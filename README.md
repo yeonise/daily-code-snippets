@@ -31,6 +31,7 @@
 1. [@Sully](https://github.com/won4885)
 2. [@Hyun](https://github.com/ghkdgus29)
 3. [@Seoyeon](https://github.com/yeonise)
+4. [@othertkfka](https://github.com/othertkfka)
 
 ## Guideline
 
