@@ -1,2 +1,3 @@
 - ex) `[title](link) - Seoyeon`
-- [2.1 What is AssertJ Core?](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/what-is-assertJ-core.md) - Seoyeon
+- [2.1 What is AssertJ Core?](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-1-what-is-assertJ-core.md) - Seoyeon
+- [2.5.1 A Simple Example](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-1-a-simple-example.md) - Seoyeon
