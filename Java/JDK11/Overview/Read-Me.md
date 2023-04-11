@@ -54,3 +54,57 @@ Please check the on-line release notes for the latest information as they will b
 
 ### Compatibility
 **호환성**
+
+See the JDK 11 Migration Guide for a list of known compatibility issues. <br>
+Every effort has been made to support programs written for previous versions of the Java platform. <br>
+Although some incompatible changes were necessary, most software should migrate to the current version with no changes. <br>
+Most failures to do so are considered bugs, except for a small number of cases where compatibility was deliberately broken, as 
+described on our compatibility web page. <br>
+Some compatibility-breaking changes were required to close potential security holes or to fix implementation or design bugs. <br>
+
+> 잘 알려진 호환성 관련 문제들은 `JDK 11 Migration Guide` 를 참고하세요. <br>
+> 이전 버전의 자바 플랫폼을 사용한 프로그램들을 지원하기 위해 많은 노력을 기울였습니다. <br>
+> 비록 일정 부분은 호환되지 않아 변경이 필요하지만, 대부분의 프로그램들은 변경 없이 현재 버전으로 변경해야 합니다. <br>
+> 변경하지 않을 경우 (의도적으로 호환성을 깨뜨린 소수의 경우를 제외하고는) 이는 버그로 간주됩니다. <br>
+> 잠재적인 보안 허점이나 구현 및 설계상의 버그를 막기 위해, 일부분은 이전 버전과의 호환성을 깨는 변경이 필요했습니다. <br>
+
+<br>
+
+### Bug Reports and Feedback
+**버그 신고 및 피드백**
+
+The JDK Bug Database web site lets you search for and examine existing bug reports, submit your own bug reports, and tell us which bug fixes
+matter most to you. <br>
+To directly submit a bug or request a feature, fill out this form : <br>
+<br>
+http://bugreport.java.com/bugreport/
+<br>
+You can send feedback to the Java SE documentation team. <br>
+<br>
+Please do not seek technical support through the Bug Database or our development teams. <br>
+For support options, see Support and Services on Oracle Support web site.
+
+> `JDK Bug Database` 웹 사이트를 사용하여 버그 보고서를 검색하고, 당신이 발견한 버그를 신고하고, 버그가 고쳐졌음을 저희에게 알릴 수 있습니다. <br>
+> 버그 신고를 하려면 다음 양식을 제출하십시오 <br> <br>
+> http://bugreport.java.com/bugreport/ <br><br>
+> 당신은 `Java SE documentation team` 에 피드백을 보낼 수 있습니다. <br>
+> <br>
+> `Bug database` 팀이나 개발팀에게 기술적 지원을 요청하지 마십시오. <br>
+> 지원 요청은, `Oracle Support web site` 의 `Support and Services` 를 참조하십시오.
+
+<br>
+
+### Contents of the JDK
+**JDK 구성 요소**
+
+This section contains a general summary of the files and directories in the JDK. <br>
+
+**Executables**
+
+
+> 이 곳에서 JDK의 파일들과 디렉토리들을 요약합니다. <br>
+> <br>
+> **실행 파일** <br>
+> 
+
+
