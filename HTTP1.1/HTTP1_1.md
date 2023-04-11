@@ -1,0 +1,1 @@
+- ex) `[title](link) - Seoyeon`
