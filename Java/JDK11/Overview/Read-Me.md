@@ -99,12 +99,60 @@ For support options, see Support and Services on Oracle Support web site.
 
 This section contains a general summary of the files and directories in the JDK. <br>
 
-**Executables**
+
 
 
 > 이 곳에서 JDK의 파일들과 디렉토리들을 요약합니다. <br>
-> <br>
+
+**Executables**
 > **실행 파일** <br>
-> 
 
+(In the bin/ subdirectory) An implementation of the Java Runtime Environment (JRE). <br>
+The JRE includes a Java Virtual Machine (JVM™), class libraries, and other files that support the execution of programs
+written in the Java programming language. <br>
+This directory also includes tools and utilities that will help you develop, execute, 
+debug, and document programs written in the Java programming language.<br>
+For further information, see the tools documentation at https://docs.oracle.com/javase/11/tools <br>
 
+> (bin/ 하위 디렉토리) JRE의 구현입니다. <br>
+> JRE는 JVM, 클래스 라이브러리, 자바로 작성된 프로그램 실행을 돕는 다양한 파일들로 이루어져 있습니다. <br>
+> 또한 이 디렉토리는 개발, 실행, 디버깅, 문서 작성을 돕는 다양한 툴들이 포함됩니다. <br>
+> 더 많은 정보가 필요하다면, `https://docs.oracle.com/javase/11/tools` 의 `tools` 를 확인하십시오.
+
+**Configuration files**
+
+(In the conf/ subdirectory) Files that contain user-configurable options. <br>
+Files in this directory can be edited to change the JDK's access permissions, configure security algorithms, 
+and set the Java Cryptography Extension Policy Files which might be used to limit the JDK's cryptographic strength.<br>
+
+> **설정 파일** <br>
+> (conf/ 하위 디렉토리) 사용자가 변경할 수 있는 옵션들을 파일로 갖고 있습니다. <br>
+> 이 디렉토리의 파일들을 편집하여,  JDK의 접근 권한을 변경하고, 보안 알고리즘을 설정하고, 
+> JDK의 암호화 강도를 제한하는 데 필요한 `Java Cryptography Extension Policy Files` 을 설정할 수 있습니다.
+
+**C header Files**
+(In the include/ subdirectory) C-language header files that support native-code programming with the Java Native 
+Interface and the Java Virtual Machine (JVM) Debugger Interface.
+> **C 헤더 파일** <br>
+> (include/ 하위 디렉토리) `Java Native Interface` 와 ` JVM Debugger Interface` 를 사용한 네이티브 코드 프로그래밍을 
+> 지원하는 C 언어 헤더파일입니다. 
+
+**Compiled Java Modules**
+(in the jmods/ subdirectory) Compiled modules used by jlink to create custom runtimes.
+>**컴파일된 자바 모듈** <br>
+> (jmods/ 하위 디렉토리) 사용자 지정 런타임을 만드는 `jlink` 를 사용한 컴파일 모듈입니다.
+
+**Copyright and License files**
+(in the legal/ subdirectory) License and copyright files for each module. <br>
+Includes third party notices as .md (markdown)files.
+>**저작권 및 라이센스 파일**<br>
+> (legal/ 하위 디렉토리) 각 모듈별로 필요한 라이센스와 저작권 파일입니다. <br>
+> 서드 파티의 경우 마크다운파일로 표시했습니다.
+
+**Additional Libraries**
+(In the lib/ subdirectory) Additional class libraries and support files required by the JDK. <br>
+These files are not intended for external use.
+
+> **추가 라이브러리**<br>
+> (lib/ 하위 디렉토리) JDK 가 필요로하는 추가적인 클래스 라이브러리와 지원 파일 입니다. <br>
+> 이 파일들은 외부에서 사용하는 용도는 아닙니다.
