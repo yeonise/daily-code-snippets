@@ -26,6 +26,10 @@
 
 [Lombok Documentation](https://projectlombok.org/features/)
 
+### 6. HTTP 1.1
+
+[RFC 2616 Documentation](https://www.rfc-editor.org/rfc/rfc2616)
+
 ## List
 
 - [Java README.md](https://github.com/yeonise/daily-code-snippets/blob/main/Java/Java.md)
