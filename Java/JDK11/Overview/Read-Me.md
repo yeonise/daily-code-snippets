@@ -156,3 +156,49 @@ These files are not intended for external use.
 > **추가 라이브러리**<br>
 > (lib/ 하위 디렉토리) JDK 가 필요로하는 추가적인 클래스 라이브러리와 지원 파일 입니다. <br>
 > 이 파일들은 외부에서 사용하는 용도는 아닙니다.
+
+<br>
+
+### Configuration
+**설정**
+
+Configuring the JRE or JDK is not considered a modification for redistribution purposes. <br>
+
+You may configure the software by modifying the files under the conf/ directory as per the 
+Java Platform, Standard Edition (Java SE) Documentation, including selecting one or creating 
+your own Java Cryptography Extension policy file under conf/security/policy. <br>
+Once you select or create your own you are not required to include alternative policy files. <br>
+Root CA certificates may be added to or removed from the Java SE certificate file located in 
+lib/security/cacerts through the use of the keytool utility available in the bin/ subdirectory of the JDK. <br>
+
+You may update the Timezone data included in the Java Runtime Environment by using the Java Time Zone Updater tool 
+available in the Java SE Downloads page. <br>
+
+> JRE 와 JDK 는 구성은 재배포 목적으로 수정된 것으로 간주되지 않습니다. <br>
+> 당신은 conf/ 디렉토리 하위의 파일들을 수정하여 소프트웨어를 구성할 수 있습니다. <br>
+> 당신이 직접 선택하거나 만든 경우에는 대체 정책 파일을 포함할 필요가 없습니다. <br>
+> 루트 CA 인증서는 keytool 유틸리티를 사용하여 Java SE 인증서 파일에서 추가하거나 제거할 수 있습니다. <br>
+> 
+> Java SE 다운로드 페이지에 있는 Java Time Zone Updater tool 을 사용하여 JRE 의 Timezone 을 수정할 수 있습니다.
+
+<br>
+
+### Unlimited Strength Java Cryptography Extension
+**무제한 강도의 Java 암호화 확장**
+
+The default JCE policy files bundled in this Java Runtime Environment allow for "unlimited" cryptographic strengths. <br>
+
+For convenience, this software also contains the historic "limited" strength policy files which restricts cryptographic strengths. <br>
+To use the limited strength policy, instead of the default unlimited policy, you must update the "crypto.policy" 
+Security property (in /conf/security/java.security) to point to the appropriate directory. <br>
+
+You are advised to consult your export/import control counsel or attorney to determine the exact requirements of your location, 
+and what policy settings should be used.
+
+> JRE의 번들로 제공되는 기본 JCE 정책 파일은 "무제한" 암호화 강도를 지원합니다. <br>
+> 
+> 편의를 위해, 암호화 강도를 제한하는 과거에 사용된 "제한된" 암호화 강도 정책 파일도 포함됩니다. <br>
+> 기본으로 제공되는 무제한 강도 정책 대신, 제한된 강도 정책을 사용하기 위해선, "crypto.policy" 보안 속성이 적절한 디렉토리를
+> 가리키도록 수정해야 합니다. <br>
+> 
+> 당신이 사는 지역에서 정확한 요구사항과 어떤 정책이 필요한 지 결정하려면, 당신의 수출입 관리 통제사 또는 변호사와 상의가 필요합니다.
