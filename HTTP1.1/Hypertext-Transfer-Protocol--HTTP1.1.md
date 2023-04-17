@@ -103,3 +103,83 @@ In this way, HTTP allows basic hypermedia access to resources available from div
 <br>
 
 ### 1.2 Requirements
+**요구 사항**
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in RFC 2119. <br>
+
+An implementation is not compliant if it fails to satisfy one or more
+of the MUST or REQUIRED level requirements for the protocols it
+implements. <br>
+An implementation that satisfies all the MUST or REQUIRED
+level and all the SHOULD level requirements for its protocols is said
+to be "unconditionally compliant"; <br>
+one that satisfies all the MUST
+level requirements but not all the SHOULD level requirements for its
+protocols is said to be "conditionally compliant." <br>
+
+> 다음의 키워드들은 RFC 2119에서와 동일한 의미로 사용됩니다. <br>
+> 
+> MUST 혹은 REQUIRED 수준의 요구사항을 하나라도 만족하지 못하는 경우, 프로토콜 구현은 규정을 만족하지 않습니다. <br>
+> MUST, REQUIRED, SHOULD 수준의 요구사항을 모두 만족하는 경우, 프로토콜 구현은 "무조건 준수" 상태입니다. <br>
+> MUST 수준 요구사항은 모두 만족하지만, SHOULD 수준 요구사항은 모두 만족하지 못하는 경우, 프로토콜 구현은 "조건부 준수" 상태입니다.
+
+<br>
+
+### 1.3 Terminology
+**술어**
+
+This specification uses a number of terms to refer to the roles
+played by participants in, and objects of, the HTTP communication. <br>
+
+**connection** <br>
+A transport layer virtual circuit established between two programs
+for the purpose of communication. <br>
+
+**message** <br>
+The basic unit of HTTP communication, consisting of a structured
+sequence of octets matching the syntax defined in section 4 and
+transmitted via the connection. <br>
+
+**request** <br>
+An HTTP request message, as defined in section 5. <br> 
+
+**response** <br>
+An HTTP response message, as defined in section 6. <br>
+
+**resource**<br>
+A network data object or service that can be identified by a URI,
+as defined in section 3.2. <br>
+Resources may be available in multiple
+representations (e.g. multiple languages, data formats, size, and
+resolutions) or vary in other ways. <br>
+
+**entity**<br>
+The information transferred as the payload of a request or
+response.<br>
+An entity consists of metainformation in the form of
+entity-header fields and content in the form of an entity-body, as
+described in section 7.<br>
+
+> 이 스펙은 참여자들의 역할과 HTTP 통신의 대상들을 지칭하기 위한 여러 용어를 사용합니다. <br>
+> 
+> `connection` <br>
+> 두 프로그램이 통신하기 위해 설치된 전송 계층의 가상 회선 <br>
+> 
+> `message` <br>
+> HTTP 통신의 기본 단위로, 구조화된 바이트 문자열로 이루어져 있으며 섹션 4에 정의된 구문과 일치하고, 커넥션을 통해 전송됩니다. <br>
+> 
+> `request` <br>
+> HTTP 요청 메시지로, 섹션 5에서 다룹니다. <br>
+> 
+> `response` <br>
+> HTTP 응답 메시지로, 섹션 6에서 다룹니다. <br>
+> 
+> `resource` <br>
+> URI 로 식별되는 네트워크 데이터 또는 서비스입니다. (섹션 3.2에서 다룹니다.)<br>
+> 리소스는 여러 언어, 데이터 형식, 크기, 해상도와 같은 여러 표현으로 제공됩니다. <br>
+> 
+> `entity`<br>
+> 요청 또는 응답의 payload로 전송되는 정보입니다.<br>
+> `entity` 는 `entity-header` 필드의 메타정보와 `entity-body` 의 내용으로 구성됩니다. (섹션 7에서 다룹니다.)<br>
