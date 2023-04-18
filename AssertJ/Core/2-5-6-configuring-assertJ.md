@@ -185,15 +185,30 @@ String[] greatBooks = array("A Game of Thrones", "The Lord of the Rings", "Assas
 
 Sets whether the elements related to AssertJ are removed from assertion errors stack trace. Defaults to true.
 
+> AssertJ와 관련된 오류를 stack trace에서 제거할지 설정합니다.
+> 기본값은 true입니다.
+
 ### AssertJ Configuration
 
-Since 3.13.0, AssertJ exposes a org.assertj.core.configuration.Configuration object providing
-access to all AssertJ globally configurable properties.
+Since 3.13.0, AssertJ exposes a `org.assertj.core.configuration.Configuration` object
+providing access to all AssertJ globally configurable properties.
 
-You can create an instance of org.assertj.core.configuration.Configuration
-and change indivual properties through setters or create your own custom configuration by inheriting from it and overriding the methods to change the default behavior as in the CustomConfiguration example below.
+> 3.13.0부터 AssertJ는 전역적으로 구성 가능한 속성에 대한 접근을 제공하는
+> `org.assertj.core.configuration.Configuration`를 제공합니다.
 
-Your configuration will be effective once you call Configuration.apply() or Configuration.applyAndDisplay().
+You can create an instance of `org.assertj.core.configuration.Configuration`
+and change individual properties through setters or create your own custom configuration
+by inheriting from it and overriding the methods
+to change the default behavior as in the `CustomConfiguration` example below.
+
+> 여러분은 `org.assertj.core.configuration.Configuration`의 인스턴스를 생성할 수 있으며,  
+> setter를 사용하여 각각의 속성을 변경할 수 있습니다.  
+> 또한 아래의 예시처럼 configuration을 상속받는 커스텀 설정 클래스를 만들고 메서드 오버라이딩을 통해 기본 동작을 변경할 수 있습니다.
+
+Your configuration will be effective once you call
+`Configuration.apply()` or `Configuration.applyAndDisplay()`.
+
+> `Configuration.apply()` 또는 `Configuration.applyAndDisplay()`를 호출하면 구성 설정이 적용됩니다.
 
 Example:
 
@@ -209,10 +224,13 @@ configuration.setMaxLengthForSingleLineDescription(81);
 configuration.setRemoveAssertJRelatedElementsFromStackTrace(false);
 
 // don't forget to apply it!
+// 설정을 적용하는 것을 잊지마세요!
 configuration.applyAndDisplay();
 ```
 
 Printing the above configuration produces the following output:
+
+> 위의 설정을 출력하면 아래와 같은 결과가 나옵니다:
 
 ``` java
 Applying configuration org.assertj.core.configuration.Configuration
@@ -229,18 +247,34 @@ Applying configuration org.assertj.core.configuration.Configuration
 
 ### Automagic configuration discovery
 
-This section describes a way to register an AssertJ Configuration without using any test framework hooks like BeforeAllCallback.
+**자동화된 구성 검색**
 
-Follow the steps below to register your Configuration as an SPI:
+This section describes a way to register an AssertJ `Configuration`
+without using any test framework hooks like `BeforeAllCallback`.
 
-- Create your own configuration inheriting from org.assertj.core.configuration.Configuration
-- Create a file named org.assertj.core.configuration.Configuration in a META-INF/services directory
-- Make sure META-INF/services/ is in the runtime classpath, usually putting it in src/test/resources will do.
-- Put the fully qualified class name of your Configuration in services/org.assertj.core.configuration.Configuration.
+> 이 섹션에서는 `BeforeAllCallback`과 같은 테스트 프레임워크에서 제공하는 콜백 메서드를 사용하지 않고 AssertJ 구성을 등록하는 방법을 설명합니다.
+
+Follow the steps below to register your `Configuration` as an SPI:
+
+> 아래 단계에 따라 구성을 SPI로 등록하세요:
+
+- Create your own configuration inheriting from `org.assertj.core.configuration.Configuration`
+- Create a file named `org.assertj.core.configuration.Configuration` in a `META-INF/services` directory
+- Make sure `META-INF/services/` is in the runtime classpath, usually putting it in s`rc/test/resources` will do.
+- Put the fully qualified class name of your `Configuration` in `services/org.assertj.core.configuration.Configuration`.
+
+> - `org.assertj.core.configuration.Configuration`를 상속하는 구성을 만듭니다.
+> - `META-INF/services`에 `org.assertj.core.configuration.Configuration`이라는 파일을 만듭니다.
+> - `META-INF/services/`가 런타임 클래스 경로에 있는지 확인하십시오. 일반적으로 `src/test/resources`에 넣으면 됩니다.
+> - `services/org.assertj.core.configuration.Configuration`에 구성의 클래스 이름을 입력합니다.
 
 This is all you have to do, AssertJ will pick up the Configuration automatically and display it at the first interaction with AssertJ.
 
+> 이것이 여러분이 해야 할 전부입니다. AssertJ는 자동으로 구성을 선택하고 AssertJ와의 첫 번째 상호 작용에서 이를 표시합니다.
+
 Here’s an example of a custom configuration class:
+
+> 다음은 사용자 지정 구성 클래스의 예입니다:
 
 ``` java
 package example.core;
@@ -255,12 +289,13 @@ import java.util.List;
 import org.assertj.core.configuration.Configuration;
 import org.assertj.core.presentation.Representation;
 
-class CustomConfiguration extends Configuration {
+class CustomConfiguration extends Configuration { // Configuration을 상속
 
     private static final SimpleDateFormat DATE_FORMAT1 = new SimpleDateFormat("yyyy_MM_dd");
     private static final SimpleDateFormat DATE_FORMAT2 = new SimpleDateFormat("yyyy|MM|dd");
     
     // we keep the default behavior for extractingPrivateFieldsEnabled since it is not overridden
+    // 재정의되지 않았기 때문에 extractingPrivateFieldsEnabled에 대한 기본 동작을 유지합니다.
     
     @Override
     public Representation representation() {
@@ -299,13 +334,18 @@ class CustomConfiguration extends Configuration {
 }
 ```
 
-With this custom configuration, the content of META-INF/services/org.assertj.core.configuration.Configuration must be:
+With this custom configuration,
+the content of `META-INF/services/org.assertj.core.configuration.Configuration` must be:
+
+> 이 사용자 정의 구성에서 `META-INF/services/org.assertj.core.configuration.Configuration`의 내용은 다음과 같아야 합니다.
 
 ``` java
 example.core.CustomConfiguration
 ```
 
-Printing the CustomConfiguration shows:
+Printing the `CustomConfiguration` shows:
+
+> `CustomConfiguration`을 출력하면 다음과 같습니다:
 
 ``` java
 Applying configuration example.core.CustomConfiguration
