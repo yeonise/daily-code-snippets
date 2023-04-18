@@ -162,6 +162,47 @@ An entity consists of metainformation in the form of
 entity-header fields and content in the form of an entity-body, as
 described in section 7.<br>
 
+**representation**<br>
+An entity included with a response that is subject to content
+negotiation, as described in section 12. <br>
+There may exist multiple
+representations associated with a particular response status.<br>
+
+**content negotiation**<br>
+The mechanism for selecting the appropriate representation when
+servicing a request, as described in section 12.<br>
+The representation of entities in any response can be negotiated
+(including error responses). <br>
+
+**variant**<br>
+A resource may have one, or more than one, representation(s)
+associated with it at any given instant. <br>
+Each of these
+representations is termed a `variant`. <br>
+Use of the term `variant`
+does not necessarily imply that the resource is subject to content
+negotiation. <br>
+
+**client**<br>
+A program that establishes connections for the purpose of sending
+requests. <br>
+
+**user agent**<br>
+The client which initiates a request. <br>
+These are often browsers,
+editors, spiders (web-traversing robots), or other end user tools. <br>
+
+**server**<br>
+An application program that accepts connections in order to
+service requests by sending back responses. <br>
+Any given program may
+be capable of being both a client and a server; <br>
+our use of these
+terms refers only to the role being performed by the program for a
+particular connection, rather than to the program's capabilities
+in general. <br>
+Likewise, any server may act as an origin server, proxy, gateway, or tunnel, switching behavior based on the nature of each request.<br>
+
 > 이 스펙은 참여자들의 역할과 HTTP 통신의 대상들을 지칭하기 위한 여러 용어를 사용합니다. <br>
 > 
 > `connection` <br>
@@ -183,3 +224,29 @@ described in section 7.<br>
 > `entity`<br>
 > 요청 또는 응답의 payload로 전송되는 정보입니다.<br>
 > `entity` 는 `entity-header` 필드의 메타정보와 `entity-body` 의 내용으로 구성됩니다. (섹션 7에서 다룹니다.)<br>
+>
+> `representation` <br>
+> content 협상의 대상이 되는 응답을 포함한 엔티티입니다.<br>
+> 특정 응답 상태와 관련있는 여러 표현이 존재할 수 있습니다. <br>
+> 
+> `content negotiation`<br>
+> 요청을 처리할 때, 적절한 표현을 선택하는 메커니즘 입니다.<br>
+> 모든 응답에서, 엔티티의 표현은 협상의 대상이 됩니다. (오류 응답 포함) <br>
+> 
+> `variant` (변형) <br>
+> 자원은 주어진 순간에, 하나 이상의 표현을 가질 수 있습니다. <br>
+> 이러한 표현들을 '변형'이라 합니다. <br>
+> '변형'이라는 용어를 사용한다 해서, 반드시 리소스가 content 협상 대상임을 의미하진 않습니다. <br>
+> 
+> `client` <br>
+> 요청을 보낼 목적으로 connection 을 수립하는 프로그램입니다. <br>
+> 
+> `user agent` <br>
+> 요청을 시작하는 클라이언트 <br>
+> 이들은 브라우저, 에디터, spiders (web-traversing robots) 또는 end-user tool 입니다.<br>
+> 
+> `server` <br>
+> 요청에 대한 응답을 보내기 위해, connection 을 수락하는 응용 프로그램입니다.<br>
+> 모든 프로그램은 클라이언트와 서버가 모두 될 수 있습니다.<br>
+> 이러한 용어의 사용은 프로그램이 일반적으로 수행할 수 있는 능력을 말하는 것이 아니라, 특정 연결에 대해 프로그램이 수행하는 역할만을 얘기합니다.<br>
+> 마찬가지로, 모든 서버는 각 요청의 특성에 따라 origin server, proxy, gateway, tunnel 역할을 할 수 있습니다 .<br>
