@@ -78,3 +78,38 @@ public class ValExample {
   }
 }
 ```
+
+### Supported configuration keys:
+> 지원되는 설정 키
+```
+lombok.val.flagUsage = [warning|error](default: not set)
+```
+Lombok will flag any usage of val as a warning or error if configured.
+> Lombok은 설정하면 `val`의 사용을 warning 또는 error로 표시할 수 있다.
+
+### Small Print
+
+For compound types, the most common superclass is inferred, not any shared interfaces. For example, `bool ? new HashSet() : new ArrayList()` is an expression with a compound type: The result is both AbstractCollection as well as Serializable. The type inferred will be AbstractCollection, as that is a class, whereas Serializable is an interface.
+
+> 혼합된 타입을 위해서, 공유된 인터페이스는 추론되지 않고 가장 일반적인 슈퍼클래스가 추론된다.
+예를 들면, `bool ? new HashSet() : new ArrayList()` 같은 혼합된 타입: 결과는 `AbstractCollection`과 `Serializable` 둘 다 추론된다. 타입은 `AbstractCollection`은 클래스로, `Serializable`은 인터페이스로 추론된다.
+
+In ambiguous cases, such as when the initializer expression is null, java.lang.Object is inferred.
+
+> null로 초기화 되는 모호한 경우, `java.lang.Object`가 추론된다.
+
+<hr>
+
+## var
+
+### Mutably! Hassle-free local variables.
+> 가변적으로! 혼란이 없는 지역 변수.
+
+var was promoted to the main package in lombok 1.16.20; given that JEP 286 establishes expectations, and lombok's take on var follows these, we've decided to promote var eventhough the feature remains controversial.
+
+> `var`는 lombok 1.16.20 메인 패키지에서 홍보되었다; `JEP 286`이 기대를 설정하고, lombok이 이를 따라서 `var`를 가져간 것을 고려하여, 우리는 `var`가 논란이 많은 기능으로 남아 있을지라도 홍보하기로 결정했다.
+
+var was introduced in lombok 1.16.12 as experimental feature.
+
+> `var`는 lombok 1.16.12에서 실험적인 기능으로 소개되었다.
+
