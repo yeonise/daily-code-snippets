@@ -5,3 +5,4 @@
 - [2.5.4 Overriding error message](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-4-overriding-error-message.md) - Seoyeon
 - [2.5.5 Avoiding incorrect usage](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-5-avoiding-incorrect-usage.md) - Seoyeon
 - [2.5.6 Configuring AssertJ](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-6-configuring-assertJ.md) - Seoyeon
+- [2.5.7 Controlling Type Formatting](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-7-controlling-type-formatting.md) - Seoyeon
