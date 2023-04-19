@@ -203,6 +203,41 @@ particular connection, rather than to the program's capabilities
 in general. <br>
 Likewise, any server may act as an origin server, proxy, gateway, or tunnel, switching behavior based on the nature of each request.<br>
 
+**origin server**<br>
+The server on which a given resource resides or is to be created. <br>
+
+**proxy**<br>
+An intermediary program which acts as both a server and a client
+for the purpose of making requests on behalf of other clients. <br>
+Requests are serviced internally or by passing them on, with
+possible translation, to other servers. <br>
+A proxy MUST implement
+both the client and server requirements of this specification. <br>
+A "transparent proxy" is a proxy that does not modify the request or
+response beyond what is required for proxy authentication and
+identification. <br>
+A "non-transparent proxy" is a proxy that modifies
+the request or response in order to provide some added service to
+the user agent, such as group annotation services, media type
+transformation, protocol reduction, or anonymity filtering. <br>
+Except where either transparent or non-transparent behavior is explicitly
+stated, the HTTP proxy requirements apply to both types of proxies. <br>
+
+**gateway**<br>
+A server which acts as an intermediary for some other server. <br>
+Unlike a proxy, a gateway receives requests as if it were the
+origin server for the requested resource; <br>
+the requesting client may not be aware that it is communicating with a gateway. <br>
+
+**tunnel**<br>
+An intermediary program which is acting as a blind relay between
+two connections. <br>
+Once active, a tunnel is not considered a party
+to the HTTP communication, though the tunnel may have been
+initiated by an HTTP request. <br>
+The tunnel ceases to exist when both
+ends of the relayed connections are closed. <br>
+
 > 이 스펙은 참여자들의 역할과 HTTP 통신의 대상들을 지칭하기 위한 여러 용어를 사용합니다. <br>
 > 
 > `connection` <br>
@@ -250,3 +285,26 @@ Likewise, any server may act as an origin server, proxy, gateway, or tunnel, swi
 > 모든 프로그램은 클라이언트와 서버가 모두 될 수 있습니다.<br>
 > 이러한 용어의 사용은 프로그램이 일반적으로 수행할 수 있는 능력을 말하는 것이 아니라, 특정 연결에 대해 프로그램이 수행하는 역할만을 얘기합니다.<br>
 > 마찬가지로, 모든 서버는 각 요청의 특성에 따라 origin server, proxy, gateway, tunnel 역할을 할 수 있습니다 .<br>
+>
+> `origin server` <br>
+> 리소스가 상주하거나 생성되는 서버입니다.<br>
+> 
+> `proxy` <br>
+> 다른 클라이언트를 대신하여 서버나 클라이언트에게 요청을 하는 중개 프로그램입니다.<br>
+> 요청을 내부적으로 처리하거나 또는 가능한 변환을 한 채 다른 서버에 전달할 수 있습니다. <br>
+> 프록시는 서버와 클라이언트의 요구사항을 모두 구현해야 합니다.<br>
+> "투명 프록시" 는 프록시 인증 및 식별에 필요한 것 이상으로는 요청이나 응답을 수정하지 않는 프록시입니다.<br>
+> "불투명 프록시" 는 `user agent` 에 그룹 주석 서비스, 미디어 유형 변환, 프로토콜 축소, 익명성 필터링과 같은
+> 추가적인 서비스를 제공하기 위해 요청이나 응답을 수정하는 프록시입니다. <br>
+> 투명 혹은 불투명한 동작이 명시적으로 명시된 경우가 아니라면, HTTP 프록시 요구 사항은 두 프록시 유형에 모두 적용됩니다. <br>
+>
+> `gateway`<br>
+> 다른 서버의 중개자 역할을 하는 서버입니다. <br>
+> 프록시와 다른 점은, 게이트웨이는 원본 서버인 것처럼 리소스 요청을 받습니다.<br>
+> 요청 클라이언트는 게이트웨이와 통신하고 있음을 알지 못합니다. <br>
+>
+> `tunnel`<br>
+> 두 연결 사이에서 `blind relay` 를 수행하는 중개 프로그램입니다. <br>
+> 일단 활성화되면, HTTP 요청에 의해 터널이 시작되었더라도, 터널을 HTTP 통신의 당사자로 간주하지 않습니다. <br>
+> 릴레이된 연결의 양쪽 끝이 닫히면, 터널은 사라집니다. <br>
+> 
