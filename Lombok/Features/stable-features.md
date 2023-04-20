@@ -113,3 +113,41 @@ var was introduced in lombok 1.16.12 as experimental feature.
 
 > `var`는 lombok 1.16.12에서 실험적인 기능으로 소개되었다.
 
+### Overview
+
+`var` works exactly like `val`, except the local variable is not marked as `final`.
+
+> `var`는 `val`과 지역 변수에는 `final`이 붙지 않는 다는 것을 제외하고 정확히 똑같이 동작한다.
+
+The type is still entirely derived from the mandatory initializer expression, and any further assignments, while now legal (because the variable is no longer final), aren't looked at to determine the appropriate type.
+For example, `var x = "Hello"; x = Color.RED;` does not work; the type of x will be inferred to be `java.lang.String` and thus, the `x = Color.RED` assignment will fail. If the type of x was inferred to be `java.lang.Object` this code would have compiled, but that's not how `var` works.
+
+> 타입은 여전히 필수적인 초기화 식에서 전적으로 추정되고, 추가적인 할당은 이제 합법적이지만(변수가 더이상 `final`이 아니기 때문에) 적절한 타입으로 결정되지 않는다.
+예를 들면, `var x = "Hello"; x = Color.RED;`는 동작하지 않는다; x의 타입은 `java.lang.String`으로 추정되기 때문에, `x = Color.RED`는 실패할 것이다.
+만약 x의 타입이 `java.lang.Object`로 추정되면 이 코드는 컴파일될 것이지만 그것은 `var`의 작동 방식이 아니다.
+
+### Supported configuration keys:
+> 지원되는 설정 키
+```
+lombok.var.flagUsage = [warning|error](default: not set)
+```
+Lombok will flag any usage of `var` as a warning or error if configured.
+
+> Lombok은 설정하면 `var`의 사용을 warning 또는 error로 표시할 수 있다.
+
+## @NonNull
+
+### or: How I learned to stop worrying and love the NullPointerException.
+
+> or: 내가 걱정하는 것을 멈추고 NullPointerException을 사랑하는 법을 배운 방법
+
+@NonNull was introduced in lombok v0.11.10.
+
+> @NonNull은 lombok v0.11.10.에서 소개되었다.
+
+### Overview
+
+You can use `@NonNull` on a record component, or a parameter of a method or constructor. This will cause to lombok generate a null-check statement for you.
+
+> 당신은 record 요소 또는 메서드의 파라미터 또는 생성자에 `@NonNull`을 사용할 수 있다.
+이것은 lombok이 null-check 식을 생성하도록 야기시켜줄 수 있다.
