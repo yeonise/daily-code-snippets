@@ -238,6 +238,36 @@ initiated by an HTTP request. <br>
 The tunnel ceases to exist when both
 ends of the relayed connections are closed. <br>
 
+**cache**<br>
+A program's local store of response messages and the subsystem
+that controls its message storage, retrieval, and deletion. <br>
+A cache stores cacheable responses in order to reduce the response
+time and network bandwidth consumption on future, equivalent
+requests. <br>
+Any client or server may include a cache, though a cache
+cannot be used by a server that is acting as a tunnel. <br>
+
+**cacheable** <br>
+A response is cacheable if a cache is allowed to store a copy of
+the response message for use in answering subsequent requests. <br>
+The rules for determining the cacheability of HTTP responses are
+defined in section 13. <br>
+Even if a resource is cacheable, there may be additional constraints on whether a cache can use the cached
+copy for a particular request. <br>
+
+**first-hand**<br>
+A response is first-hand if it comes directly and without
+unnecessary delay from the origin server, perhaps via one or more
+proxies. <br>
+A response is also first-hand if its validity has just
+been checked directly with the origin server. <br>
+
+**explicit expiration time** <br>
+The time at which the origin server intends that an entity should
+no longer be returned by a cache without further validation. <br>
+
+
+
 > 이 스펙은 참여자들의 역할과 HTTP 통신의 대상들을 지칭하기 위한 여러 용어를 사용합니다. <br>
 > 
 > `connection` <br>
@@ -308,3 +338,19 @@ ends of the relayed connections are closed. <br>
 > 일단 활성화되면, HTTP 요청에 의해 터널이 시작되었더라도, 터널을 HTTP 통신의 당사자로 간주하지 않습니다. <br>
 > 릴레이된 연결의 양쪽 끝이 닫히면, 터널은 사라집니다. <br>
 > 
+> `cache` <br>
+> 응답 메시지의 로컬 저장소 역할과, 메시지 저장소, 검색 및 삭제를 제어하는 하위 시스템입니다. <br>
+> 캐시는 향후 동일한 요청에 대해 응답시간 및 네트워크 대역폭 소비를 줄이기 위해, 캐시 가능한 응답들을 저장합니다. <br>
+> 모든 클라이언트나 서버는 캐시를 포함할 수 있지만, 터널 역할을 하는 서버에서는 캐시를 사용할 수 없습니다. <br>
+>
+> `cacheable` (캐시가능)<br>
+>  후속 요청에 응답하기 위한 응답 메시지 복사본을 저장할 수 있도록 캐시가 허락한 경우, 응답은 캐시 가능합니다. <br>
+> HTTP 응답의 캐시 가능성을 결정하는 규칙은 섹션 13에 정의되어 있습니다. <br>
+> 리소스가 캐시가능하더라도, 특정 요청에 대해 캐시된 복사본을 사용할 수 있는지에 대한 추가적인 제약 조건이 있을 수 있습니다. <br>
+> 
+> `first-hand` (직접) <br>
+> 프록시를 거치는 등의 불필요한 지연없이 origin server 에서 직접 응답이 오는 경우, 이 응답을 직접 응답이라 합니다. <br>
+> origin server 가 직접 유효성을 체크한 응답도 직접 응답이라 합니다. <br>
+>
+> `explicit expiration time` (명시적 만료 시간)<br>
+> origin server 가 추가적인 유효성 검사 없이 캐시에서 엔티티를 더 이상 꺼내쓸 수 없게 의도하는 시간입니다. <br>
