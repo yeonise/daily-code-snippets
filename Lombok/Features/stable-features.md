@@ -151,3 +151,15 @@ You can use `@NonNull` on a record component, or a parameter of a method or cons
 
 > 당신은 record 요소 또는 메서드의 파라미터 또는 생성자에 `@NonNull`을 사용할 수 있다.
 이것은 lombok이 null-check 식을 생성하도록 야기시켜줄 수 있다.
+
+Lombok has always treated various annotations generally named `@NonNull` on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via for example `@Data`. However, using lombok's own `@lombok.NonNull` on a parameter or record component results in the insertion of the null-check at the top of that method.
+
+> lombok은 만약 `@Data`를 통해서 롬복이 전체 메서드 또는 생성자를 생성한다면 null-check를 생성하는 신호로 일반적으로 필드에서 `@NonNull` 이라고 불리는 다양한 어노테이션을 항상 다뤄왔다.
+그러나, lombok의 `@lombok.NonNull`을 파라미터 또는 record 요소에 사용하는 것은 메서드의 맨 위에 null-check를 넣는 결과를 발생시킨다.
+
+The null-check looks like `if (param == null) throw new NullPointerException("param is marked non-null but is null");` and will be inserted at the very top of your method. For constructors, the null-check will be inserted immediately following any explicit `this()` or `super()` calls. For record components, the null-check will be inserted in the 'compact constructor' (the one that has no argument list at all), which will be generated if you have no constructor. If you have written out the record constructor in long form (with parameters matching your components exactly), then nothing happens - you'd have to annotate the parameters of this long-form constructor instead.
+
+> null-check는 다음과 같이 보인다. `if (param == null) throw new NullPointerException("param is marked non-null but is null");`
+그리고 null-check는 메서드의 가장 위에 삽입된다.
+생성자에서, null-check는 `this()` 또는 `super()`의 명백한 호출에 즉시 삽입된다.
+
