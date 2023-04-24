@@ -266,6 +266,48 @@ been checked directly with the origin server. <br>
 The time at which the origin server intends that an entity should
 no longer be returned by a cache without further validation. <br>
 
+**heuristic expiration time**<br>
+An expiration time assigned by a cache when no explicit expiration
+time is available. <br>
+
+**age**<br>
+The age of a response is the time since it was sent by, or
+successfully validated with, the origin server. <br>
+
+**freshness lifetime**<br>
+The length of time between the generation of a response and its
+expiration time. <br>
+
+**fresh**<br>
+A response is fresh if its age has not yet exceeded its freshness
+lifetime. <br>
+
+**stale**<br>
+A response is stale if its age has passed its freshness lifetime. <br>
+
+**semantically transparent**<br>
+A cache behaves in a "semantically transparent" manner, with
+respect to a particular response, when its use affects neither the
+requesting client nor the origin server, except to improve
+performance. <br>
+When a cache is semantically transparent, the client
+receives exactly the same response (except for hop-by-hop headers)
+that it would have received had its request been handled directly
+by the origin server. <br>
+
+**validator**<br>
+A protocol element (e.g., an entity tag or a Last-Modified time)
+that is used to find out whether a cache entry is an equivalent
+copy of an entity. <br>
+
+**upstream/downstream**<br>
+Upstream and downstream describe the flow of a message: all
+messages flow from upstream to downstream. <br>
+
+**inbound/outbound**<br>
+Inbound and outbound refer to the request and response paths for
+messages: "inbound" means "traveling toward the origin server",
+and "outbound" means "traveling toward the user agent" <br>
 
 
 > 이 스펙은 참여자들의 역할과 HTTP 통신의 대상들을 지칭하기 위한 여러 용어를 사용합니다. <br>
@@ -354,3 +396,36 @@ no longer be returned by a cache without further validation. <br>
 >
 > `explicit expiration time` (명시적 만료 시간)<br>
 > origin server 가 추가적인 유효성 검사 없이 캐시에서 엔티티를 더 이상 꺼내쓸 수 없게 의도하는 시간입니다. <br>
+>
+> `heuristic expiration time` (모호한 만료 시간)<br>
+> 명시적인 만료시간을 사용할 수 없을 때, 캐시에서 할당하는 만료시간 입니다. <br>
+> 
+> `age` <br>
+> 응답의 나이는 `origin server` 가 응답 메시지를 성공적으로 보낸 이후부터의 시간입니다.<br> 
+> 
+> `freshness lifetime`<br>
+> 응답 메시지가 생성된 시간과 응답 메시지의 만료 시간 사이의 시간입니다. <br>
+> 
+> `fresh`<br>
+> 응답 메시지의 나이가 아직 `freshness lifetime` 을 초과하지 않았다면 응답 메시지는 `fresh` 합니다. <br>
+> 
+> `stale`(신선하지 않은) <br>
+> 응답 메시지의 나이가 `freshness lifetime` 을 초과하였다면 응답 메시지는 `stale` 합니다. <br>
+> 
+> `semantically transparent` (의미상 투명한) <br> 
+> (특정 응답 에서) 캐시는 성능 향상을 제외하고는, 클라이언트와 서버에 영향을 미치지 않으므로 "의미상 투명한" 방식으로 작동합니다. <br>
+> 캐시가 `semantically transparent` 하다면, 클라이언트는 원본 서버로부터 받았어야 할 응답 메시지와 동일한 응답을 받습니다. <br>
+> 
+> `validator` <br>
+> (`entity tag` 또는 `Last-Modified time` 같은) 프로토콜 요소를 말하며, 캐시 항목이 로컬의 복사본과 동일한 지 검증합니다. <br>
+>
+> `upstream/downstream` <br>
+> `upstream` 과 `downstream` 은 메시지의 흐름을 설명합니다. <br>
+> 모든 메시지들은 `upstream` 에서 `downstream` 으로 흐릅니다. <br>
+> 
+> `inbound/outbound`<br>
+> `inbound` 와 `outbound` 는 요청 메시지와 응답 메시지의 이동 경로를 나타냅니다. <br>
+> `inbound` 는 `origin server` 로 향하는 이동을 의미하고 `outbound` 는 `user agent` 를 향하는 이동을 의미합니다. <br>
+
+### 1.4 Overall Operation
+**전반적인 운영**
