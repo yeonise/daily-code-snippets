@@ -429,3 +429,37 @@ and "outbound" means "traveling toward the user agent" <br>
 
 ### 1.4 Overall Operation
 **전반적인 운영**
+
+The HTTP protocol is a request/response protocol.
+A client sends a request to the server in the form of a request method, URI, and protocol version, followed by a MIME-like message containing request modifiers, client information, and possible body content over a connection with a server.
+The server responds with a status line, including the message's protocol version and a success or error code, followed by a MIME-like message containing server information, entity metainformation, and possible entity-body content.
+The relationship between HTTP and MIME is described in appendix 19.4.
+<br>
+
+Most HTTP communication is initiated by a user agent and consists of a request to be applied to a resource on some origin server.
+In the simplest case, this may be accomplished via a single connection (v) between the user agent (UA) and the origin server (O).
+```
+request chain ------------------------>
+UA -------------------v------------------- O
+<----------------------- response chain
+```
+A more complicated situation occurs when one or more intermediaries are present in the request/response chain.
+There are three common forms of intermediary: proxy, gateway, and tunnel.
+A proxy is a forwarding agent, receiving requests for a URI in its absolute form, rewriting all or part of the message, and forwarding the reformatted request toward the server identified by the URI.
+
+> HTTP 프로토콜은 요청/응답 프로토콜입니다.
+> 클라이언트는 request method, URI, 프로토콜 버전, 요청 수정자를 포함한 MIME 유형의 메시지, 클라이언트 정보, 가능한 본문 메시지를 서버에게 전송합니다.
+> 서버는 메시지의 프로토콜 버전과 상태코드, 서버 정보를 포함한 MIME 유형의 메시지, 엔티티 메타 정보와 가능한 엔티티 본문 정보를 가진 status line 을 반환합니다.
+> HTTP 와 MIME의 관계는 부록 19.4에서 설명합니다.
+> <br>
+> 
+> 대부분의 HTTP 통신은 사용자 에이전트가 시작하며, 일부 origin server 의 리소스에 적용되는 요청으로 이루어집니다. 
+> 가장 간단한 경우, 사용자 에이전트와 origin server의 단일 커넥션을 통해 수행됩니다.
+> ```
+> request chain ------------------------>
+> UA -------------------v------------------- O
+> <----------------------- response chain
+> ```
+> 요청/응답 체인 중간에 하나 이상의 중개자가 있는 경우, 더 복잡한 상황이 발생합니다.
+> 중개자에는 프록시, 게이트웨이, 터널의 3가지 형태가 있습니다.
+> 프록시는 전달 에이전트로, 요청으로부터 절대 URI를 받고, 메시지를 다시 재작성하고, URI로 식별되는 서버에 새로이 포맷된 요청 메시지를 전달합니다.
