@@ -98,7 +98,7 @@ In ambiguous cases, such as when the initializer expression is null, java.lang.O
 
 > null로 초기화 되는 모호한 경우, `java.lang.Object`가 추론된다.
 
-<hr>
+<hr><br><br>
 
 ## var
 
@@ -135,6 +135,8 @@ Lombok will flag any usage of `var` as a warning or error if configured.
 
 > Lombok은 설정하면 `var`의 사용을 warning 또는 error로 표시할 수 있다.
 
+<hr><br><br>
+
 ## @NonNull
 
 ### or: How I learned to stop worrying and love the NullPointerException.
@@ -158,8 +160,55 @@ Lombok has always treated various annotations generally named `@NonNull` on a fi
 그러나, lombok의 `@lombok.NonNull`을 파라미터 또는 record 요소에 사용하는 것은 메서드의 맨 위에 null-check를 넣는 결과를 발생시킨다.
 
 The null-check looks like `if (param == null) throw new NullPointerException("param is marked non-null but is null");` and will be inserted at the very top of your method. For constructors, the null-check will be inserted immediately following any explicit `this()` or `super()` calls. For record components, the null-check will be inserted in the 'compact constructor' (the one that has no argument list at all), which will be generated if you have no constructor. If you have written out the record constructor in long form (with parameters matching your components exactly), then nothing happens - you'd have to annotate the parameters of this long-form constructor instead.
+If a null-check is already present at the top, no additional null-check will be generated.
 
 > null-check는 다음과 같이 보인다. `if (param == null) throw new NullPointerException("param is marked non-null but is null");`
 그리고 null-check는 메서드의 가장 위에 삽입된다.
 생성자에서, null-check는 `this()` 또는 `super()`의 명백한 호출에 즉시 삽입된다.
+record 요소에서 생성자가 없는 경우 null-check는 'compact 생성자'(인자가 없는 생성자)에 삽입된다.
+만약 record 생성자를 긴 형식(파라미터들이 모두 매칭되는)으로 작성한다면 아무것도 일어나지 않는다. - 대신에 긴 형식 생성자의 파라미터에 어노테이션을 붙여야 할 것이다.
+만약 null-check가 이미 위에 있다면, 추가적인 null-check는 발생하지 않는다.
 
+### With Lombok
+```
+import lombok.NonNull;
+
+public class NonNullExample extends Something {
+  private String name;
+  
+  public NonNullExample(@NonNull Person person) {
+    super("Hello");
+    this.name = person.getName();
+  }
+}
+```
+### Vanilla Java
+```
+import lombok.NonNull;
+
+public class NonNullExample extends Something {
+  private String name;
+  
+  public NonNullExample(@NonNull Person person) {
+    super("Hello");
+    if (person == null) {
+      throw new NullPointerException("person is marked non-null but is null");
+    }
+    this.name = person.getName();
+  }
+}
+```
+### Supported configuration keys:
+```
+lombok.nonNull.exceptionType = [NullPointerException | IllegalArgumentException | JDK | Guava | Assertion] (default: NullPointerException).
+```
+When lombok generates a null-check `if` statement, by default, a `java.lang.NullPointerException` will be thrown with 'field name is marked non-null but is null' as the exception message. However, you can use `IllegalArgumentException` in this configuration key to have lombok throw that exception with this message instead. By using `Assertion`, an `assert` statement with the same message will be generated. The keys `JDK` or `Guava` result in an invocation to the standard nullcheck method of these two frameworks: `java.util.Objects.requireNonNull([field name here], "[field name here] is marked non-null but is null");` or `com.google.common.base.Preconditions.checkNotNull([field name here], "[field name here] is marked non-null but is null");` respectively.
+
+> lombok이 `if`문에서 null-check를 발생시킬 때 default는 `java.lang.NullPointerException`을 'field name is marked non-null but is null' 메시지와 함께 발생시킨다. 그러나 `IllegalArgumentException`로 설정하면 lombok은 `IllegalArgumentException`을 발생시킨다. `Assertion`을 사용하면 동일한 메시지를 가진 `assert`문이 발생된다.
+`JDK`와 `Guava`는 이 두 가지 프레임워크의 기본 nullcheck 메서드를 호출한다 : `java.util.Objects.requireNonNull([field name here], "[field name here] is marked non-null but is null");` 또는 `com.google.common.base.Preconditions.checkNotNull([field name here], "[field name here] is marked non-null but is null");`
+```
+lombok.nonNull.flagUsage = [warning | error] (default: not set)
+```
+Lombok will flag any usage of @NonNull as a warning or error if configured.
+
+> lombok은 `@NonNull`의 사용에 warning 또는 error를 표시하도록 설정할 수 있다.
