@@ -446,6 +446,11 @@ UA -------------------v------------------- O
 A more complicated situation occurs when one or more intermediaries are present in the request/response chain.
 There are three common forms of intermediary: proxy, gateway, and tunnel.
 A proxy is a forwarding agent, receiving requests for a URI in its absolute form, rewriting all or part of the message, and forwarding the reformatted request toward the server identified by the URI.
+A gateway is a receiving agent, acting as a layer above some other server(s) and, if necessary, translating the requests to the underlying server's protocol.
+A tunnel acts as a relay point between two connections without changing the messages;
+tunnels are used when the
+communication needs to pass through an intermediary (such as a firewall) even when the intermediary cannot understand the contents of the messages.
+
 
 > HTTP 프로토콜은 요청/응답 프로토콜입니다.
 > 클라이언트는 request method, URI, 프로토콜 버전, 요청 수정자를 포함한 MIME 유형의 메시지, 클라이언트 정보, 가능한 본문 메시지를 서버에게 전송합니다.
@@ -463,3 +468,34 @@ A proxy is a forwarding agent, receiving requests for a URI in its absolute form
 > 요청/응답 체인 중간에 하나 이상의 중개자가 있는 경우, 더 복잡한 상황이 발생합니다.
 > 중개자에는 프록시, 게이트웨이, 터널의 3가지 형태가 있습니다.
 > 프록시는 전달 에이전트로, 요청으로부터 절대 URI를 받고, 메시지를 다시 재작성하고, URI로 식별되는 서버에 새로이 포맷된 요청 메시지를 전달합니다.
+> 게이트웨이는 다른 서버위의 계층 역할을 하는 수신자 에이전트로, 필요한 경우 요청메시지의 프로토콜을 해당 서버에 맞게 변환합니다.
+> 터널은 메시지를 변경하지 않고, 두 connection 을 연결합니다. 
+> 중개자가 이해할 수 없는 메시지라 하더라도, 통신이 제대로 이루어지기 위해선 중개자를 통과해야 합니다.
+
+<br>
+
+```
+request chain -------------------------------------->
+UA -----v----- A -----v----- B -----v----- C -----v----- O
+<------------------------------------- response chain
+```
+The figure above shows three intermediaries (A, B, and C) between the user agent and origin server.
+A request or response message that travels the whole chain will pass through four separate connections.
+This distinction is important because some HTTP communication options may apply only to the connection with the nearest, non-tunnel neighbor, only to the end-points of the chain, or to all connections along the chain.
+Although the diagram is linear, each participant may be engaged in multiple, simultaneous communications.
+For example, B may be receiving requests from many clients other than A, and/or forwarding requests to servers other than C, at the same time that it is handling A's request.
+
+> ```
+> request chain -------------------------------------->
+> UA -----v----- A -----v----- B -----v----- C -----v----- O
+> <------------------------------------- response chain
+>```
+> 위 그림은 사용자 에이전트와 origin server 사이 중개자 A, B, C 를 보여줍니다.
+> 요청 및 응답 메시지는 전체 통신과정에서 4개의 개별적인 연결을 통과합니다.
+> 일부 HTTP 통신 옵션은 연결된 커넥션에서만 적용되거나, 터널이 아닌 이웃에 적용되거나, end-point에서만 적용되거나, 모든 연결에 적용되는 등, 차이가 있기 때문에 이러한 개별적인 연결의 구분은 중요합니다.
+> 그림은 선형적이지만, 실제 각 연결에서 참여자는 여러 통신에 동시적으로 참여할 수 있습니다.
+> 예를 들어, B는 A보다 더 많은 요청을 받거나, A의 요청을 처리하는 동시에 C가 아닌 서버에 요청을 전달할 수 있습니다.
+
+<br>
+
+Any party to the communication which is not acting as a tunnel may employ an internal cache for handling requests.
