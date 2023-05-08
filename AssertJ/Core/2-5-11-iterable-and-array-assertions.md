@@ -100,3 +100,95 @@ assertThat(hobbits).allMatch(character -> character.getRace() == HOBBIT, "hobbit
 You can pass a predicate description to make the error message more explicit if the assertion fails.
 
 > assertion이 실패할 경우 설명을 전달하여 오류 메시지를 더 명확하게 만들 수 있습니다.
+
+<br/>
+
+### Navigating to a given element
+
+**주어진 요소로 이동하기**
+
+The idea is to navigate to a given element in order to check it,
+you can navigate to the first, last or any element by index or
+if you expect only one element use `singleElement`.
+
+> 주어진 요소로 이동하여 확인합니다.
+> 첫 번째, 마지막 또는 임의의 인덱스로 이동하거나
+> 단일 요소만 사용하는 경우에 탐색할 수 있습니다.
+
+this is only available for iterables at the moment.
+
+> iterables한 경우에만 사용할 수 있습니다.
+
+**First / last / element(index)**
+
+**처음 / 마지막 / 인덱스**
+
+Use `first`, `last` and `element(index)` to navigate to the corresponding element,
+after navigating you can only use object assertions unless you have specified an Assert class
+or preferrably an `InstanceOfAssertFactory` as shown in the following examples.
+
+> `first`, `last` 그리고 `element(index)`를 사용하여 해당 요소로 이동할 수 있습니다.
+> 탐색 후에는 아래 예제와 같이 Assert 클래스 또는 `InstanceOfAssertFactory`를 지정하지 않는 한 객체에 대한 assertion만 사용할 수 있습니다.
+
+Examples:
+
+``` java
+// only object assertions available after navigation
+// assertion은 navigation 이후에 사용 가능
+Iterable<TolkienCharacter> hobbits = list(frodo, sam, pippin);
+assertThat(hobbits).first().isEqualTo(frodo); // 첫 번째 객체는 frodo인지 확인
+assertThat(hobbits).element(1).isEqualTo(sam); // 인덱스 1에 위치한 요소가 sam인지 확인
+assertThat(hobbits).last().isEqualTo(pippin); // 마지막 객체는 pippin인지 확인
+
+// strongly typed String assertions after navigation
+// 강한 String assertion의 사용
+Iterable<String> hobbitsName = list("frodo", "sam", "pippin");
+// STRING is an InstanceOfAssertFactory from org.assertj.core.api.InstanceOfAssertFactories.STRING
+// as() is just synthetic sugar for readability
+// as()는 가독성을 위해 사용한 것
+assertThat(hobbitsName).first(as(STRING))
+                        .startsWith("fro")
+                        .endsWith("do");
+assertThat(hobbitsName).element(1, as(STRING))
+                        .startsWith("sa")
+                        .endsWith("am");
+assertThat(hobbitsName).last(as(STRING))
+                        .startsWith("pip")
+                        .endsWith("pin");
+
+// alternative for strongly typed assertions
+// 강한 assertion의 대안
+assertThat(hobbitsName, StringAssert.class).first()
+                                            .startsWith("fro")
+                                            .endsWith("do");
+```
+
+**Single element**
+
+**단일 객체**
+
+`singleElement` checks that the iterable has only one element and navigates to it,
+after navigating you can only use object assertions unless you have specified an Assert class
+or preferrably an `InstanceOfAssertFactory` as shown in the following examples.
+
+> `singleElement`는 iterable에 요소가 하나만 있는지 확인하고 탐색합니다.
+> 탐색 후에는 아래 예제와 같이 Assert 클래스 또는 `InstanceOfAssertFactory`를 지정하지 않는 한 객체에 대한 assertion만 사용할 수 있습니다.
+
+Examples:
+
+``` java
+Iterable<String> babySimpsons = list("Maggie");
+
+// only object assertions available
+assertThat(babySimpsons).singleElement()
+                        .isEqualTo("Maggie");
+
+// to get specific typed assertions, pass the corresponding InstanceOfAssertFactory from
+// org.assertj.core.api.InstanceOfAssertFactories.STRING), as() is just synthetic sugar for readability
+assertThat(babySimpsons).singleElement(as(STRING))
+                        .endsWith("gie"); // "gie"로 끝나는 String인지 확인
+
+// alternative for strongly typed assertions
+assertThat(babySimpsons, StringAssert.class).singleElement()
+                                            .startsWith("Mag"); // "Mag"로 시작하는 String인지 확인
+```
