@@ -499,3 +499,36 @@ For example, B may be receiving requests from many clients other than A, and/or 
 <br>
 
 Any party to the communication which is not acting as a tunnel may employ an internal cache for handling requests.
+The effect of a cache is that the request/response chain is shortened if one of the participants along the chain has a cached response applicable to that request.
+The following illustrates the resulting chain if B has a cached copy of an earlier response from O (via C) for a request which has not been cached by UA or A.
+```
+request chain ---------->
+UA -----v----- A -----v----- B - - - - - - C - - - - - - O
+<--------- response chain
+```
+Not all responses are usefully cacheable, and some requests may contain modifiers which place special requirements on cache behavior.
+HTTP requirements for cache behavior and cacheable responses are defined in section 13.
+
+> 터널 역할을 하지 않는 통신 당사자는, 내부 캐시를 사용하여 요청을 처리할 수 있습니다.
+> 통신 당사자들 중 하나라도 요청에 적용가능한 캐시된 응답을 갖고 있으면, 요청/응답 체인을 줄일 수 있습니다.
+> 다음은 B가 O로 부터 받은 이전 응답의 캐시된 사본을 갖는 경우에 응답 체인을 보여줍니다.
+>```
+>request chain ---------->
+>UA -----v----- A -----v----- B - - - - - - C - - - - - - O
+><--------- response chain
+>```
+> 모든 응답이 캐시 가능한 것은 아니며, 특정 요청은 특별한 캐시 동작을 요청하는 수정자를 포함할 수 있습니다.
+> 캐시 동작과 캐시 가능한 응답에 관한 HTTP 요구사항은 13장에 정의되어 있습니다.
+
+<br>
+
+In fact, there are a wide variety of architectures and configurations of caches and proxies currently being experimented with or deployed across the World Wide Web.
+These systems include national hierarchies of proxy caches to save transoceanic bandwidth, systems that broadcast or multicast cache entries, organizations that distribute subsets of cached data via CD-ROM, and so on.
+HTTP systems are used in corporate intranets over high-bandwidth links, and for access via PDAs with low-power radio links and intermittent connectivity.
+The goal of HTTP/1.1 is to support the wide diversity of configurations already deployed while introducing protocol constructs that meet the needs of those who build web applications that require high reliability and, failing that, at least reliable indications of failure.
+
+
+> 실제로, `World Wide Web` 에는 실험중이거나 사용중인 캐시와 프록시의 다양한 구조와 설정이 있습니다.
+> 이러한 시스템에는 대양 횡단 대역폭을 절약하기 위한 국가 계층의 프록시, `broadcast` 나 `multicast` 하기 위한 캐시들, CD-ROM을 통해 캐시의 하위 집합을 배포하는 조직등이 포함됩니다.
+> HTTP 시스템은 고대역폭 링크를 통해 회사 인트라넷에서 사용되며 저전력의 무선 링크나 간헐적인 연결이 있는 PDA를 통한 접근에 사용됩니다.
+> 마지막 줄 아직 안함. ㅋ
