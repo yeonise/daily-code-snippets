@@ -192,3 +192,172 @@ assertThat(babySimpsons).singleElement(as(STRING))
 assertThat(babySimpsons, StringAssert.class).singleElement()
                                             .startsWith("Mag"); // "Mag"로 시작하는 String인지 확인
 ```
+
+<br/>
+
+### Filtering elements
+
+Filtering is handy to target assertions on some specific elements, the filter criteria can be expressed by:
+
+> 필터링은 일부 특정 요소에 대한 assertion을 편리하게 해주며 기준은 다음과 같이 표현할 수 있습니다.
+
+- a java Predicate
+- an element property/field having a specific value (or not) or in a set of values (or not)
+- an element property/field having a null value
+- an element matching some assertions
+- an element matching a Condition
+
+> - 자바의 Predicate
+> - 특정 값을 갖거나 (갖지 않거나) 일련의 값을 가지는 (갖지 않는) 요소 속성/필드
+> - null 값을 갖는 특정 요소 속성/필드
+> - 일부 assertion과 일치하는 요소
+> - 조건과 일치하는 요소
+
+Let’s explore these options in some examples taken from FilterExamples from the assertions-examples project.
+
+> 이러한 옵션들을 몇 가지 예시와 함께 알아보겠습니다.
+
+**Filtering with a Predicate**
+
+You specify the filter condition using simple predicate, best expressed with a lambda.
+
+> 당신은 predicate를 사용한 람다를 통해 필터 조건을 지정할 수 있습니다.
+
+Example:
+
+``` java
+assertThat(fellowshipOfTheRing).filteredOn( character -> character.getName().contains("o") ) // 람다 사용
+                               .containsOnly(aragorn, frodo, legolas, boromir);
+```
+
+**Filtering on a property or a field**
+
+First you specify the property/field name to filter on and then its expected value.
+The filter first tries to get the value from a property, then from a field.
+Reading private fields is supported by default,
+but can be disabled globally by calling `Assertions.setAllowExtractingPrivateFields(false)`.
+
+> 먼저 필터링할 속성/필드 이름을 지정한 다음에 그것의 예상 값을 지정합니다.
+> 필터는 먼저 속성에서 값을 가져온 다음에 필드에서 값을 가져오려고 시도합니다.
+> 기본적으로 private 필드를 읽어들이는 것은 지원하는 것으로 설정되어 있으나,
+> `Assertions.setAllowExtractingPrivateFields(false)`을 통해 전역적으로 비활성화할 수 있습니다.
+
+Filter supports nested properties/fields.
+Note that if an intermediate value is null the whole nested property/field is considered to be null,
+for example reading `"address.street.name"` will return null if `"address.street"` is null.
+
+> Filter는 중첩된 속성/필드를 지원합니다.
+> 중간 값이 null이면 중첩된 속성/필드 전체가 null로 간주됩니다.
+> 예를 들어 `"address.street.name"`을 읽을 때 `"address.street"`가 null이면 null이 반환됩니다.
+
+Filters support these basic operations : `not`, `in`, `notIn`
+
+> 필터는 다음과 같은 기본 작업을 지원합니다 : `not`, `in`, `notIn`
+
+``` java
+import static org.assertj.core.api.Assertions.in;
+import static org.assertj.core.api.Assertions.not;
+import static org.assertj.core.api.Assertions.notIn;
+...
+
+// filters use introspection to get property/field values
+// 필터는 내부 검사를 사용하여 속성/필드 값을 가져옵니다.
+assertThat(fellowshipOfTheRing).filteredOn("race", HOBBIT)
+                               .containsOnly(sam, frodo, pippin, merry);
+
+// nested properties are supported
+// `"race.name"` 과 같은 중첩된 속성을 지원합니다.
+assertThat(fellowshipOfTheRing).filteredOn("race.name", "Man")
+                               .containsOnly(aragorn, boromir);
+
+// you can apply different comparison
+// `not`, `in`, `notIn`을 사용하여 조건을 다르게 변경할 수 있습니다.
+assertThat(fellowshipOfTheRing).filteredOn("race", notIn(HOBBIT, MAN))
+                               .containsOnly(gandalf, gimli, legolas);
+
+assertThat(fellowshipOfTheRing).filteredOn("race", in(MAIA, MAN))
+                               .containsOnly(gandalf, boromir, aragorn);
+
+assertThat(fellowshipOfTheRing).filteredOn("race", not(HOBBIT))
+                               .containsOnly(gandalf, boromir, aragorn, gimli, legolas);
+
+// you can chain multiple filter criteria
+// 여러 개의 필터 기준을 체이닝할 수 있습니다.
+assertThat(fellowshipOfTheRing).filteredOn("race", MAN)
+                               .filteredOn("name", not("Boromir"))
+                               .containsOnly(aragorn);
+```
+
+**Filtering on a function return value**
+
+This is a more flexible way of getting the value to filter on but note
+that there is no support for operators like `not`, `in` and `notIn`.
+
+``` java
+assertThat(fellowshipOfTheRing).filteredOn(TolkienCharacter::getRace, HOBBIT)
+                               .containsOnly(sam, frodo, pippin, merry);
+```
+
+**Filtering on null value**
+
+Filters the elements whose specified property/field is null.
+
+Filter supports nested properties/fields.
+Note that if an intermediate value is null the whole nested property/field is considered to be null,
+for example reading `"address.street.name"` will return null if `"address.street"` is null.
+
+``` java
+TolkienCharacter pippin = new TolkienCharacter("Pippin", 28, HOBBIT);
+TolkienCharacter frodo = new TolkienCharacter("Frodo", 33, HOBBIT);
+TolkienCharacter merry = new TolkienCharacter("Merry", 36, HOBBIT);
+TolkienCharacter mysteriousHobbit = new TolkienCharacter(null, 38, HOBBIT);
+
+List<TolkienCharacter> hobbits = list(frodo, mysteriousHobbit, merry, pippin);
+
+assertThat(hobbits).filteredOnNull("name"))
+                   .singleElement()
+                   .isEqualTo(mysteriousHobbit);
+```
+
+**Filtering elements matchin given assertions**
+
+Filters the iterable under test keeping only elements matching
+the given assertions specified with a `Consumer`.
+
+Example: check hobbits whose age < 34
+
+``` java
+TolkienCharacter pippin = new TolkienCharacter("Pippin", 28, HOBBIT);
+TolkienCharacter frodo = new TolkienCharacter("Frodo", 33, HOBBIT);
+TolkienCharacter merry = new TolkienCharacter("Merry", 36, HOBBIT);
+TolkienCharacter sam = new TolkienCharacter("Sam", 38, HOBBIT);
+
+List<TolkienCharacter> hobbits = list(frodo, sam, merry, pippin);
+
+assertThat(hobbits).filteredOnAssertions(hobbit -> assertThat(hobbit.age).isLessThan(34))
+                   .containsOnly(frodo, pippin);
+```
+
+**Filtering with a Condition**
+
+Filter the iterable/array under test keeping only elements matching the given `Condition`.
+
+Two methods are available : being(Condition) and having(Condition).
+They do the same job - pick the one that makes your code more readable!
+
+``` java
+import org.assertj.core.api.Condition;
+
+Condition<Player> mvpStats= new Condition<Player>(player -> {
+return player.pointsPerGame() > 20 && (player.assistsPerGame() >= 8 || player.reboundsPerGame() >= 8);
+}, "mvp");
+
+List<Player> players;
+players.add(rose); // Derrick Rose : 25 ppg - 8 assists - 5 rebounds
+players.add(lebron); // Lebron James : 27 ppg - 6 assists - 9 rebounds
+players.add(noah); // Joachim Noah : 8 ppg - 5 assists - 11 rebounds
+
+// noah does not have more than 20 ppg
+assertThat(players).filteredOn(mvpStats)
+                   .containsOnly(rose, lebron);
+```
