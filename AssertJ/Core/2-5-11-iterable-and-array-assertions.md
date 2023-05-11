@@ -290,8 +290,12 @@ assertThat(fellowshipOfTheRing).filteredOn("race", MAN)
 
 **Filtering on a function return value**
 
+**함수의 반환 값을 필터링**
+
 This is a more flexible way of getting the value to filter on but note
 that there is no support for operators like `not`, `in` and `notIn`.
+
+> 이것은 필터링된 값을 얻는 보다 유연한 방법이지만, `not`, `in` 그리고 `notIn`과 같은 연산자를 지원하지 않습니다.
 
 ``` java
 assertThat(fellowshipOfTheRing).filteredOn(TolkienCharacter::getRace, HOBBIT)
@@ -300,11 +304,19 @@ assertThat(fellowshipOfTheRing).filteredOn(TolkienCharacter::getRace, HOBBIT)
 
 **Filtering on null value**
 
+**null 값 필터링**
+
 Filters the elements whose specified property/field is null.
+
+> 속성/필드가 null인 요소를 필터링합니다.
 
 Filter supports nested properties/fields.
 Note that if an intermediate value is null the whole nested property/field is considered to be null,
 for example reading `"address.street.name"` will return null if `"address.street"` is null.
+
+> 필터는 중첩된 속성/필드를 지원합니다.
+> 중간 값이 null인 경우 전체의 속성/필드가 null인 것으로 간주됩니다.
+> 예를 들어 `"address.street.name"`을 읽을 때, `"address.street"`이 null이라면 null을 반환할 것입니다.
 
 ``` java
 TolkienCharacter pippin = new TolkienCharacter("Pippin", 28, HOBBIT);
@@ -321,10 +333,16 @@ assertThat(hobbits).filteredOnNull("name"))
 
 **Filtering elements matchin given assertions**
 
+**지정된 assertion과 일치하는 필터링 요소**
+
 Filters the iterable under test keeping only elements matching
 the given assertions specified with a `Consumer`.
 
+> 테스트 중인 iterable을 필터링하여 Consumer로 지정된 assertion과 일치하는 요소만 유지합니다.
+
 Example: check hobbits whose age < 34
+
+> 예: hobbit들 중에서 나이가 34살 미만인 경우만 남기기
 
 ``` java
 TolkienCharacter pippin = new TolkienCharacter("Pippin", 28, HOBBIT);
@@ -340,16 +358,24 @@ assertThat(hobbits).filteredOnAssertions(hobbit -> assertThat(hobbit.age).isLess
 
 **Filtering with a Condition**
 
+**조건에 맞는 필터링**
+
 Filter the iterable/array under test keeping only elements matching the given `Condition`.
+
+> 주어진 조건과 일치하는 요소만 유지하면서 테스트 중인 iterable/array를 필터링합니다.
 
 Two methods are available : being(Condition) and having(Condition).
 They do the same job - pick the one that makes your code more readable!
+
+> 2가지 메서드를 사용할 수 있습니다 : 1. being과 2. having
+> 2가지 메서드는 같은 작업을 수행합니다 - 코드를 더 읽기 쉽게 만드는 것을 선택하세요!
 
 ``` java
 import org.assertj.core.api.Condition;
 
 Condition<Player> mvpStats= new Condition<Player>(player -> {
-return player.pointsPerGame() > 20 && (player.assistsPerGame() >= 8 || player.reboundsPerGame() >= 8);
+    // 게임 당 점수가 20점 이상이면서 게임 당 어시스트가 8점 이상이거나 게임 당 리바운드가 8점 이상인 선수만 남겨서 반환합니다.
+    return player.pointsPerGame() > 20 && (player.assistsPerGame() >= 8 || player.reboundsPerGame() >= 8);
 }, "mvp");
 
 List<Player> players;
