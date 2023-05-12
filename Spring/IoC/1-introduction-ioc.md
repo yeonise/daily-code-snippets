@@ -1,6 +1,4 @@
-## 1.1. Introduction to the Spring IoC Container and Beans
-
-> Spring IoC 컨테이너와 `Bean` 소개
+# Introduction to the Spring IoC Container and Beans
 
 This chapter covers the Spring Framework implementation of the Inversion of Control (IoC) principle. IoC is also known
 as dependency injection (DI). It is a process whereby objects define their dependencies (that is, the other objects they
