@@ -314,3 +314,7 @@ setter methods, then constructor injection may be the only available form of DI.
 
 > 특정 클래스에 가장 적합한 DI 스타일을 사용하세요. 소스가 없는 타사 클래스를 다룰 때는 어떤 스타일을 선택해야 할지 고민하는 경우가 있습니다. 예를 들어, 서드파티 클래스에 세터 메서드가 노출되지 않는 경우,
 > 생성자 주입이 가능한 유일한 DI 형태일 수 있습니다.
+
+<br>
+
+추가 예정...
