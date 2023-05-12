@@ -6,9 +6,7 @@
 
 ### Core
 
-- [1.1. Introduction to the Spring IoC Container and Beans](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/sully/1.1-introduction-ioc.md) - Sully
-- [1.2. Container Overview](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/sully/1.2-container-overview.md) - Sully
-- [1.2.1. Configuration Metadata](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/sully/1.2.1-configuration-metadata.md) - Sully
-- [1.2.2 Composing XML-based Configuration Metadata](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/sully/1.2.2-composing-xml-based-configuration-metadata.md) - Sully
-- [1.2.2. Instantiating a Container](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/sully/1.2.2-instantiating-a-container.md) - Sully
-- [1.2.2. The Groovy Bean Definition DSL](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/sully/1.2.2-the-groovy-bean-definition-dsl.md) - Sully
+- [Introduction to the Spring IoC Container and Beans](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/IoC/1-introduction-ioc.md) - Sully
+- [Container Overview](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/IoC/2-container-overview.md) - Sully
+- [Bean OverView](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/IoC/3-bean-overview.md) - Sully
+- [Dependencies](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/IoC/4-dependencies.md) - Sully
