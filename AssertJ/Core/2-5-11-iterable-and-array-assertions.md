@@ -387,3 +387,226 @@ players.add(noah); // Joachim Noah : 8 ppg - 5 assists - 11 rebounds
 assertThat(players).filteredOn(mvpStats)
                    .containsOnly(rose, lebron);
 ```
+
+<br/>
+
+### Extracting elements values
+
+What problem extracting solves
+
+Let’s say you have called some service and got a list (or an array) of `TolkienCharacter`,
+to check the results you have to build the expected TolkienCharacters, that can be quite tedious!
+
+> 서비스를 호출하여 `TolkienCharacter`의 리스트(또는 배열)을 얻었다고 가정해 보겠습니다.
+> 그리고 결과를 확인하려면 예상되는 `TolkienCharacter`를 빌드해야 합니다.
+> 상당히 지루한 작업이죠!
+
+``` java
+List<TolkienCharacter> fellowshipOfTheRing = tolkienDao.findHeroes();  // frodo, sam, aragorn ...
+
+// requires creation of frodo and aragorn, the expected TolkienCharacters
+assertThat(fellowshipOfTheRing).contains(frodo, aragorn);
+```
+
+Instead, it is usually enough to check some fields or properties on the elements,
+for that you have to extract the fields/properties before performing your assertions, something like:
+
+> 대신, 일반적으로 다음과 같이 assertion을 수행하기 전에 필드/속성을 추출하기 때문에
+> 요소의 일부 필드 또는 속성을 확인하는 것으로 충분히 검사할 수 있습니다.
+
+``` java
+// extract the names ...
+List<String> names = fellowshipOfTheRing.stream().map(TolkienCharacter::getName).collect(toList());
+// ... and finally assert something
+assertThat(names).contains("Boromir", "Gandalf", "Frodo", "Legolas");
+```
+
+This is too much work (even with the stream API), instead AssertJ can help extracting values
+from the elements under tests, there are several ways of doing so:
+
+> 이것은 너무 많은 작업을 필요로 합니다. (stream API를 사용하는 경우에도)
+> 대신 AssertJ는 테스트 중인 요소에서 값을 추출하는 데 도움이 되는 몇 가지 방법을 제공합니다:
+
+- Extracting a single value per element
+- Extracting a multiple values per element
+- Extracting and flattening multiple values per element
+
+> - 요소에서 단일 값 추출
+> - 요소에서 여러 값 추출
+> - 요소에서 여러 값 추출 및 평면화
+
+**Extracting single value per element**
+
+Specify the field/property to extract (or pass a `Function`)
+from each elements and perform assertions on the extracted values.
+
+> 각 요소에서 추출(또는 함수 전달)할 필드/속성을 지정하고 추출된 값에 대한 assertion을 수행합니다.
+
+Extracting by name can access private fields/properties
+which is handy to check internals not exposed with public methods (lambda won’t work here),
+it also supports nested field/property like `"race.name"`.
+
+> 이름으로 추출하면 public 메서드로 노출되지 않은 내부를 확인하는 데 편리한 private 필드/속성에 접근할 수 있으며(여기서 lambda는 작동하지 않음)
+> `"race.name"`과 같은 중첩된 필드/속성도 지원합니다.
+
+Examples:
+
+``` java
+// "name" needs to be either a property or a field of the TolkienCharacter class
+// "name"은 TolkienCharacter 클래스의 속성 또는 필드여야 합니다.
+assertThat(fellowshipOfTheRing).extracting("name")
+                                .contains("Boromir", "Gandalf", "Frodo", "Legolas") // 포함하는 것
+                                .doesNotContain("Sauron", "Elrond"); // 포함하지 않는 것
+
+// specifying nested field/property is supported
+// 중첩된 필드/속성 확인을 지원
+assertThat(fellowshipOfTheRing).extracting("race.name")
+                                .contains("Man", "Maia", "Hobbit", "Elf");
+
+// same thing with a lambda which is type safe and refactoring friendly:
+// 람다를 사용하여 리팩토링
+assertThat(fellowshipOfTheRing).extracting(TolkienCharacter::getName)
+                                .contains("Boromir", "Gandalf", "Frodo", "Legolas");
+
+// same thing map an alias of extracting:
+// map을 사용한 예시
+assertThat(fellowshipOfTheRing).map(TolkienCharacter::getName)
+                                .contains("Boromir", "Gandalf", "Frodo", "Legolas");
+```
+
+Note that extracting one property can be made strongly typed by
+giving the property type as the second argument.
+
+> 두 번째 인자로 속성의 타입을 지정함으로써 강력한 형식으로 하나의 속성을 추출할 수 있습니다.
+
+``` java
+// to have type safe extracting, use the second parameter to pass the expected property type:
+// type-safe한 추출을 위해 두번째 인자로 예상하는 타입을 지정할 수 있습니다:
+assertThat(fellowshipOfTheRing).extracting("name", String.class) // String type 검증
+                                .contains("Boromir", "Gandalf", "Frodo", "Legolas")
+                                .doesNotContain("Sauron", "Elrond");
+```
+
+**Extracting multiple values**
+
+You can extract several values from the elements under test and check them using tuples.
+
+> 테스트 중인 요소에서 여러 값을 추출하고 튜플을 사용하여 확인할 수 있습니다.
+
+As an example, let’s check the name, age and race’s name of each TolkienCharacter element:
+
+> 예를 들어, 각 TolkienCharacter 요소의 이름, 나이, 인종 이름을 확인해 보겠습니다.
+
+``` java
+// when checking several properties/fields you have to use tuples:
+// 여러 속성/필드를 확인할 때는 튜플을 사용해야 합니다:
+import static org.assertj.core.api.Assertions.tuple;
+
+// extracting name, age and and race.name nested property
+assertThat(fellowshipOfTheRing).extracting("name", "age", "race.name")
+                                .contains(tuple("Boromir", 37, "Man"),
+                                          tuple("Sam", 38, "Hobbit"),
+                                          tuple("Legolas", 1000, "Elf"));
+
+// same assertion with functions for type safety:
+// 함수를 사용하여 type-safety하게 같은 assertion 수행
+assertThat(fellowshipOfTheRing).extracting(TolkienCharacter::getName,
+                                    tolkienCharacter -> tolkienCharacter.age,
+                                    tolkienCharacter -> tolkienCharacter.getRace().getName())
+                                .contains(tuple("Boromir", 37, "Man"),
+                                          tuple("Sam", 38, "Hobbit"),
+                                          tuple("Legolas", 1000, "Elf"));
+```
+
+The extracted name, age and race’s name values of the current element are grouped in a tuple,
+thus you need to use tuples for specifying the expected values.
+
+> 추출된 현재 요소의 이름, 나이, 인종 이름 값은 튜플로 그룹화되어 있으므로 튜플을 사용하여 예상 값을 지정해야 합니다.
+
+More examples are available in IterableAssertionsExamples.java of the assertj-examples project.
+
+> 더 많은 예시는 IterableAssertionsExamples.java of the assertj-examples project에서 확인할 수 있습니다.
+
+**Extracting and flattening multiple values per element**
+
+Flat extracting is hard to explain but easy to understand with an example,
+so let’s see how it works (in functional programming it is juts a flatMap).
+
+> 플랫 추출은 설명보다 예제를 통해 이해하기 쉬우므로 어떻게 작동하는지 예시를 통해 살펴보겠습니다.(함수형 프로그래밍에서는 플랫맵을 사용합니다)
+
+Let’s assume we have a `Player` class with a `teamMates` property returning a
+`List<Player>` and we want to assert that it returns the expected players:
+
+> `List<Player>`를 반환하는 teamMates 속성이 있는 Player 클래스가 있고 예상 플레이어를 반환한다고 주장을 가정해 보겠습니다.
+
+``` java
+Player jordan = ... // initialized with Pippen and Kukoc team mates
+Player magic = ... // initialized with Jabbar and Worthy team mates
+List<Player> reallyGoodPlayers = list(jordan, magic);
+
+// check all team mates by specifying the teamMates property (Player has a getTeamMates() method):
+// teamMates 속성을 지정하여 모든 팀원을 확인합니다(플레이어에는 getTeamMates() 메서드가 있음):
+assertThat(reallyGoodPlayers).flatExtracting("teamMates")
+                             .contains(pippen, kukoc, jabbar, worthy);
+
+// alternatively, you can use a Function for type safety:
+// 또는, type-safety를 위해서 함수를 사용할 수도 있습니다:
+assertThat(reallyGoodPlayers).flatExtracting(BasketBallPlayer::getTeamMates)
+                             .contains(pippen, kukoc, jabbar, worthy);
+
+// flatMap is an alias of flatExtracting:
+// flatMap은 flatExtracting의 별칭입니다:
+assertThat(reallyGoodPlayers).flatMap(BasketBallPlayer::getTeamMates)
+                             .contains(pippen, kukoc, jabbar, worthy);
+
+// if you use extracting instead of flatExtracting the result would be a list of list of players so the assertion becomes:
+// flatExtracting 대신 추출을 사용하면 결과는 플레이어 목록이 되므로 assertion은 다음과 같이 됩니다:
+assertThat(reallyGoodPlayers).extracting("teamMates")
+                             .contains(list(pippen, kukoc), list(jabbar, worthy));
+```
+
+You can use `flatMap` in place of `flatExtracting` (except for the variant taking a String)
+
+> flatExtracting 대신 flatMap을 사용할 수 있습니다.(문자열을 사용하는 경우 제외)
+
+Flat extracting can be used to group multiple values if you don’t want to use `extracting` and tuples:
+
+> `extracting`과 튜플을 사용하지 않으려면 플랫 추출을 사용하여 여러 값을 그룹화할 수 있습니다.
+
+``` java
+// extract a list of values, flatten them and use contains assertion
+// 값들의 리스트를 추출한 다음, contains assertion을 사용하여 평명화합니다.
+assertThat(fellowshipOfTheRing).flatExtracting("name", "race.name")
+                               .contains("Frodo", "Hobbit", "Legolas", "Elf");
+
+// same assertions with Functions:
+// 함수를 사용한 같은 assertion:
+assertThat(fellowshipOfTheRing).flatExtracting(TolkienCharacter::getName,
+                                            tc -> tc.getRace().getName())
+                               .contains("Frodo", "Hobbit", "Legolas", "Elf");
+```
+
+<br/>
+
+### Comparing elements with a specific comparator
+
+`usingElementComparator` allows you to change the way elements are compared
+(instead of using the elements `equals` method).
+
+> `usingElementComparator`를 사용하여 요소를 비교하는 방식을 변경할 수 있습니다. (`equals` 메서드를 사용하는 대신)
+
+Examples:
+
+``` java
+List<TolkienCharacter> fellowshipOfTheRing = list(frodo, sam, merry, pippin, gandald, legolas, boromir, aragorn, gimli);
+
+// the fellowshipOfTheRing includes Gandalf but not Sauron ...
+// fellowshipOfTheRing이 Gandalf는 포함하고 Sauron은 포함하지 않을 때 ...
+assertThat(fellowshipOfTheRing).contains(gandalf)
+                               .doesNotContain(sauron);
+
+// ... but if we compare only races, Sauron is in fellowshipOfTheRing since he's a Maia like Gandalf
+// ... 하지만 종족만 비교한다면 Sauron은 Gandalf와 같은 Maia이므로 FellowshipOfTheRing에 있음을 확인할 수 있습니다.
+assertThat(fellowshipOfTheRing).usingElementComparator((t1, t2) -> t1.getRace().compareTo(t2.getRace()))
+                               .contains(sauron);
+```
