@@ -386,3 +386,207 @@ the beans to be injected into the other prior to being fully initialized itself 
 
 > 일반적인 경우(순환 의존성이 없는 경우)와 달리, 빈 A와 빈 B 사이의 순환 종속성은 빈 중 하나가 완전히 초기화되기 전에 다른 빈에 주입되도록 강제합니다(고전적인 닭과 달걀 시나리오 -> 닭이 먼저냐 달걀이
 > 먼저냐 이걸 말하는 듯?)
+
+<br>
+
+<hr>
+
+<br>
+
+You can generally trust Spring to do the right thing. It detects configuration problems, such as references to
+non-existent beans and circular dependencies, at container load-time. Spring sets properties and resolves dependencies
+as late as possible, when the bean is actually created. This means that a Spring container that has loaded correctly can
+later generate an exception when you request an object if there is a problem creating that object or one of its
+dependencies — for example, the bean throws an exception as a result of a missing or invalid property. This potentially
+delayed visibility of some configuration issues is why ApplicationContext implementations by default pre-instantiate
+singleton beans. At the cost of some upfront time and memory to create these beans before they are actually needed, you
+discover configuration issues when the ApplicationContext is created, not later. You can still override this default
+behavior so that singleton beans initialize lazily, rather than being eagerly pre-instantiated.
+
+> 일반적으로 스프링이 올바른 작업을 수행한다고 믿을 수 있습니다. 존재하지 않는 빈에 대한 참조 및 순환 의존성과 같은 구성 문제를 컨테이너 로드 시점에 감지합니다. 스프링은 빈이 실제로 생성될 때 가능한 한 늦게
+> 속성을 설정하고 의존성을 해결합니다. 즉, 올바르게 로드된 스프링 컨테이너는 나중에 객체를 요청할 때, 해당 객체 또는 해당 의존성 중 하나를 생성하는 데 문제가 있는 경우(예: 빈이 누락되거나 잘못된 속성으로
+> 인해
+> 예외를 던지는 경우) 예외를 생성할 수 있습니다. 일부 구성 문제에 대한 가시성이 지연될 수 있기 때문에 기본적으로 `ApplicaitonContext` 구현은 싱글톤 빈을 미리 인스턴스화합니다. 이러한 빈이
+> 실제로
+> 필요하기 전에 미리 생성하는 데 약간의 시간과 메모리가 소요되지만, 나중에가 아니라 `ApplicationContext`가 생성될 때 구성 문제를 발견할 수 있습니다. 이 기본 동작을 재정의하여 싱글톤 빈이
+> 급하게
+> 사전 인스턴스화 되지 않고 느리게 초기화되도록 할 수 있습니다.
+
+<br>
+
+If no circular dependencies exist, when one or more collaborating beans are being injected into a dependent bean, each
+collaborating bean is totally configured prior to being injected into the dependent bean. This means that, if bean A has
+a dependency on bean B, the Spring IoC container completely configures bean B prior to invoking the setter method on
+bean A. In other words, the bean is instantiated (if it is not a pre-instantiated singleton), its dependencies are set,
+and the relevant lifecycle methods (such as a configured init method or the InitializingBean callback method) are
+invoked.
+
+> 순환 의존성이 존재하지 않는 경우, 하나 인상의 협업 빈이 의존 빈에 주입될 때, 각 협업 빈은 종속 빈에 주입되기 전에 완전히 구성됩니다. 즉, 빈 A가 빈 B에 대한 의존성이 있는 경우 스프링 IoC
+> 컨테이너는 빈 A에서 세터 메서드를 호출하기 전에 빈 B를 완전히 구성합니다. 즉, 빈이 인스턴스화 되고(미리 인스턴스화된 싱글톤이 아닌 경우), 의존성이 설정되고, 관련된 라이프사이클 메서드(예: 구성된 초기화
+> 메서드 또는 `InitializingBean` 콜백 메서드)가 호출됩니다.
+
+<br>
+
+## Examples of Dependency Injection
+
+The following example uses XML-based configuration metadata for setter-based DI. A small part of a Spring XML
+configuration file specifies some bean definitions as follows:
+
+> 다음 예제는 세터 기반 DI에 XML 기반 구성 메타데이터를 사용합니다. 스프링 XML 구성 파일의 일부에는 다음과 같이 몇 가지 빈 정의가 지정되어 있습니다.
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean">
+	<!-- setter injection using the nested ref element -->
+	<property name="beanOne">
+		<ref bean="anotherExampleBean"/>
+	</property>
+
+	<!-- setter injection using the neater ref attribute -->
+	<property name="beanTwo" ref="yetAnotherBean"/>
+	<property name="integerProperty" value="1"/>
+</bean>
+
+<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+```
+
+<br>
+
+The following example shows the corresponding ExampleBean class:
+
+> 다음 예제는 해당 `ExampleBean` 클래스를 보여줍니다.
+
+```java
+public class ExampleBean {
+
+	private AnotherBean beanOne;
+
+	private YetAnotherBean beanTwo;
+
+	private int i;
+
+	public void setBeanOne(AnotherBean beanOne) {
+		this.beanOne = beanOne;
+	}
+
+	public void setBeanTwo(YetAnotherBean beanTwo) {
+		this.beanTwo = beanTwo;
+	}
+
+	public void setIntegerProperty(int i) {
+		this.i = i;
+	}
+}
+```
+
+In the preceding example, setters are declared to match against the properties specified in the XML file. The following
+example uses constructor-based DI:
+
+> 위의 예제에서는 XML 파일에 지정된 프로퍼티와 일치하도록 생성자를 선언했습니다. 다음 예제에서는 생성자 기반 DI를 사용합니다.
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean">
+	<!-- constructor injection using the nested ref element -->
+	<constructor-arg>
+		<ref bean="anotherExampleBean"/>
+	</constructor-arg>
+
+	<!-- constructor injection using the neater ref attribute -->
+	<constructor-arg ref="yetAnotherBean"/>
+
+	<constructor-arg type="int" value="1"/>
+</bean>
+
+<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+```
+
+<br>
+
+The following example shows the corresponding ExampleBean class:
+
+> 다음 예제는 해당 `ExampleBean` 클래스를 보여줍니다.
+
+<br>
+
+```java
+public class ExampleBean {
+
+	private AnotherBean beanOne;
+
+	private YetAnotherBean beanTwo;
+
+	private int i;
+
+	public ExampleBean(
+		AnotherBean anotherBean, YetAnotherBean yetAnotherBean, int i) {
+		this.beanOne = anotherBean;
+		this.beanTwo = yetAnotherBean;
+		this.i = i;
+	}
+}
+```
+
+The constructor arguments specified in the bean definition are used as arguments to the constructor of the ExampleBean.
+
+> 빈 정의에 지정된 생성자 인수는 `ExampleBean`의 생성자에 대한 인수로 사용됩니다.
+
+<br>
+
+Now consider a variant of this example, where, instead of using a constructor, Spring is told to call a static factory
+method to return an instance of the object:
+
+> 이제 위 예제의 변형으로, 생성자를 사용하는 대신 스프링이 `static` 팩토리 메서드를 호출하여 객체의 인스턴스를 반환하도록 지시하는 경우를 생각해 보겠습니다:
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean" factory-method="createInstance">
+	<constructor-arg ref="anotherExampleBean"/>
+	<constructor-arg ref="yetAnotherBean"/>
+	<constructor-arg value="1"/>
+</bean>
+
+<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+```
+
+<br>
+
+The following example shows the corresponding ExampleBean class:
+
+> 다음 예제는 해당 `ExampleBean` 클래스를 보여줍니다.
+
+```java
+public class ExampleBean {
+
+	// a private constructor
+	// private 생성자
+	private ExampleBean(...) {
+		...
+	}
+    
+	// a static factory method; the arguments to this method can be
+	// 정적 팩토리 메서드; 이 메서드의 인수는 다음과 같을 수 있음
+	// considered the dependencies of the bean that is returned,
+	// 반환되는 빈의 의존성을 고려
+	// regardless of how those arguments are actually used.
+	// 해당 인수가 실제로 어떻게 사용되는지와는 상관 없이
+	public static ExampleBean createInstance (
+		AnotherBean anotherBean, YetAnotherBean yetAnotherBean, int i) {
+
+		ExampleBean eb = new ExampleBean (...);
+		// some other operations...
+		//
+		return eb;
+	}
+}
+```
+
+Arguments to the static factory method are supplied by <constructor-arg/> elements, exactly the same as if a constructor
+had actually been used. The type of the class being returned by the factory method does not have to be of the same type
+as the class that contains the static factory method (although, in this example, it is). An instance (non-static)
+factory method can be used in an essentially identical fashion (aside from the use of the factory-bean attribute instead
+of the class attribute), so we do not discuss those details here.
+
+> `static` 팩토리 메서드에 대한 인수는 생성자가 실제로 사용된 것과 같이 `<constructor-args/>` 요소로 제공됩니다. 팩토리 메서드가 반환하는 클래스의 유형은 `static` 팩토리 메서드가
+> 포함된 클래스와 동일한 유형일 필요는 없습니다(이 예제에서는 동일하지만). 인스턴스(비 정적) 팩토리 메서드는 본질적으로 동일한 방식으로 사용될 수 있으므로(클래스 속성 대신 `factory-bean` 속성을
+> 사용하는 것 외에는), 여기서는 이러한 세부 사항에 대해 설명하지 않습니다. 
