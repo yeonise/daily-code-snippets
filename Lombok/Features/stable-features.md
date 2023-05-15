@@ -212,3 +212,17 @@ lombok.nonNull.flagUsage = [warning | error] (default: not set)
 Lombok will flag any usage of @NonNull as a warning or error if configured.
 
 > lombok은 `@NonNull`의 사용에 warning 또는 error를 표시하도록 설정할 수 있다.
+
+### Small Print
+
+Lombok's detection scheme for already existing null-checks consists of scanning for if statements or assert statements that look just like lombok's own. Any 'throws' statement as the 'then' part of the if statement, whether in braces or not, counts. Any invocation to any method named `requireNonNull` or `checkNotNull` counts. The conditional of the if statement must look exactly like `PARAMNAME == null`; the assert statement must look exactly like `PARAMNAME != null`. The invocation to a `requireNonNull`-style method must be on its own (a statement which just invokes that method), or must be the expression of an assignment or variable declaration statement. The first statement in your method that is not such a null-check stops the process of inspecting for null-checks.
+
+> Lombok의 이미 존재하는 null-check에 대한 탐지 방식은 lombok의 기능으로 보이는 if 문 또는 assert 문을 찾는 방식으로 이루어져 있다. if 문의 then 부분인 throws는 괄호가 있던지 없던지 계산된다. `requireNonNull` 또는 `checkNotNull` 메서드의 호출은 계산된다. if 문의 조건은 반드시 `PARAMNAME == null`과 같아야 하고 assert 문은 반드시 `PARAMNAME != null` 이어야 한다. `requireNonNull`스타일 메서드 호출은 자체적이거나(해당 메서드를 호출하는 구문) 할당 또는 변수 선언문의 표현식이어야 한다. null-check 가 아닌 메서드의 첫번째 구문은 null-check 검사 프로세스를 중지시킨다.
+
+While `@Data` and other method-generating lombok annotations will trigger on various well-known annotations that signify the field must never be `@NonNull`, this feature only triggers on lombok's own `@NonNull` annotation from the `lombok` package.
+
+> `@Data` 와 다른 메서드 생성 애노테이션은 다양한 잘 알려진 필드가 절대 `@NonNull`이 되서는 안되는 애노테이션을 발생시킨다, 이 기능은 오직 lombok 패키지의 lombok 자체의 `@NonNull` 애노테이션을 발생시킨다.
+
+A `@NonNull` on a primitive parameter results in a warning. No null-check will be generated.
+
+> primitive 파라미터의 `@NonNull`은 위험한 결과를 발생시킨다. null-check가 생성되지 않게 한다.
