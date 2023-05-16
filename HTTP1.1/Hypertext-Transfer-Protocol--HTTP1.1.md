@@ -531,4 +531,25 @@ The goal of HTTP/1.1 is to support the wide diversity of configurations already 
 > 실제로, `World Wide Web` 에는 실험중이거나 사용중인 캐시와 프록시의 다양한 구조와 설정이 있습니다.
 > 이러한 시스템에는 대양 횡단 대역폭을 절약하기 위한 국가 계층의 프록시, `broadcast` 나 `multicast` 하기 위한 캐시들, CD-ROM을 통해 캐시의 하위 집합을 배포하는 조직등이 포함됩니다.
 > HTTP 시스템은 고대역폭 링크를 통해 회사 인트라넷에서 사용되며 저전력의 무선 링크나 간헐적인 연결이 있는 PDA를 통한 접근에 사용됩니다.
-> 마지막 줄 아직 안함. ㅋ
+> HTTP/1.1 의 목표는 이미 배포된 다양한 구성을 지원하고 웹 애플리케이션을 만드는 사람들의 요구사항(높은 신뢰성, 실패할 경우 최소한 신뢰할 수 있는 고장 표시)을 만족하는 프로토콜을 만드는 것입니다. 
+
+<br>
+
+HTTP communication usually takes place over TCP/IP connections.
+The default port is TCP 80, but other ports can be used.
+This does not preclude HTTP from being implemented on top of any other protocol on the Internet, or on other networks.
+HTTP only presumes a reliable transport; any protocol that provides such guarantees can be used;
+the mapping of the HTTP/1.1 request and response structures onto the transport data units of the protocol in question is outside the scope of this specification.
+In HTTP/1.0, most implementations used a new connection for each request/response exchange.
+In HTTP/1.1, a connection may be used for one or more request/response exchanges, although connections may be closed for a variety of reasons
+
+> HTTP 통신은 일반적으로 TCP/IP 연결을 통해 이루어집니다.
+> 기본 포트는 80번 이지만, 다른 포트로 사용 가능합니다.
+> 이는 HTTP가 다른 프로토콜 위에 구현되는 것이 가능함을 의미합니다.
+> HTTP 는 신뢰할 수 있는 전송만을 가정합니다; 이러한 보증을 제공하는 모든 프로토콜을 사용할 수 있습니다.
+> `Transport` 계층의 프로토콜과 데이터 단위에 대한 논의는 이 스펙의 범위를 벗어납니다. 
+> HTTP/1.0 에서 대부분은 매 요청/응답 마다 새로운 커넥션을 사용했습니다.
+> HTTP/1.1 에서는 하나의 커넥션이 한개 이상의 요청/응답 트랜잭션을 처리할 수 있습니다. (비록 트랜잭션 처리도중에 다양한 이유로 커넥션이 닫힐 수 있지만)
+
+## 2. Notational Conventions and Generic Grammar
+> 표기 규칙 및 일반 문법 
