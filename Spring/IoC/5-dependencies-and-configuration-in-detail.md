@@ -86,4 +86,65 @@ the use of the nested <value/> element over the value attribute style.
 
 <br>
 
+## The idref element
+
+The idref element is simply an error-proof way to pass the id (a string value - not a reference) of another bean in the
+container to a <constructor-arg/> or <property/> element. The following example shows how to use it:
+
+> `idref` 요소는 컨테이너에 있는 다른 빈의 `id`(참조가 아닌 문자열 값)를 `<constructor-arg/>` 또는 `<property/>` 요소로 전달하는 오류 방지 방식입니다. 아래의 예제는 그
+> 사용 방법을 보여줍니다:
+
+```xml
+<bean id="theTargetBean" class="..."/>
+
+<bean id="theClientBean" class="...">
+	<property name="targetName">
+		<idref bean="theTargetBean"/>
+	</property>
+</bean>
+```
+
+The preceding bean definition snippet is exactly equivalent (at runtime) to the following snippet:
+
+> 위의 빈 정의 코드는 (실행 시) 아래의 코드와 정확히 동일합니다:
+
+```xml
+<bean id="theTargetBean" class="..." />
+
+<bean id="client" class="...">
+	<property name="targetName" value="theTargetBean"/>
+</bean>
+```
+
+The first form is preferable to the second, because using the idref tag lets the container validate at deployment time
+that the referenced, named bean actually exists. In the second variation, no validation is performed on the value that
+is passed to the targetName property of the client bean. Typos are only discovered (with most likely fatal results) when
+the client bean is actually instantiated. If the client bean is a prototype bean, this typo and the resulting exception
+may only be discovered long after the container is deployed.
+
+> 첫 번째 형태가 두 번째 형태보다 더 선호되는데, 이는 `idref` 태그를 사용하면 컨테이너가 배포 시점에 참조된 빈이 실제로 존재하는지 확인할 수 있기 때문입니다. 두 번째 변형에서는 `client`
+> 빈의 `targetName` 속성에 전달되는 값에 대한 유효성 검사가 수행되지 않습니다. 오타는 `client` 빈이 실제로 인스턴스화될 때만 발견됩니다(대부분 치명적인 결과를 초래할 수 있음). 클라이언트 빈이
+> 프로토타입 빈일 경우, 이 오타와 그에 따른 예외는 컨테이너가 배포된 후 한참 후에야 발견될 수 있습니다.
+
+<br>
+
+The local attribute on the idref element is no longer supported in the 4.0 beans XSD, since it does not provide value
+over a regular bean reference any more. Change your existing idref local references to idref bean when upgrading to the
+4.0 schema.
+{: .notice--primary}
+
+> `idref` 요소의 `local` 속성은 더 이상 일반 빈 참조에 대한 값을 제공하지 않으므로, 4.0 빈 XSD에서 더 이상 지원되지 않습니다. 4.0 스키마로 업그레이드할 때, 기존 `idref local`
+> 참조를 `idref bean` 빈으로 변경하세요.
+
+<br>
+
+A common place (at least in versions earlier than Spring 2.0) where the <idref/> element brings value is in the
+configuration of AOP interceptors in a ProxyFactoryBean bean definition. Using <idref/> elements when you specify the
+interceptor names prevents you from misspelling an interceptor ID.
+
+> `<idref/>` 요소가 가치를 제공하는 일반적인 위치(적어도 스프링 2.0 이전 버전)는 `ProxyFactoryBean` 빈 정의의 AOP 인터셉터 구성입니다. 인터셉터 이름을 지정할
+> 때, `<idref/>` 요소를 사용하면 인터셉터 ID의 철자를 잘못 입력하는 것을 방지할 수 있습니다. 
+
+<br>
+
 추가 예정..
