@@ -236,3 +236,89 @@ but there is a better way to check that no exception is thrown.
 verified and returned allowing to check the custom exception fields/properties.
 
 > `catchThrowableOfType`은 잡은 예외의 타입을 확인하고 사용자 정의 예외 필드/속성을 확인한 뒤 반환하는 `catchThrowable`의 변형입니다.
+
+<br/>
+
+### assertThatThrownBy
+
+`assertThatThrownBy(ThrowingCallable)` is an alternative to `catchThrowable`,
+use it if you find more readable.
+
+> `assertThatThrownBy(ThrowingCallable)`은 `catchThrowable`보다 가독성이 좋은 대체 가능한 메서드입니다.
+
+``` java
+Example:
+
+assertThatThrownBy(() -> { throw new Exception("boom!"); }).isInstanceOf(Exception.class) // 예외 발생 시 타입 검증
+                  .hasMessageContaining("boom"); // 예외 메시지 검증
+```
+
+If the provided `ThrowingCallable` does not raise an exception, an assertion error is immediately thrown.
+
+> 만약 `ThrowingCallable`이 예외를 발생시키지 않으면 즉시 검증 오류가 발생합니다.
+
+<br/>
+
+### assertThatExceptionOfType
+
+`assertThatExceptionOfType` is an alternative syntax that some people find more natural.
+
+> `assertThatExceptionOfType`은 일부 사용자들이 더 자연스럽게 사용하는 대체 가능한 메서드입니다.
+
+``` java
+assertThatExceptionOfType(IOException.class).isThrownBy(() -> { throw new IOException("boom!"); })
+            .withMessage("%s!", "boom")
+            .withMessageContaining("boom")
+            .withNoCause();
+```
+
+If the provided `ThrowingCallable` does not raise an exception, an assertion error is immediately thrown.
+
+> 만약 `ThrowingCallable`이 예외를 발생시키지 않으면 즉시 검증 오류가 발생합니다.
+
+Similarly to `catchThrowableOfType`, the latter syntax has been enriched for commonly used exceptions:
+
+> `catchThrowableOfType`과 유사하게 다음의 구문들은 사용하여 예외 검증을 보다 강화할 수 있습니다.
+
+- `assertThatNullPointerException`
+- `assertThatIllegalArgumentException`
+- `assertThatIllegalStateException`
+- `assertThatIOException`
+
+The previous example can be rewritten as:
+
+> 이전 예제는 다음과 같이 다시 작성할 수 있습니다:
+
+``` java
+assertThatIOException().isThrownBy(() -> { throw new IOException("boom!"); }) // assertThatIOException()의 사용으로 강화된 검증
+                        .withMessage("%s!", "boom")
+                        .withMessageContaining("boom")
+                        .withNoCause();
+```
+
+<br/>
+
+### Testing that no exception is thrown
+
+You can test that a piece of code does not throw any exception with:
+
+> 다음을 사용하여 코드가 예외를 던지지 않는지 확인할 수 있습니다:
+
+``` java
+// standard style
+assertThatNoException().isThrownBy(() -> System.out.println("OK"));
+// BDD style
+thenNoException().isThrownBy(() -> System.out.println("OK"));
+```
+
+or similarly:
+
+> 또는 다음과 같이 작성할 수도 있습니다:
+
+``` java
+// standard style
+assertThatCode(() -> System.out.println("OK")).doesNotThrowAnyException(); // 어떠한 예외도 발생하지 않음
+// BDD style
+thenCode(() -> System.out.println("OK")).doesNotThrowAnyException();
+```
+
