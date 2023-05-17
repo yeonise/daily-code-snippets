@@ -226,3 +226,35 @@ While `@Data` and other method-generating lombok annotations will trigger on var
 A `@NonNull` on a primitive parameter results in a warning. No null-check will be generated.
 
 > primitive 파라미터의 `@NonNull`은 위험한 결과를 발생시킨다. null-check가 생성되지 않게 한다.
+
+A `@NonNull` on a parameter of an abstract method used to generate a warning; starting with version 1.16.8, this is no longer the case, to acknowledge the notion that `@NonNull` also has a documentary role. For the same reason, you can annotate a method as `@NonNull`; this is allowed, generates no warning, and does not generate any code.
+
+> abstract 메서드 파라미터의 `@NonNull`은 위험을 발생시킨다; 그러나 1.16.8 버전에서 시작하면, `@NonNull`은 documentary의 역할도 한다는 것을 알려주기 위해서 더 이상 그렇지 않다. 같은 이유로, 메서드에 `@NonNull`을 붙일 수 있다; 이것은 위험을 발생시키지 않고, 어떤 코드도 만들어내지 않는다는 것을 허용한다.
+
+<hr><br><br>
+
+## @Cleanup
+
+Automatic resource management: Call your close() methods safely with no hassle.
+
+> 자동 자원 관리: close() 메서드를 혼란 없이 안전하게 호출해라.
+
+### OverView
+
+You can use `@Cleanup` to ensure a given resource is automatically cleaned up before the code execution path exits your current scope. You do this by annotating any local variable declaration with the `@Cleanup` annotation like so:
+`@Cleanup InputStream in = new FileInputStream("some/file");`
+As a result, at the end of the scope you're in, `in.close()` is called. This call is guaranteed to run by way of a try/finally construct. Look at the example below to see how this works.
+
+> 주어진 자원이 현재 스코프에 존재하는 코드 실행 후에 자동적으로 청소되도록 하는 `@Cleanup`을 사용할 수 있다. 당신은 이것을 지역 변수 선언에 `@Cleanup`을 붙임으로서 사용할 수 있다: `@Cleanup InputStream in = new FileInputStream("some/file");`
+결과적으로, 현재 스코프의 끝에서 `in.close()`가 호출된다. 이것은 try/finally 구조를 통해 실행되는 것을 보장한다. 다음의 실행되는 예제를 보아라.
+
+If the type of object you'd like to cleanup does not have a `close()` method, but some other no-argument method, you can specify the name of this method like so:
+`@Cleanup("dispose") org.eclipse.swt.widgets.CoolBar bar = new CoolBar(parent, 0);`
+By default, the cleanup method is presumed to be `close()`. A cleanup method that takes 1 or more arguments cannot be called via `@Cleanup`.
+
+> 만약 cleanup을 실행하려는 객체가 `close` 메서드를 가지지 않는 경우, 그러나 인자가 없는 메서드가 있는 경우, 다음처럼 메서드의 이름을 특정할 수 있다:  
+```
+@Cleanup("dispose") 
+org.eclipse.swt.widgets.CoolBar bar = new CoolBar(parent, 0);
+```
+> 기본적으로, cleanup 메서드는 `close()`로 추정된다. cleanup 메서드가 한개 또는 여러개의 인자를 가지는 경우 `@Cleanup`로 호출될 수 없다.
