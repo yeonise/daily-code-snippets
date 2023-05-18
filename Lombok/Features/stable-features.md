@@ -258,3 +258,65 @@ By default, the cleanup method is presumed to be `close()`. A cleanup method tha
 org.eclipse.swt.widgets.CoolBar bar = new CoolBar(parent, 0);
 ```
 > 기본적으로, cleanup 메서드는 `close()`로 추정된다. cleanup 메서드가 한개 또는 여러개의 인자를 가지는 경우 `@Cleanup`로 호출될 수 없다.
+
+### With Lombok
+```
+import lombok.Cleanup;
+import java.io.*;
+
+public class CleanupExample {
+  public static void main(String[] args) throws IOException {
+    @Cleanup InputStream in = new FileInputStream(args[0]);
+    @Cleanup OutputStream out = new FileOutputStream(args[1]);
+    byte[] b = new byte[10000];
+    while (true) {
+      int r = in.read(b);
+      if (r == -1) break;
+      out.write(b, 0, r);
+    }
+  }
+}
+```
+### Vanilla Java
+```
+import java.io.*;
+
+public class CleanupExample {
+  public static void main(String[] args) throws IOException {
+    InputStream in = new FileInputStream(args[0]);
+    try {
+      OutputStream out = new FileOutputStream(args[1]);
+      try {
+        byte[] b = new byte[10000];
+        while (true) {
+          int r = in.read(b);
+          if (r == -1) break;
+          out.write(b, 0, r);
+        }
+      } finally {
+        if (out != null) {
+          out.close();
+        }
+      }
+    } finally {
+      if (in != null) {
+        in.close();
+      }
+    }
+  }
+}
+```
+### Small Print
+In the finally block, the cleanup method is only called if the given resource is not `null`. However, if you use `delombok` on the code, a call to `lombok.Lombok.preventNullAnalysis(Object o)` is inserted to prevent warnings if static code analysis could determine that a null-check would not be needed. Compilation with `lombok.jar` on the classpath removes that method call, so there is no runtime dependency.
+
+> finally 블록에서, cleanup 메서드는 주어진 자원이 `null`이 아닐 때만 호출된다. 그러나, `delombok`을 사용하면, `lombok.Lombok.preventNullAnalysis(Object o)`이 만약 static 코드 분석이 null-check가 필요없다고 결정했을 때의 위험을 예방하기 위해 삽입된다. `lombok.jar`에 의한 컴파일은 메서드 호출을 제거한다, 그러면 런타임 의존성이 사라진다.
+
+If your code throws an exception, and the cleanup method call that is then triggered also throws an exception, then the original exception is hidden by the exception thrown by the cleanup call. You should not rely on this 'feature'. Preferably, lombok would like to generate code so that, if the main body has thrown an exception, any exception thrown by the close call is silently swallowed (but if the main body exited in any other way, exceptions by the close call will not be swallowed). The authors of lombok do not currently know of a feasible way to implement this scheme, but if java updates allow it, or we find a way, we'll fix it.
+
+> 만약 코드가 예외를 발생시켰을 경우, 그리고 cleanup 메서드가 호출했을 경우 또한 예외를 발생시킨다, 그러면 원래의 예외는 cleanup 호출에 의한 예외에 숨겨진다. 당신은 이 기능에 의존하면 안된다.
+가급적이면, lombok은 코드를 이렇게 생성한다, main body가 예외를 발생시켰을 경우, 모든 예외는 close 호출에 의해 조용히 삼켜진다.(그러나 main body가 다른 방식에 의해 종료된 경우, 예외는 close 호출에 의해 삼겨지지 않는다.)
+lombok의 저자는 이 스킴을 구현하는 실현 가능한 방법을 정확히 알지 못한다, 그러나 java 업데이트가 이것을 허용해줬고, 우리는 방법을 찾아서, 그것을 고쳤다.
+
+You do still need to handle any exception that the cleanup method can generate!
+
+> 당신은 여전히 cleanup 메서드가 발생시킬 수 있는 예외를 처리해야 한다.
