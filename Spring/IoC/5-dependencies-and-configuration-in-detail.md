@@ -86,7 +86,7 @@ the use of the nested <value/> element over the value attribute style.
 
 <br>
 
-## The idref element
+### The idref element
 
 The idref element is simply an error-proof way to pass the id (a string value - not a reference) of another bean in the
 container to a <constructor-arg/> or <property/> element. The following example shows how to use it:
@@ -143,8 +143,79 @@ configuration of AOP interceptors in a ProxyFactoryBean bean definition. Using <
 interceptor names prevents you from misspelling an interceptor ID.
 
 > `<idref/>` 요소가 가치를 제공하는 일반적인 위치(적어도 스프링 2.0 이전 버전)는 `ProxyFactoryBean` 빈 정의의 AOP 인터셉터 구성입니다. 인터셉터 이름을 지정할
-> 때, `<idref/>` 요소를 사용하면 인터셉터 ID의 철자를 잘못 입력하는 것을 방지할 수 있습니다. 
+> 때, `<idref/>` 요소를 사용하면 인터셉터 ID의 철자를 잘못 입력하는 것을 방지할 수 있습니다.
 
 <br>
 
-추가 예정..
+## References to Other Beans (Collaborators)
+
+The ref element is the final element inside a <constructor-arg/> or <property/> definition element. Here, you set the
+value of the specified property of a bean to be a reference to another bean (a collaborator) managed by the container.
+The referenced bean is a dependency of the bean whose property is to be set, and it is initialized on demand as needed
+before the property is set. (If the collaborator is a singleton bean, it may already be initialized by the container.)
+All references are ultimately a reference to another object. Scoping and validation depend on whether you specify the ID
+or name of the other object through the bean or parent attribute.
+
+> `ref` 요소는 `<constructor-arg/>` 또는 `<property/>` 정의 요소 내부의 마지막 요소입니다. 여기에서는, 빈의 지정된 속성 값을 컨테이너에서 관리하는 다른 빈(콜라보레이터)에 대한
+> 참조로 설정합니다. 참조된 빈은 속성을 설정하려는 빈의 의존성이며, 속성이 설정되기 전에 필요에 따라 초기화됩니다. (콜라보레이터가 싱글톤 빈인 경우, 컨테이너에 의해 이미 초기화되었을 수 있습니다.) 모든
+> 참조는
+> 궁극적으로 다른 객체에 대한 참조입니다. 범위 지정 및 유효성 검사는 `bean` 또는 `parent` 속성을 통해 다른 객체의 ID 또는 이름을 지정하는지의 여부에 따라 달라집니다.
+
+Specifying the target bean through the bean attribute of the <ref/> tag is the most general form and allows creation of
+a reference to any bean in the same container or parent container, regardless of whether it is in the same XML file. The
+value of the bean attribute may be the same as the id attribute of the target bean or be the same as one of the values
+in the name attribute of the target bean. The following example shows how to use a ref element:
+
+> `<ref/>` 태그의 빈 속성을 통해 대상 빈을 지정하는 것이 가장 일반적인 형식이며, 동일한 XML 파일에 있는지의 여부에 관계없이 동일한 컨테이너 또는 상위 컨테이너에 있는 모든 빈에 대한 참조를 생성할 수
+> 있습니다. 빈 속성의 값은 대상 빈의 `id` 속성과 동일하거나 대상 빈의 `name` 속성에 있는 값 중 하나와 동일할 수 있습니다. 아래의 예는 `ref` 요소를 사용하는 방법을 보여줍니다:
+
+```xml
+<ref bean="someBean"/>
+```
+
+<br>
+
+Specifying the target bean through the parent attribute creates a reference to a bean that is in a parent container of
+the current container. The value of the parent attribute may be the same as either the id attribute of the target bean
+or one of the values in the name attribute of the target bean. The target bean must be in a parent container of the
+current one. You should use this bean reference variant mainly when you have a hierarchy of containers and you want to
+wrap an existing bean in a parent container with a proxy that has the same name as the parent bean. The following pair
+of listings shows how to use the parent attribute:
+
+> `parent` 속성을 통해 대상 빈을 지정하면, 현재 컨테이너의 상위 컨테이너에 있는 빈에 대한 참조가 생성됩니다. `parent` 속성의 값은 대상 빈의 id 속성 또는 대상 빈의 `name` 속성에 있는 값
+> 중 하나와 동일할 수 있습니다. 대상 빈은 현재 컨테이너의 상위 컨테이너에 있어야 합니다. 이 빈의 참조 변형은 주로 컨테이너 계층 구조가 있고 부모 빈과 이름이 같은 프록시를 사용하여 기존 빈을 부모 컨테이너에
+> 래핑하려는 경우에 사용해야 합니다. 아래의 목록은 `parent` 속성을 사용하는 방법을 보여줍니다:
+
+```xml
+<!-- in the parent context -->
+<bean id="accountService" class="com.something.SimpleAccountService">
+	<!-- insert dependencies as required here -->
+</bean>
+```
+
+```xml
+<!-- in the child (descendant) context -->
+<bean id="accountService" <!-- bean name is the same as the parent bean -->
+	class="org.springframework.aop.framework.ProxyFactoryBean">
+	<property name="target">
+		<ref parent="accountService"/> <!-- notice how we refer to the parent bean -->
+	</property>
+	<!-- insert other configuration and dependencies as required here -->
+</bean>
+```
+
+<br>
+
+The local attribute on the ref element is no longer supported in the 4.0 beans XSD, since it does not provide value over
+a regular bean reference any more. Change your existing ref local references to ref bean when upgrading to the 4.0
+schema.
+{: .notice--primary}
+
+> `ref` 요소의 `local` 속성은 더 이상 일반 `bean` 참조에 대한 값을 제공하지 않으므로, 4.0 bean XSD에서 더 이상 지원되지 않습니다. 4.0 스키마로 업그레이드할 때,
+> 기존 `ref local` 참조를 `ref bean`으로 변경하세요. 
+
+<br>
+
+## Inner Beans
+
+추가 예정...
