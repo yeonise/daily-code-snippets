@@ -126,3 +126,203 @@ There are BDD soft assertions versions for the different soft assertions approac
 > - `AutoCloseableBDDSoftAssertions`
 > - 각 테스트 후 `assertAll()`을 호출하는 `JUnitBDDSoftAssertions` 사용
 > - 각 테스트 후 `assertAll()` 호출을 처리하는 Junit5의 확장 사용
+
+<br/>
+
+### JUnit 4 Soft assertions rule
+
+The JUnit rule provided by AssertJ takes care of calling `assertAll()` at the end of each test.
+
+> AssertJ에서 제공하는 Junit rule은 각 테스트가 끝날 때 `assertAll()`을 호출하여 처리합니다.
+
+Example:
+
+``` java
+@Rule // Rule 애너테이션 사용
+public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
+
+@Test
+void junit4_soft_assertions_example() {
+    softly.assertThat("George Martin").as("great authors").isEqualTo("JRR Tolkien");  
+    softly.assertThat(42).as("response to Everything").isGreaterThan(100);
+    softly.assertThat("Gandalf").isEqualTo("Sauron");
+    // No need to call softly.assertAll(), this is automatically done by the JUnitSoftAssertions rule
+    // JUnitSoftAssertions rule에 의해 자동으로 처리되기 때문에 assertAll을 호출할 필요가 없습니다.
+}
+```
+
+In a similar way you can use `JUnitBDDSoftAssertions` where `assertThat` is replaced by `then`:
+
+> 유사한 방식으로 `assertThat`을 `then`으로 대체할 수 있는 `JUnitBDDSoftAssertions`을 사용할 수도 있습니다.
+
+``` java
+@Rule // Rule 애너테이션 사용
+public final JUnitBDDSoftAssertions softly = new JUnitBDDSoftAssertions();
+
+@Test
+void junit4_bdd_soft_assertions_example() {
+    softly.then("George Martin").as("great authors").isEqualTo("JRR Tolkien");
+    softly.then(42).as("response to Everything").isGreaterThan(100);
+    softly.then("Gandalf").isEqualTo("Dauron");
+    // No need to call softly.assertAll(), this is automatically done by the JUnitSoftAssertions rule
+    // JUnitSoftAssertions rule에 의해 자동으로 처리되기 때문에 assertAll을 호출할 필요가 없습니다.
+}
+```
+
+<br/>
+
+### JUnit 5 soft assertions extension
+
+`SoftAssertionsExtension` is a JUnit 5 extension that:
+
+> `SoftAssertionsExtension`은 Junit 5의 확장으로:
+
+- takes care of calling `assertAll()` at the end of each tests
+- supports initializing `SoftAssertionsProvider` field annotated with `@InjectSoftAssertions`
+- supports injecting a `SoftAssertionsProvider` parameter in each test methods
+
+> - 각 테스트가 끝날 때 자동으로 `assertAll()`을 호출하여 처리합니다.
+> - `@InjectSoftAssertions`을 사용하여 `SoftAssertionsProvider`의 필드를 초기화할 수 있습니다.
+> - 각 테스트 메서드에 `SoftAssertionsProvider` 매개변수 주입을 지원합니다.
+
+`SoftAssertionsProvider` is the interface that any concrete soft assertions class must implement,
+AssertJ provides two of them: `SoftAssertions` and `BDDSoftAssertions`,
+but custom implementations are also supported as long as they have a default constructor.
+See the end of combining soft assertions entry points section for an example.
+
+> `SoftAssertionsProvider`은 구체적인 soft assertion 클래스가 구현해야 하는 인터페이스입니다.
+> AssertJ는 다음 두 가지를 제공합니다: `SoftAssertions`과 `BDDSoftAssertions`
+> 그러나 사용자 정의 구현도 기본 생성자가 있다면 지원 가능합니다.
+> 예제는 combining soft assertions entry points 파트의 끝 부분을 참고하세요.
+
+> `JUnitJupiterSoftAssertions`, `JUnitJupiterBDDSoftAssertions` and `SoftlyExtension`
+> are now deprecated in favor of `SoftAssertionsExtension`.
+
+> `JUnitJupiterSoftAssertions`, `JUnitJupiterBDDSoftAssertions` 그리고 `SoftlyExtension`은
+> `SoftAssertionsExtension`을 위해 더 이상 사용하지 않습니다. (deprecated)
+
+**SoftAssertionsProvider field injection**
+
+`SoftAssertionsExtension` supports injecting any instance of `SoftAssertionsProvider`
+into a class test field annotated with `@InjectSoftAssertions`.
+The injection occurs before each test method execution,
+after each test `assertAll()` is invoked to verify that no soft assertions failed.
+
+A nested test class can provide a `SoftAssertionsProvider` field
+when it extends this extension or can inherit the parent’s one.
+
+You can have multiple soft assertion providers injected into a single test class.
+Assertions made on any of them will be collected in a single error collector and reported all together,
+in the same order that they failed.
+
+This extension throws an `ExtensionConfigurationException` if:
+
+the field is static or final or cannot be accessed;
+
+the field type is not a concrete implementation of `SoftAssertionsProvider` (or subclass); or
+
+the field type has no default constructor.
+
+Example:
+
+``` java
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(SoftAssertionsExtension.class)
+public class JUnit5SoftAssertionsExtensionAssertionsExamples {
+
+    @InjectSoftAssertions
+    private SoftAssertions softly;
+    
+    @Test
+    public void chained_soft_assertions_example() {
+    String name = "Michael Jordan - Bulls";
+    softly.assertThat(name).startsWith("Mi")
+    .contains("Bulls");
+    // no need to call softly.assertAll(), this is done by the extension
+    }
+    
+    // nested classes test work too
+    @Nested
+    class NestedExample {
+    
+        @Test
+        public void football_assertions_example() {
+          String kylian = "Kylian Mbappé";
+          softly.assertThat(kylian).startsWith("Ky")
+                                   .contains("bap");
+          // no need to call softly.assertAll(), this is done by the extension
+        }
+    }
+}
+```
+
+**SoftAssertionsProvider parameter injection**
+
+`SoftAssertionsExtension` supports injecting any `SoftAssertionsProvider` implementation
+as a parameter in any test method.
+
+The term "test method" refers to any method annotated
+with `@Test`, `@RepeatedTest`, `@ParameterizedTest`, `@TestFactory` or `@TestTemplate`.
+Notably, the extension is compatible with parameterized tests,
+the parameterized arguments must come first and the soft assertions argument last.
+
+The scope of the `SoftAssertionsProvider` instance managed by this extension begins
+when a parameter of type `SoftAssertionsProvider` is resolved for a test method.
+It ends after the test method has been executed, this is when `assertAll()` will be invoked
+on the instance to verify that no soft assertions failed.
+
+Parameter injection and field injection can be mixed.
+Assertions made on the field- and parameter-injected soft assertion providers
+will all be collected and reported together when the extension calls `assertAll()`.
+
+This extension throws a `ParameterResolutionException` if the resolved `SoftAssertionsProvider` :
+
+- is abstract; or
+- has no default constructor.
+
+Example:
+
+``` java
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.assertj.core.api.BDDSoftAssertions;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+
+@ExtendWith(SoftAssertionsExtension.class)
+public class JUnit5SoftAssertionsExample {
+
+    @Test
+    void junit5_soft_assertions_multiple_failures_example(SoftAssertions softly) {
+        softly.assertThat("George Martin").as("great authors").isEqualTo("JRR Tolkien");
+        softly.assertThat(42).as("response to Everything").isGreaterThan(100);
+        softly.assertThat("Gandalf").isEqualTo("Sauron");
+        // No need to call softly.assertAll(), this is automatically done by the SoftAssertionsExtension
+    }
+    
+    @Test
+    void junit5_bdd_soft_assertions_multiple_failures_example(BDDSoftAssertions softly) {
+        softly.then("George Martin").as("great authors").isEqualTo("JRR Tolkien");
+        softly.then(42).as("response to Everything").isGreaterThan(100);
+        softly.then("Gandalf").isEqualTo("Sauron");
+        // No need to call softly.assertAll(), this is automatically done by the SoftAssertionsExtension
+    }
+    
+    @ParameterizedTest
+    @CsvSource({ "1, 1, 2", "1, 2, 3" })
+    // test parameters come first, soft assertion must come last.
+    void junit5_soft_assertions_parameterized_test_example(int a, int b, int sum, SoftAssertions softly) {
+        softly.assertThat(a + b).as("sum").isEqualTo(sum);
+        softly.assertThat(a).isLessThan(sum);
+        softly.assertThat(b).isLessThan(sum);
+    }
+
+}
+```
