@@ -203,25 +203,41 @@ See the end of combining soft assertions entry points section for an example.
 
 **SoftAssertionsProvider field injection**
 
+**SoftAssertionsProvider 필드 주입**
+
 `SoftAssertionsExtension` supports injecting any instance of `SoftAssertionsProvider`
 into a class test field annotated with `@InjectSoftAssertions`.
 The injection occurs before each test method execution,
 after each test `assertAll()` is invoked to verify that no soft assertions failed.
 
+> `SoftAssertionsExtension`은 `SoftAssertionsProvider`의 어떠한 인스턴스든지
+> `@InjectSoftAssertions` 애너테이션이 붙은 테스트 클래스의 필드에 주입하는 것을 지원합니다.
+> 주입은 각각의 테스트 메서드가 실행되기 전과
+> assertAll()이 호출되어 실패한 soft assertion이 없는지 확인하고 발생합니다.
+
 A nested test class can provide a `SoftAssertionsProvider` field
 when it extends this extension or can inherit the parent’s one.
+
+> 중첩된 테스트 클래스는 이 확장을 extends 하거나 부모의 확장을 상속할 때 `SoftAssertionsProvider` 필드를 사용할 수 있습니다.
 
 You can have multiple soft assertion providers injected into a single test class.
 Assertions made on any of them will be collected in a single error collector and reported all together,
 in the same order that they failed.
 
+> 단일 테스트 클래스에 여러 개의 soft assertion provider를 주입할 수 있습니다.
+> 하나의 에러 수집기에 함께 집계되고 결과 또한 동일한 순서로 함께 보고됩니다.
+
 This extension throws an `ExtensionConfigurationException` if:
 
-the field is static or final or cannot be accessed;
+> 이 확장은 다음과 같은 경우 `ExtensionConfigurationException`을 발생시킵니다:
 
-the field type is not a concrete implementation of `SoftAssertionsProvider` (or subclass); or
+- the field is static or final or cannot be accessed;
+- the field type is not a concrete implementation of `SoftAssertionsProvider` (or subclass); or
+- the field type has no default constructor.
 
-the field type has no default constructor.
+> - 필드가 static 또는 final이거나 접근할 수 없는 경우
+> - 필드 type이 `SoftAssertionsProvider`(또는 하위 클래스)의 구체적인 구현이 아닌 경우
+> - 기본 생성자가 없는 경우
 
 Example:
 
@@ -232,7 +248,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(SoftAssertionsExtension.class)
+@ExtendWith(SoftAssertionsExtension.class) // Junit5 확장 사용
 public class JUnit5SoftAssertionsExtensionAssertionsExamples {
 
     @InjectSoftAssertions
@@ -240,22 +256,25 @@ public class JUnit5SoftAssertionsExtensionAssertionsExamples {
     
     @Test
     public void chained_soft_assertions_example() {
-    String name = "Michael Jordan - Bulls";
-    softly.assertThat(name).startsWith("Mi")
-    .contains("Bulls");
+        String name = "Michael Jordan - Bulls";
+        softly.assertThat(name).startsWith("Mi")
+                               .contains("Bulls");
     // no need to call softly.assertAll(), this is done by the extension
+    // 확장에 의해서 처리되기 때문에 assertAll()을 호출할 필요가 없습니다.
     }
     
     // nested classes test work too
+    // 중첩된 클래스 또한 테스트 가능합니다.
     @Nested
     class NestedExample {
     
         @Test
         public void football_assertions_example() {
-          String kylian = "Kylian Mbappé";
-          softly.assertThat(kylian).startsWith("Ky")
-                                   .contains("bap");
+            String kylian = "Kylian Mbappé";
+            softly.assertThat(kylian).startsWith("Ky")
+                                     .contains("bap");
           // no need to call softly.assertAll(), this is done by the extension
+          // 확장에 의해서 처리되기 때문에 assertAll()을 호출할 필요가 없습니다.
         }
     }
 }
@@ -263,27 +282,46 @@ public class JUnit5SoftAssertionsExtensionAssertionsExamples {
 
 **SoftAssertionsProvider parameter injection**
 
+**SoftAssertionsProvider 파라미터 주입**
+
 `SoftAssertionsExtension` supports injecting any `SoftAssertionsProvider` implementation
 as a parameter in any test method.
+
+> `SoftAssertionsExtension`은 `SoftAssertionsProvider`의 구현체를 모든 테스트 메서드의 파라미터로 주입하는 것을 지원합니다.
 
 The term "test method" refers to any method annotated
 with `@Test`, `@RepeatedTest`, `@ParameterizedTest`, `@TestFactory` or `@TestTemplate`.
 Notably, the extension is compatible with parameterized tests,
 the parameterized arguments must come first and the soft assertions argument last.
 
+> "test method"란, `@Test`, `@RepeatedTest`, `@ParameterizedTest`, `@TestFactory`
+> 또는 `@TestTemplate`의 주석이 달린 모든 메서드를 말합니다.
+> 특히, 확장은 parameterized test와 호환 가능하며, 파라미터가 먼저 오고 soft assertion 인수가 마지막에 와야합니다.
+
 The scope of the `SoftAssertionsProvider` instance managed by this extension begins
 when a parameter of type `SoftAssertionsProvider` is resolved for a test method.
 It ends after the test method has been executed, this is when `assertAll()` will be invoked
 on the instance to verify that no soft assertions failed.
 
+> 이 확장에 의해 관리되는 `SoftAssertionsProvider` 인스턴스의 범위는 `SoftAssertionsProvider` 유형의 파라미터가 테스트 메서드에 대해 확인될 때 시작됩니다.
+> 테스트 메서드가 실행되고 난 이후에 종료됩니다. 이때 인스턴스에서 `assertAll()`이 호출되어 soft assertion이 실패하지 않았는지 확인합니다.
+
 Parameter injection and field injection can be mixed.
 Assertions made on the field- and parameter-injected soft assertion providers
 will all be collected and reported together when the extension calls `assertAll()`.
 
+> 파라미터 주입과 필드 주입은 섞어서 사용할 수 있습니다.
+> 필드 및 파라미터가 주입된 soft assertion provider에 대한 검증은 확장이 `assertAll()`을 호출할 때 모두 수집되어 함께 보고됩니다.
+
 This extension throws a `ParameterResolutionException` if the resolved `SoftAssertionsProvider` :
+
+> 이 확장은 아래의 경우 `ParameterResolutionException`을 발생시킵니다:
 
 - is abstract; or
 - has no default constructor.
+
+> - abstract인 경우
+> - 기본 생성자가 없는 경우
 
 Example:
 
@@ -296,29 +334,32 @@ import org.assertj.core.api.BDDSoftAssertions;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 
-@ExtendWith(SoftAssertionsExtension.class)
+@ExtendWith(SoftAssertionsExtension.class) // Junit5 확장 사용
 public class JUnit5SoftAssertionsExample {
 
     @Test
-    void junit5_soft_assertions_multiple_failures_example(SoftAssertions softly) {
+    void junit5_soft_assertions_multiple_failures_example(SoftAssertions softly) { // SoftAssertions 사용 예시
         softly.assertThat("George Martin").as("great authors").isEqualTo("JRR Tolkien");
         softly.assertThat(42).as("response to Everything").isGreaterThan(100);
         softly.assertThat("Gandalf").isEqualTo("Sauron");
         // No need to call softly.assertAll(), this is automatically done by the SoftAssertionsExtension
+        // assertAll()을 호출할 필요가 없습니다. SoftAssertionsExtension에서 자동적으로 처리합니다.
     }
     
     @Test
-    void junit5_bdd_soft_assertions_multiple_failures_example(BDDSoftAssertions softly) {
+    void junit5_bdd_soft_assertions_multiple_failures_example(BDDSoftAssertions softly) { // BDDSoftAssertions 사용 예시
         softly.then("George Martin").as("great authors").isEqualTo("JRR Tolkien");
         softly.then(42).as("response to Everything").isGreaterThan(100);
         softly.then("Gandalf").isEqualTo("Sauron");
         // No need to call softly.assertAll(), this is automatically done by the SoftAssertionsExtension
+        // assertAll()을 호출할 필요가 없습니다. SoftAssertionsExtension에서 자동적으로 처리합니다.
     }
     
     @ParameterizedTest
     @CsvSource({ "1, 1, 2", "1, 2, 3" })
     // test parameters come first, soft assertion must come last.
-    void junit5_soft_assertions_parameterized_test_example(int a, int b, int sum, SoftAssertions softly) {
+    // 테스트 파라미터가 먼저오고 soft assertion이 마지막에 와야 합니다.
+    void junit5_soft_assertions_parameterized_test_example(int a, int b, int sum, SoftAssertions softly) { // 파라미터 순서에 주의
         softly.assertThat(a + b).as("sum").isEqualTo(sum);
         softly.assertThat(a).isLessThan(sum);
         softly.assertThat(b).isLessThan(sum);
