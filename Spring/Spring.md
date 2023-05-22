@@ -10,3 +10,4 @@
 - [Container Overview](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/IoC/2-container-overview.md) - Sully
 - [Bean OverView](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/IoC/3-bean-overview.md) - Sully
 - [Dependencies](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/IoC/4-dependencies.md) - Sully
+- [Dependencies And Configuration In Detail](https://github.com/won4885/daily-code-snippets/blob/main/Spring/IoC/5-dependencies-and-configuration-in-detail.md) - Sully
