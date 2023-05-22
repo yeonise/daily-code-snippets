@@ -212,10 +212,50 @@ schema.
 {: .notice--primary}
 
 > `ref` 요소의 `local` 속성은 더 이상 일반 `bean` 참조에 대한 값을 제공하지 않으므로, 4.0 bean XSD에서 더 이상 지원되지 않습니다. 4.0 스키마로 업그레이드할 때,
-> 기존 `ref local` 참조를 `ref bean`으로 변경하세요. 
+> 기존 `ref local` 참조를 `ref bean`으로 변경하세요.
 
 <br>
 
 ## Inner Beans
 
-추가 예정...
+A <bean/> element inside the <property/> or <constructor-arg/> elements defines an inner bean, as the following example
+shows:
+
+> 아래의 예제에서 볼 수 있듯이, `<property/>` 또는 `<constructor-arg/>` 요소 내부의 `<bean/>` 요소는 내부 빈을 정의합니다:
+
+```xml
+<bean id="outer" class="...">
+	<!-- instead of using a reference to a target bean, simply define the target bean inline -->
+	<!-- 대상 빈에 대한 참조를 사용하는 대신, 대상 빈을 한줄로 정의하기만 하면 됨 -->
+	<property name="target">
+		<bean class="com.example.Person"> <!-- this is the inner bean -->
+			<property name="name" value="Fiona Apple"/>
+			<property name="age" value="25"/>
+		</bean>
+	</property>
+</bean>
+```
+
+An inner bean definition does not require a defined ID or name. If specified, the container does not use such a value as
+an identifier. The container also ignores the scope flag on creation, because inner beans are always anonymous and are
+always created with the outer bean. It is not possible to access inner beans independently or to inject them into
+collaborating beans other than into the enclosing bean.
+
+> 내부 빈 정의에는 정의된 ID나 이름이 필요하지 않습니다. 지정된 경우, 컨테이너는 이러한 값을 식별자로 사용하지 않습니다. 또한 내부 빈은 항상 익명이며, 항상 외부 빈과 함께 생성되므로 컨테이너는 생성
+> 시 `scope` 플래그를 무시합니다. 내부 빈에 독립적으로 접근하거나 둘러싸는 빈이 아닌, 다른 협업 빈에 내부 빈을 삽입할 수 없습니다.
+
+<br>
+
+As a corner case, it is possible to receive destruction callbacks from a custom scope — for example, for a
+request-scoped inner bean contained within a singleton bean. The creation of the inner bean instance is tied to its
+containing bean, but destruction callbacks let it participate in the request scope’s lifecycle. This is not a common
+scenario. Inner beans typically simply share their containing bean’s scope.
+
+> 코너 케이스로서, 예를 들어 싱글톤 빈 내에 포함된 요청 범위 내부 빈에 대해 사용자 정의 범위에서 소멸 콜백을 수신할 수 있습니다. 내부 빈 인스턴스의 생성은 포함된 빈에 연결되지만, 소멸 콜백을 통해 요청
+> 범위의 라이프사이클에 참여할 수 있습니다. 이것은 일반적인 시나리오는 아닙니다. 내부 빈은 일반적으로 단순하게 포함하는 빈의 범위를 공유합니다.
+
+<br>
+
+# Collections
+
+다음에 또..
