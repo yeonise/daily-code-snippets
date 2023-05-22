@@ -367,3 +367,98 @@ public class JUnit5SoftAssertionsExample {
 
 }
 ```
+
+<br/>
+
+### Auto Closeable Soft assertions
+
+As `AutoCloseableSoftAssertions` implements `AutoCloseable#close()` by calling `assertAll()`,
+when used in a try-with-resources block `assertAll()` is called automatically before exiting the block.
+
+> `AutoCloseableSoftAssertions`는 `assertAll()을 호출하여 ` `AutoCloseable#close()`을 구현하므로,
+> try-with-resources 블럭에서 사용될 때, 블럭이 종료되기 전에 `assertAll()`이 자동으로 호출됩니다.
+
+Example:
+
+``` java
+@Test
+void auto_closeable_soft_assertions_example() {
+    try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) { // resource 작성
+        softly.assertThat("George Martin").as("great authors").isEqualTo("JRR Tolkien");  
+        softly.assertThat(42).as("response to Everything").isGreaterThan(100);
+        softly.assertThat("Gandalf").isEqualTo("Sauron");
+        // no need to call assertAll, this is done when softly is closed.
+        // 블럭이 종료되기 전에 assertAll이 자동으로 호출됩니다.
+    }
+}
+```
+
+In a similar way you can use `AutoCloseableBDDSoftAssertions` where `assertThat` is replaced by `then`:
+
+> 비슷한 방법으로 `AutoCloseableBDDSoftAssertions`을 사용하여 `assertThat` 대신 `then`을 사용할 수 있습니다:
+
+``` java
+@Test
+void auto_closeable_bdd_soft_assertions_example() {
+    try (AutoCloseableBDDSoftAssertions softly = new AutoCloseableBDDSoftAssertions()) { // resource 작성
+        softly.then("George Martin").as("great authors").isEqualTo("JRR Tolkien");
+        softly.then(42).as("response to Everything").isGreaterThan(100);
+        softly.then("Gandalf").isEqualTo("Sauron");
+        // no need to call assertAll, this is done when softly is closed.
+        // 블럭이 종료되기 전에 assertAll이 자동으로 호출됩니다.
+    }
+}
+```
+
+<br/>
+
+### Soft assertions with assertSoftly
+
+The `assertSoftly` static method takes care of calling `assertAll()` before exiting.
+
+> `assertSoftly` 정적 메서드는 종료 전 `assertAll()`을 호출합니다.
+
+Example:
+
+``` java
+@Test
+void assertSoftly_example() {
+    SoftAssertions.assertSoftly(softly -> {
+        softly.assertThat("George Martin").as("great authors").isEqualTo("JRR Tolkien");
+        softly.assertThat(42).as("response to Everything").isGreaterThan(100);
+        softly.assertThat("Gandalf").isEqualTo("Sauron");
+        // no need to call assertAll(), assertSoftly does it for us.
+        // assertSoftly 정적 메서드를 사용하면 assertAll()을 명시적으로 호출할 필요가 없습니다.
+    });
+}
+```
+
+<br/>
+
+### Combining soft assertions entry points
+
+Since the 3.16.0 version AssertJ provides a way to combine standard soft assertions
+with custom ones in a single entry point.
+
+> AssertJ 3.16.0 버전 이후부터 단일 진입점에서 표준 soft assertion과 사용자 정의 assertion을 결합하는 방법을 제공합니다.
+
+Let’s assume we have written an entry point for `TolkienCharacter` soft assertions
+so that we can write assertions like:
+
+> 아래와 같이 작성하기 위해 `TolkienCharacter`의 soft assertion 대한 진입점을 작성했다고 가정해봅시다:
+
+``` java
+TolkienSoftAssertions softly = new TolkienSoftAssertions();
+softly.assertThat(frodo).hasRace(HOBBIT)
+                        .hasName("Frodo");
+```
+
+If we want to check standard soft assertions we could make `TolkienSoftAssertions` inherit `SoftAssertions`
+but if we want to have `GoTSoftAssertions` too then we are stuck as Java does not allow multiple inheritance.
+
+> 만약 우리가 표준 soft assertion을 확인하길 원한다면 우리는 `TolkienSoftAssertions`가 `SoftAssertions`을 상속하도록 만들 수 있을 것입니다.
+> 그러나 Java는 다중 상속을 허용하지 않기 때문에 `GoTSoftAssertions`도 상속받도록 만드는 것은 불가합니다.
+
+The 3.16.0 release introduced the `SoftAssertionsProvider` interface to define soft assertions entry points.
+
+> 3.16.0 릴리즈는 soft assertion 진입점을 정의하기 위한 `SoftAssertionsProvider` 인터페이스를 도입했습니다.
