@@ -14,3 +14,12 @@
 
 ### 4. Following Development
 - https://docs.spring.io/spring-data/jdbc/docs/current/reference/html/#get-started:up-to-date
+
+### 5. Project Metadata
+- https://docs.spring.io/spring-data/jdbc/docs/current/reference/html/#project
+
+### 6. Upgrading Spring Data
+- https://docs.spring.io/spring-data/jdbc/docs/current/reference/html/#upgrading
+
+### 7. Dependencies
+- https://docs.spring.io/spring-data/jdbc/docs/current/reference/html/#dependencies
