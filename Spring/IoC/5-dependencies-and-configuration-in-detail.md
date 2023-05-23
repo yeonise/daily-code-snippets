@@ -258,4 +258,145 @@ scenario. Inner beans typically simply share their containing bean’s scope.
 
 # Collections
 
-다음에 또..
+The <list/>, <set/>, <map/>, and <props/> elements set the properties and arguments of the Java Collection types List,
+Set, Map, and Properties, respectively. The following example shows how to use them:
+
+> `<list/>`, `<set/>`, `<map/>` 및 `<props/>` 요소는 각각 자바 `Collection` 유형 `List`, `Set`, `Map` 및 `Preperties`의 속성과 인수를
+> 설정합니다. 아래의 예제는 이 요소들의 사용 방법을 보여 줍니다:
+
+```xml
+<bean id="moreComplexObject" class="example.ComplexObject">
+    <!-- OO의 호출 결과 -->
+    
+	<!-- results in a setAdminEmails(java.util.Properties) call -->
+	<property name="adminEmails">
+		<props>
+			<prop key="administrator">administrator@example.org</prop>
+			<prop key="support">support@example.org</prop>
+			<prop key="development">development@example.org</prop>
+		</props>
+	</property>
+	<!-- results in a setSomeList(java.util.List) call -->
+	<property name="someList">
+		<list>
+			<value>a list element followed by a reference</value>
+			<ref bean="myDataSource" />
+		</list>
+	</property>
+	<!-- results in a setSomeMap(java.util.Map) call -->
+	<property name="someMap">
+		<map>
+			<entry key="an entry" value="just some string"/>
+			<entry key="a ref" value-ref="myDataSource"/>
+		</map>
+	</property>
+	<!-- results in a setSomeSet(java.util.Set) call -->
+	<property name="someSet">
+		<set>
+			<value>just some string</value>
+			<ref bean="myDataSource" />
+		</set>
+	</property>
+</bean>
+```
+
+<br>
+
+The value of a map key or value, or a set value, can also be any of the following elements:
+
+> 맵의 `key` 또는 `value`의 값 또는 `set`의 값은 아래의 요소 중 하나라도 될 수 있습니다:
+
+```xml
+bean | ref | idref | list | set | map | props | value | null
+```
+
+## Collection Merging
+
+The Spring container also supports merging collections. An application developer can define a
+parent <list/>, <map/>, <set/> or <props/> element and have child <list/>, <map/>, <set/> or <props/> elements inherit
+and override values from the parent collection. That is, the child collection’s values are the result of merging the
+elements of the parent and child collections, with the child’s collection elements overriding values specified in the
+parent collection.
+
+> 스프링 컨테이너는 컬렉션 병합도 지원합니다. 애플리케이션 개발자는 부모 `<list/>`, `<map/>`, `<set/>` 또는 `<props/>` 요소를 정의하고
+> 자식 `<list/>`, `<map/>`, `<set/>` 또는 `<props/>` 요소가 부모 컬렉션의 값을 상속 및 재정의하도록 할 수 있습니다. 즉, 자식 컬렉션의 값은 부모 컬렉션과 자식 컬렉션의 요소를
+> 병합한 결과이며, 자식 컬렉션의 컬렉션 요소가 부모 컬렉션에 지정된 값을 재정의합니다.
+
+<br>
+
+This section on merging discusses the parent-child bean mechanism. Readers unfamiliar with parent and child bean
+definitions may wish to read the relevant section before continuing.
+
+> 병합에 대한 이 섹션에서는 부모-자식 빈 메커니즘에 대해 설명합니다. 부모 및 자식 빈 정의에 익숙하지 않은 우리는 계속하기 전에 관련 섹션을 읽어 보란다.
+
+<br>
+
+The following example demonstrates collection merging:
+
+> 아래의 예는 컬렉션 병합을 보여줍니다:
+
+```xml
+<beans>
+	<bean id="parent" abstract="true" class="example.ComplexObject">
+		<property name="adminEmails">
+			<props>
+				<prop key="administrator">administrator@example.com</prop>
+				<prop key="support">support@example.com</prop>
+			</props>
+		</property>
+	</bean>
+	<bean id="child" parent="parent">
+		<property name="adminEmails">
+			<!-- the merge is specified on the child collection definition -->
+			<!-- 병합은 자식 컬렉션 정의에 지정됩니다 -->
+			<props merge="true">
+				<prop key="sales">sales@example.com</prop>
+				<prop key="support">support@example.co.uk</prop>
+			</props>
+		</property>
+	</bean>
+<beans>
+```
+
+<br>
+
+Notice the use of the merge=true attribute on the <props/> element of the adminEmails property of the child bean
+definition. When the child bean is resolved and instantiated by the container, the resulting instance has an adminEmails
+Properties collection that contains the result of merging the child’s adminEmails collection with the parent’s
+adminEmails collection. The following listing shows the result:
+
+> 자식 빈 정의의 `adminEmails` 속성의 `<props/>` 요소에 `merge=true` 속성이 사용된 것을 주목하세요. `child` 빈이 컨테이너에 의해 확인되고 인스턴스화되면, 결과
+> 인스턴스에는 `child`의 `adminEmails` 컬렉션을 부모의 `adminEmails` 컬렉션과 병합한 결과가 포함된 `adminEmails` `Properties` 컬렉션을 가집니다. 아래의 목록은
+> 결과를
+> 보여줍니다:
+
+<br>
+
+```
+administrator=administrator@example.com
+sales=sales@example.com
+support=support@example.co.uk
+```
+
+The child Properties collection’s value set inherits all property elements from the parent <props/>, and the child’s
+value for the support value overrides the value in the parent collection.
+
+> 자식 `Preperties` 컬렉션의 값 집합은 상위 `<preps/>`에서 모든 속성 요소를 상속하며, `support` 값에 대한 하위의 값은 부모 컬렉션의 값을 재정의합니다.
+
+<br>
+
+This merging behavior applies similarly to the <list/>, <map/>, and <set/> collection types. In the specific case of
+the <list/> element, the semantics associated with the List collection type (that is, the notion of an ordered
+collection of values) is maintained. The parent’s values precede all of the child list’s values. In the case of the Map,
+Set, and Properties collection types, no ordering exists. Hence, no ordering semantics are in effect for the collection
+types that underlie the associated Map, Set, and Properties implementation types that the container uses internally.
+
+> 이 병합 동작은 `<list/>`, `<map/>`, `<set/>` 컬렉션 유형에도 유사하게 적용됩니다. `<list/>` 요소의 특정 케이스에는 `List` 컬렉션 유형과 관련된 의미론(즉,
+> 값의 `orderd` 컬렉션 개념인 듯?)이 유지됩니다. 부모 목록의 값은 모든 자식 목록의 값보다 앞에 위치합니다. `Map`, `Set` 그리고 `Preperties` 컬렉션 유형의 경우 순서가 존재하지
+> 않습니다. 따라서 컨테이너가 내부적으로 사용하는 관련 `Map`, `Set` 및 `Preperties` 구현 유형의 기반이 되는 컬렉션 유형에는 순서 지정 의미론(semantics)이 적용되지 않습니다.
+
+<br>
+
+## Limitations of Collection Merging
+
+다음 시간에..
