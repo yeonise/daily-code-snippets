@@ -26,6 +26,98 @@ To put annotations on the generated method, you can use `onMethod=@__({@Annotati
 
 > 생성된 메서드에 애노테이션을 붙이면 , `onMethod=@__({@AnnotationsHere});` 를 사용할 수 있고 setter 메서드의 파라미터에만 애노테이션을 붙이면, `onParam=@__({@AnnotationsHere})` 를 사용할 수 있다. 그렇지만 조심해야 한다! 이것은 실험적인 기능이다. 더 자세한 부분은 `onX` 기능의 문서를 보면 된다.
 
-NEW in lombok v1.12.0: javadoc on the field will now be copied to generated getters and setters. Normally, all text is copied, and @return is moved to the getter, whilst @param lines are moved to the setter. Moved means: Deleted from the field's javadoc. It is also possible to define unique text for each getter/setter. To do that, you create a 'section' named GETTER and/or SETTER. A section is a line in your javadoc containing 2 or more dashes, then the text 'GETTER' or 'SETTER', followed by 2 or more dashes, and nothing else on the line. If you use sections, @return and @param stripping for that section is no longer done (move the @return or @param line into the section).
+NEW in lombok v1.12.0: javadoc on the field will now be copied to generated getters and setters. Normally, all text is copied, and `@return` is moved to the getter, whilst `@param` lines are moved to the setter. Moved means: Deleted from the field's javadoc. It is also possible to define unique text for each getter/setter. To do that, you create a 'section' named `GETTER` and/or `SETTER`. A section is a line in your javadoc containing 2 or more dashes, then the text 'GETTER' or 'SETTER', followed by 2 or more dashes, and nothing else on the line. If you use sections, `@return` and `@param` stripping for that section is no longer done (move the `@return` or `@param` line into the section).
 
+> lombok V1.12.0에서 새로운 것 : 이제 생성된 getter와 setter에 javadoc이 복사된다. 보통, 모든 텍스트는 복사되고, `@param` 라인이 setter로 이동하는 동안 `@return`은 getter로 이동한다. 이동한다: 필드의 javadoc에서 삭제된다. 이것은 또한 getter/setter 각각에 유일한 텍스트를 정의할 수 있다. 그렇게 하려면, `GETTER` and/or `SETTER`라는 'section'을 만든다. section은 javadoc에 있는 2개 이상의 대시 그리고 `GETTER` 또는 `SETTER` 텍스트 그 뒤에 2개 이상의 대시가 오고 그외에 아무것도 없는 라인이다. 만약 section을 사용한다면, 해당 섹션에 대한 `@return`과 `@param`은 더 이상 벗겨지지 않는다(`@return`또는 `@param` 라인이 section 안으로 이동하는 것).
 
+### With Lombok
+```
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
+public class GetterSetterExample {
+  /**
+   * Age of the person. Water is wet.
+   * 
+   * @param age New value for this person's age. Sky is blue.
+   * @return The current value of this person's age. Circles are round.
+   */
+  @Getter @Setter private int age = 10;
+  
+  /**
+   * Name of the person.
+   * -- SETTER --
+   * Changes the name of this person.
+   * 
+   * @param name The new value.
+   */
+  @Setter(AccessLevel.PROTECTED) private String name;
+  
+  @Override public String toString() {
+    return String.format("%s (age: %d)", name, age);
+  }
+}
+```
+
+### Vanila Java
+```
+
+public class GetterSetterExample {
+  /**
+   * Age of the person. Water is wet.
+   */
+  private int age = 10;
+
+  /**
+   * Name of the person.
+   */
+  private String name;
+  
+  @Override public String toString() {
+    return String.format("%s (age: %d)", name, age);
+  }
+  
+  /**
+   * Age of the person. Water is wet.
+   *
+   * @return The current value of this person's age. Circles are round.
+   */
+  public int getAge() {
+    return age;
+  }
+  
+  /**
+   * Age of the person. Water is wet.
+   *
+   * @param age New value for this person's age. Sky is blue.
+   */
+  public void setAge(int age) {
+    this.age = age;
+  }
+  
+  /**
+   * Changes the name of this person.
+   *
+   * @param name The new value.
+   */
+  protected void setName(String name) {
+    this.name = name;
+  }
+}
+```
+
+<hr><br><br>
+
+## @ToString
+No need to start a debugger to see your fields: Just let lombok generate a toString for you!
+
+> 필드를 보기 위해서 debugger를 시작할 필요가 없다: 그저 lombok에게 toString을 생성하도록 시켜라!
+
+Annotating a class with `@ToString` will cause lombok to generate an implementation of the `toString()` method. You use configuration options to specify whether field names should be included but otherwise the format is fixed: the class name followed by parentheses containing fields separated by commas, e.g. `MyClass(foo=123, bar=234)`.
+
+> 클래스에 `@ToString`을 붙이는 것은 lombok이 `toString()` 메서드를 구현하도록 시킨다. 당신은 설정 옵션을 통해서 필드의 이름들을 포함시킬 건지 아니면 포맷을 고칠 건지 특정할 수 있다: 클래스명 다음에 나오는 괄호는 콤마로 분리된 필드들을 포함한다. 예를 들면 `MyClass(foo=123, bar=234)`.
+
+By setting the `includeFieldNames` parameter to true you can add some clarity (but also quite some length) to the output of the `toString()` method.
+
+> `includeFieldNames` 파라미터를 true로 설정하면 `toString()` 메서드의 출력에 명확성(약간의 길이 뿐만 아니라)을 추가할 수 있다.
