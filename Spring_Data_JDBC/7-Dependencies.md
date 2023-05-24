@@ -68,3 +68,33 @@ Example 2. Declaring a dependency to a Spring Data module
 
 > Spring Data 모듈에 대한 의존성 선언
 > (xml 생략)
+
+<br>
+
+# 7.1. Dependency Management with Spring Boot
+
+> 스프링부트의 의존성 관리
+
+Spring Boot selects a recent version of the Spring Data modules for you.
+If you still want to upgrade to a newer version, set the spring-data-bom.version property to the train version and iteration you would like to use.
+
+See Spring Boot’s documentation (search for "Spring Data Bom") for more details.
+
+> 스프링 부트는 가장 최신 버전의 Spring Data 모듈을 선택합니다.
+> 만약 최신 버전으로 업그레이드 하고싶다면 spring-data-bom.version 속성을 사용하고 싶은 train version 과 iteration 으로 설정하세요.
+>
+> 더욱 자세한 정보는 스프링 부트의 문서를 확인하세요.
+
+<br>
+
+# 7.2. Spring Framework
+
+> 스프링 프레임워크
+
+The current version of Spring Data modules require Spring Framework 6.0.9 or better.
+The modules might also work with an older bugfix version of that minor version.
+However, using the most recent version within that generation is highly recommended.
+
+> 현재 사용하는 Spring Data 버전을 사용하기 위해, 스프링 프레임워크는 6.0.9 버전 이상이 필요합니다.
+> 모듈은 해당 마이너 버전의 이전 버그 수정 버전에서도 작동할 수 있습니다.
+> 하지만, 해당 세대내에서 가장 최신 버전을 사용하는 것을 추천합니다. 

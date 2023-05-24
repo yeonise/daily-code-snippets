@@ -23,3 +23,6 @@
 
 ### 7. Dependencies
 - https://docs.spring.io/spring-data/jdbc/docs/current/reference/html/#dependencies
+
+### 8. Working with Spring Data Repositories
+- https://docs.spring.io/spring-data/jdbc/docs/current/reference/html/#repositories
