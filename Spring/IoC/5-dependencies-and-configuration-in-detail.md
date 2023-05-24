@@ -399,4 +399,62 @@ types that underlie the associated Map, Set, and Properties implementation types
 
 ## Limitations of Collection Merging
 
-다음 시간에..
+You cannot merge different collection types (such as a Map and a List). If you do attempt to do so, an appropriate
+Exception is thrown. The merge attribute must be specified on the lower, inherited, child definition. Specifying the
+merge attribute on a parent collection definition is redundant and does not result in the desired merging.
+
+> 서로 다른 컬렉션 유형(예: `Map`과 `List`)은 병합할 수 없습니다. 병합을 시도하면, 적절한 `Exception`이 발생합니다. `merge` 속성은 상속된 자식 정의에 지정해야 합니다. 부모 컬렉션
+> 정의에 병합 속성을 지정하는 것은 중복되며, 원하는 병합이 이루어지지 않습니다.
+
+<br>
+
+## Strongly-typed collection
+
+Thanks to Java’s support for generic types, you can use strongly typed collections. That is, it is possible to declare a
+Collection type such that it can only contain (for example) String elements. If you use Spring to dependency-inject a
+strongly-typed Collection into a bean, you can take advantage of Spring’s type-conversion support such that the elements
+of your strongly-typed Collection instances are converted to the appropriate type prior to being added to the
+Collection. The following Java class and bean definition show how to do so:
+
+> 자바의 일반 유형의 지원 덕분에, 강력하게 유형화된 컬렉션을 사용할 수 있습니다. 즉, (예를 들어) `String` 요소만 포함할 수 있도록 `Collection` 유형을 선언할 수 있습니다. 스프링을 사용하여
+> 강력하게 유형화된 `Collection`을 빈에 의존적으로 주입하는 경우, 강력하게 유형화된 `Collection` 인스턴스 요소가 `Collection`에 추가되기 전에 적절한 유형으로 반환되도록 스프링의 유형
+> 변환 지원을 활용할 수 있습니다. 아래의 자바 클래스와 빈 정의는 이를 수행하는 방법을 보여줍니다:
+
+```java
+public class SomeClass {
+
+	private Map<String, Float> accounts;
+
+	public void setAccounts(Map<String, Float> accounts) {
+		this.accounts = accounts;
+	}
+}
+```
+
+```xml
+<beans>
+	<bean id="something" class="x.y.SomeClass">
+		<property name="accounts">
+			<map>
+				<entry key="one" value="9.99"/>
+				<entry key="two" value="2.75"/>
+				<entry key="six" value="3.99"/>
+			</map>
+		</property>
+	</bean>
+</beans>
+```
+
+When the accounts property of the something bean is prepared for injection, the generics information about the element
+type of the strongly-typed Map<String, Float> is available by reflection. Thus, Spring’s type conversion infrastructure
+recognizes the various value elements as being of type Float, and the string values (9.99, 2.75, and 3.99) are converted
+into an actual Float type.
+
+> `something` 빈의 `accounts` 속성이 주입을 위해 준비되면, 강력하게 유형화된 `Map<String, Float>`의 요소 유형에 대한 제네릭 정보를 반영하여 사용할 수 있습니다. 따라서 스프링의
+> 유형 변환 인프라는 다양한 값 요소를 `Float` 유형으로 인식하고, 문자열 값(9.99, 2.75 및 3.99)을 실제 `Float` 유형으로 반환합니다.
+
+<br>
+
+## Null and Empty String Values
+
+다음 이 시간에..
