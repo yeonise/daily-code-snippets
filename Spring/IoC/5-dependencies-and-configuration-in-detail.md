@@ -455,6 +455,149 @@ into an actual Float type.
 
 <br>
 
-## Null and Empty String Values
+# Null and Empty String Values
 
-다음 이 시간에..
+Spring treats empty arguments for properties and the like as empty Strings. The following XML-based configuration
+metadata snippet sets the email property to the empty String value ("").
+
+> 스프링은 속성 등에 대한 빈 인수를 빈 `String`으로 취급합니다. 아래의 XML 기반 구성 메타데이터 스니펫은 `email` 속성을 빈 `String` 값("")으로 설정합니다.
+
+```xml
+<bean class="ExampleBean">
+	<property name="email" value=""/>
+</bean>
+```
+
+The preceding example is equivalent to the following Java code:
+
+> 위의 예는 아래의 자바 코드와 동일합니다.
+
+```java
+exampleBean.setEmail("");
+```
+
+<br>
+
+The <null/> element handles null values. The following listing shows an example:
+
+> `<null/>` 요소는 `null` 값을 처리합니다. 아래의 목록은 그 예시를 보여줍니다:
+
+```xml
+<bean class="ExampleBean">
+	<property name="email">
+		<null/>
+	</property>
+</bean>
+```
+
+The preceding configuration is equivalent to the following Java code:
+
+> 위의 구성은 아래의 자바 코드와 동일합니다.
+
+```java
+exampleBean.setEmail(null);
+```
+
+<br>
+
+# XML Shortcut with the p-namespace
+
+The p-namespace lets you use the bean element’s attributes (instead of nested <property/> elements) to describe your
+property values collaborating beans, or both.
+
+> p-네임스페이스를 사용하면 중첩된 `<property/>` 요소 대신 `bean` 요소의 속성을 사용하여 속성 값을 공동 작업(콜라보)하는 빈 또는 둘 다를 설명할 수 있습니다.
+
+<br>
+
+Spring supports extensible configuration formats with namespaces, which are based on an XML Schema definition. The beans
+configuration format discussed in this chapter is defined in an XML Schema document. However, the p-namespace is not
+defined in an XSD file and exists only in the core of Spring.
+
+> 스프링은 XML 스키마 정의를 기반으로 하는 네임스페이스가 있는 확장 가능한 구성 형식을 지원합니다. 이 챕터에서 설명하는 `beans` 구성 형식은 XML 스키마 문서에 정의되어 있습니다. 그러나
+> p-네임스페이스는 XSD 파일에 정의되어 있지 않으며, 스프링의 코어에만 존재합니다.
+
+<br>
+
+The following example shows two XML snippets (the first uses standard XML format and the second uses the p-namespace)
+that resolve to the same result:
+
+> 아래의 예는 동일한 결과로 해석되는 두 개의 XML 스니펫(첫 번째는 표준 XML 형식을 사용하고, 두 번째는 p-네임스페이스를 사용함)을 보여줍니다:
+
+```xml
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean name="classic" class="com.example.ExampleBean">
+		<property name="email" value="someone@somewhere.com"/>
+	</bean>
+
+	<bean name="p-namespace" class="com.example.ExampleBean"
+		p:email="someone@somewhere.com"/>
+</beans>
+```
+
+The example shows an attribute in the p-namespace called email in the bean definition. This tells Spring to include a
+property declaration. As previously mentioned, the p-namespace does not have a schema definition, so you can set the
+name of the attribute to the property name.
+
+> 이 예는 빈 정의에서 `email`이라는 p-네임스페이스의 속성을 보여줍니다. 이것은 스프링이 속성 선언을 포함하도록 지시합니다. 앞에서 언급했듯이, p-네임스페이스에는 스키마 정의가 없으므로, 프로퍼티 이름을
+> 속성 이름으로 설정할 수 있습니다. (preperty나 attribute나..)
+
+<br>
+
+This next example includes two more bean definitions that both have a reference to another bean:
+
+> 아래의 예제에는 다른 빈에 대한 참조가 있는 두 개의 빈 정의가 더 포함되어 있습니다:
+
+```xml
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean name="john-classic" class="com.example.Person">
+		<property name="name" value="John Doe"/>
+		<property name="spouse" ref="jane"/>
+	</bean>
+
+	<bean name="john-modern"
+		class="com.example.Person"
+		p:name="John Doe"
+		p:spouse-ref="jane"/>
+
+	<bean name="jane" class="com.example.Person">
+		<property name="name" value="Jane Doe"/>
+	</bean>
+</beans>
+```
+
+This example includes not only a property value using the p-namespace but also uses a special format to declare property
+references. Whereas the first bean definition uses <property name="spouse" ref="jane"/> to create a reference from bean
+john to bean jane, the second bean definition uses p:spouse-ref="jane" as an attribute to do the exact same thing. In
+this case, spouse is the property name, whereas the -ref part indicates that this is not a straight value but rather a
+reference to another bean.
+
+> 이 예제에는 p-네임스페이스를 사용하는 속성 값뿐만 아니라 특수 형식을 사용하여 속성 참조를 선언하는 것도 포함됩니다. 첫 번째 빈 정의에서는 `<property name="spouse" ref="jane"/>`
+> 을 사용하여 bean `john`에서 bean `jane`으로 참조를 생성하는 반면, 두 번째 빈 정의에서는 `p:spouse-ref="jane"`을 속성으로 사용하여 정확히 동일한 작업을 수행합니다. 이
+> 경우 `spouse`는 속성 이름이고, `-ref` 부분은 이것이 직선 값이 아니라 다른 빈에 대한 참조임을 나타냅니다.
+
+<br>
+
+The p-namespace is not as flexible as the standard XML format. For example, the format for declaring property references
+clashes with properties that end in Ref, whereas the standard XML format does not. We recommend that you choose your
+approach carefully and communicate this to your team members to avoid producing XML documents that use all three
+approaches at the same time.
+{: .notice--primary}
+
+> p-네임스페이스는 표준 XML 형식만큼 유연하지 않습니다. 예를 들어, 속성 참조를 선언하는 형식은 `Ref`로 끝나는 속성과 충돌하지만 표준 XML 형식은 충돌하지 않습니다. 세 가지 접근 방식을 동시에
+> 사용하는 XML 문서를 생성하지 않도록 접근 방식을 신중하게 선택하고, 이를 팀원에게 전달하는 것이 좋습니다.
+
+<br>
+
+# XML Shortcut with the c-namespace
+
+추가 예정쓰
