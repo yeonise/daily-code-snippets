@@ -462,3 +462,106 @@ but if we want to have `GoTSoftAssertions` too then we are stuck as Java does no
 The 3.16.0 release introduced the `SoftAssertionsProvider` interface to define soft assertions entry points.
 
 > 3.16.0 릴리즈는 soft assertion 진입점을 정의하기 위한 `SoftAssertionsProvider` 인터페이스를 도입했습니다.
+
+**Step 1**
+
+The first step consists in extending this interface to expose as many custom entry points as you need.
+The typical custom `SoftAssertionsProvider` interface exposes default `assertThat` methods, as shown below:
+
+> 첫 번째 단계는 이 인터페이스를 확장하여 필요한 만큼의 사용자 정의 entry point를 만드는 것입니다.
+> 일반적인 사용자 정의 `SoftAssertionsProvider` 인터페이스는 아래와 같이 `assertThat` 메서드를 노출합니다.
+
+``` java
+public interface TolkienSoftAssertionsProvider extends SoftAssertionsProvider {
+    // custom assertions
+    // 사용자 정의 검증문
+    default TolkienCharacterAssert assertThat(TolkienCharacter actual) {
+        return proxy(TolkienCharacterAssert.class, TolkienCharacter.class, actual);
+    }
+}
+
+// let's add a Game of Thrones entry point
+// Game of Thrones entry point를 추가해 보겠습니다
+public interface GoTSoftAssertionsProvider extends SoftAssertionsProvider {
+    // custom assertions
+    // 사용자 정의 검증문
+    default GoTCharacterAssert assertThat(GoTCharacter actual) {
+        return proxy(GoTCharacterAssert.class, GoTCharacter.class, actual);
+    }
+}
+```
+
+**Step 2**
+
+In order to get a concrete entry point exposing all custom entry points,
+create a class implementing all custom `SoftAssertionsProvider` and extending `AbstractSoftAssertions`.
+`AbstractSoftAssertions` provides the core internal implementation to collect all errors
+from the different implemented entry points (it also implements `SoftAssertionsProvider`).
+
+> 모든 사용자 정의 entry points를 사용하는 구체적인 진입점을 얻으려면
+> 모든 사용자 정의 `SoftAssertionsProvider`를 구현하는 클래스를 만들고 `AbstractSoftAssertions`를 상속받습니다.
+> `AbstractSoftAssertions`는 구현된 여러 entry point를 통해 모든 오류를 수집하는 핵심 내부 구현을 제공합니다. (`SoftAssertionsProvider`도 구현합니다)
+
+To get standard soft assertions, inherit from `SoftAssertions` instead of `AbstractSoftAssertions`
+(or `BddSoftAssertions` to get the BDD flavor).
+
+> 표준 soft assertion을 얻으려면 AbstractSoftAssertions 대신 SoftAssertions을 상속받습니다. (BDD 특성을 얻으려면 BddSoftAssertions을 상속받습니다)
+
+Let’s define our concrete entry points implementing both
+`TolkienSoftAssertionsProvider` and `GoTSoftAssertionsProvider`:
+
+> `TolkienSoftAssertionsProvider`와 `GoTSoftAssertionsProvider`를 모두 구현하는 구체적인 entry point를 정의해 보겠습니다:
+
+``` java
+// we extend SoftAssertions to get standard soft assertions
+// SoftAssertion을 확장하여 표준 soft assertion을 얻습니다
+public class FantasySoftAssertions extends SoftAssertions
+implements TolkienSoftAssertionsProvider, GoTSoftAssertionsProvider {
+
+    // we can even add more assertions here
+    // 우리는 더 많은 검증문을 추가할 수도 있습니다
+    public HumanAssert assertThat(Human actual) {
+        return proxy(HumanAssert.class, Human.class, actual);
+    }
+}
+```
+
+**Step 3**
+
+The last step is to use `FantasySoftAssertions`:
+
+> 마지막 단계는 FantasySoftAssertion을 사용하는 것입니다:
+
+``` java
+FantasySoftAssertions softly = new FantasySoftAssertions();
+
+// custom TolkienCharacter assertions
+// 사용자 정의 TolkienCharacter
+softly.assertThat(frodo).hasRace(HOBBIT);
+
+// custom GoTCharacter assertions
+// 사용자 정의 GoTCharacter
+softly.assertThat(nedStark).isDead();
+
+// standard assertions
+// 표준 assertions
+softly.assertThat("Games of Thrones").startsWith("Games")
+                                     .endsWith("Thrones");
+// verify assertions
+// 검증문을 확인합니다
+softly.assertAll();
+```
+
+> 사용자 정의 soft assertion(entry point)을 만드는 세 단계를 설명하고 있습니다.
+> 각 단계는 AssertJ를 확장하여 원하는 만큼 많은 사용자 정의 entry point를 노출시키는 과정입니다.
+
+> 첫 번째 단계는 인터페이스를 확장하여 필요한 만큼 많은 사용자 정의 진입점을 노출시키는 것입니다.
+> 위 예시에서 TolkienSoftAssertionsProvider는 TolkienCharacter 객체에 대한 어서션을 위한 진입점을 노출시키고, GoTSoftAssertionsProvider는 GoTCharacter 객체에 대한 어서션을 위한 진입점을 노출시킵니다.
+> 사용자는 필요에 따라 진입점을 추가하거나 수정할 수 있습니다.
+
+> 두 번째 단계는 모든 사용자 정의 SoftAssertionsProvider를 구현하고 AbstractSoftAssertions를 확장하는 클래스를 만드는 것입니다. 
+> FantasySoftAssertions은 TolkienSoftAssertionsProvider, GoTSoftAssertionsProvider를 implement하고 SoftAssertions을 extends 하고 있습니다.
+> Human 객체에 대한 어서션도 추가적으로 제공하고 있습니다.
+
+> 마지막 단계는 FantasySoftAssertions를 사용하는 것입니다.
+> FantasySoftAssertions 인스턴스를 생성하고 사용자 정의 어서션 및 기본 어서션을 수행할 수 있습니다.
