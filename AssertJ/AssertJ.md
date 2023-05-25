@@ -8,3 +8,4 @@
 - [2.5.7 Controlling Type Formatting](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-7-controlling-type-formatting.md) - Seoyeon
 - [2.5.11. Iterable and array assertions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-11-iterable-and-array-assertions.md) - Seoyeon
 - [2.5.12. Exception assertions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-12-exception-assertions.md) - Seoyeon
+- [2.5.15. Soft assertions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-15-soft-assertions.md) - Seoyeon
