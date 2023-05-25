@@ -565,3 +565,103 @@ softly.assertAll();
 
 > 마지막 단계는 FantasySoftAssertions를 사용하는 것입니다.
 > FantasySoftAssertions 인스턴스를 생성하고 사용자 정의 어서션 및 기본 어서션을 수행할 수 있습니다.
+
+**Optional step: use `SoftAssertionsExtension`**
+
+JUnit 5 `SoftAssertionsExtension` calls `softly.assertAll()` after each test
+so that we don’t have to do it manually.
+Since 3.16.0 it is capable of injecting any `SoftAssertionsProvider`,
+we can then inject our custom `FantasySoftAssertions`:
+
+> JUnit5의 `SoftAssertionsExtension`은 `softly.assertAll()`을 각 테스트 이후에 호출하기 때문에 우리가 명시적으로 호출하지 않아도 됩니다. 
+> 3.16.0 버전부터 모든 `SoftAssertionsProvider`를 주입할 수 있으므로 사용자 지정 `FantasySoftAssertions` 또한 주입할 수 있습니다.
+
+``` java
+@ExtendWith(SoftAssertionsExtension.class) // 확장
+public class JUnit5_StandardAndCustomSoftAssertionsExamples {
+
+    @Test
+    public void successful_junit_soft_custom_assertion_example(FantasySoftAssertions softly) { // 주입
+        softly.assertThat(frodo).hasName("Frodo")
+                                .hasAge(33);
+        softly.assertThat(frodo.age).isEqualTo(33);
+    }
+}
+```
+
+### Reacting to collected soft assertions
+
+AssertJ allows to perform an action after an `AssertionError` is collected.
+
+> AssertJ는 `AssertionError`가 수집된 이후에 작업을 수행할 수 있습니다.
+
+The action is specified by the `AfterAssertionErrorCollected` functional interface
+which can be expressed as lambda, to register your callback call
+`setAfterAssertionErrorCollected` as shown below:
+
+> 아래 예시와 같이 작업은 콜백 호출 `setAfterAssertionErrorCollected`를 등록하는 람다를 표현할 수 있는 `AfterAssertionErrorCollected`라는 함수형 인터페이스에 의해 지정됩니다.
+
+Example:
+
+``` java
+SoftAssertions softly = new SoftAssertions();
+StringBuilder reportBuilder = new StringBuilder(format("Assertions report:%n"));
+
+// register our callback
+// callback 등록
+softly.setAfterAssertionErrorCollected(error -> reportBuilder.append(format("------------------%n%s%n", error.getMessage())));
+// the AssertionError corresponding to the failing assertions are registered in the report
+// 실패한 어설션에 해당하는 AssertionError가 보고서에 등록됩니다
+softly.assertThat("The Beatles").isEqualTo("The Rolling Stones");
+softly.assertThat(123).isEqualTo(123)
+                      .isEqualTo(456);
+```
+
+resulting `reportBuilder`:
+
+> `reportBuilder`의 결과:
+
+``` 
+Assertions report:
+------------------
+Expecting:
+  <"The Beatles">
+to be equal to:
+  <"The Rolling Stones">
+but was not.
+------------------
+Expecting:
+  <123>
+to be equal to:
+  <456>
+but was not.
+```
+
+Alternatively, if you have defined your own `SoftAssertions` class and
+inherited from `AbstractSoftAssertions`, you can instead override `onAssertionErrorCollected(AssertionError)`.
+
+> 또는 자체 `SoftAssertions` 클래스를 정의하고 `AbstractSoftAssertions`을 상속한 경우, onAssertionErrorCollected(AssertionError)를 재정의할 수 있습니다.
+
+Example:
+
+``` java
+class TolkienSoftAssertions extends AbstractSoftAssertions {
+
+public TolkienHeroesAssert assertThat(TolkienHero actual) {
+    return proxy(TolkienHeroesAssert.class, TolkienHero.class, actual);
+}
+
+    @Override
+    public void onAssertionErrorCollected(AssertionError assertionError) {
+        System.out.println(assertionError);
+    }
+}
+
+TolkienSoftAssertions softly = new TolkienSoftAssertions();
+
+TolkienCharacter frodo = TolkienCharacter.of("Frodo", 33, HOBBIT);
+
+// the AssertionError corresponding to this failing assertion is printed to the console.
+// 실패한 검증에 해당하는 AssertionError가 콘솔에 출력됩니다
+softly.assertThat(frodo).hasName("Bilbo");
+```
