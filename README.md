@@ -30,6 +30,10 @@
 
 [RFC 2616 Documentation](https://www.rfc-editor.org/rfc/rfc2616)
 
+### 7. Spring Data JDBC
+[Spring Data JDBC Documentation](https://docs.spring.io/spring-data/jdbc/docs/current/reference/html/#get-started:first-steps:spring)
+
+
 ## List
 
 - [Java README.md](https://github.com/yeonise/daily-code-snippets/blob/main/Java/Java.md)
