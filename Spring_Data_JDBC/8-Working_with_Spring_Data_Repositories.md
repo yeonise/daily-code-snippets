@@ -153,3 +153,90 @@ interface UserRepository extends CrudRepository<User, Long> {
 > 
 > 예제6. 파생된 삭제 쿼리
 > (코드 생략)
+
+<br>
+
+## 8.2. Query Methods
+
+Standard CRUD functionality repositories usually have queries on the underlying datastore.
+With Spring Data, declaring those queries becomes a four-step process:
+
+1. Declare an interface extending Repository or one of its subinterfaces and type it to the domain class and ID type that it should handle, as shown in the following example:
+```java
+interface PersonRepository extends Repository<Person, Long> { … }
+```
+
+2. Declare query methods on the interface.
+```java
+interface PersonRepository extends Repository<Person, Long> {
+  List<Person> findByLastname(String lastname);
+}
+```
+
+3. Set up Spring to create proxy instances for those interfaces, either with JavaConfig or with XML configuration.
+```java
+import org.springframework.data.….repository.config.EnableJpaRepositories;
+
+@EnableJpaRepositories
+class Config { … }
+```
+Note that the JavaConfig variant does not configure a package explicitly, because the package of the annotated class is used by default. 
+To customize the package to scan, use one of the basePackage… attributes of the data-store-specific repository’s @EnableJpaRepositories-annotation.
+
+4. Inject the repository instance and use it, as shown in the following example:
+```java
+class SomeClient {
+
+  private final PersonRepository repository;
+
+  SomeClient(PersonRepository repository) {
+    this.repository = repository;
+  }
+
+  void doSomething() {
+    List<Person> persons = repository.findByLastname("Matthews");
+  }
+}
+```
+
+The sections that follow explain each step in detail:
+- Defining Repository Interfaces
+- Defining Query Methods
+- Creating Repository Instances
+- Custom Implementations for Spring Data Repositories
+
+> 표준 CRUD 리포지토리는 데이터 저장소에 대한 기본적인 쿼리를 지원합니다.
+> Spring Data 를 사용하면, 이러한 쿼리를 4단계에 거쳐 선언할 수 있습니다.
+>
+> 1. Repository 또는 이의 하위 인터페이스를 확장하는 인터페이스를 선언하고, 처리하려는 도메인 클래스와 식별자 타입을 다음과 같이 입력하십시오.
+>  (코드 생략)
+> 2. 쿼리 메서드를 인터페이스에 선언합니다.
+>   (코드 생략)
+> 3. JavaConfig 나 XML 설정을 통해 해당 인터페이스에 대한 프록시 인스턴스를 생성할 수 있도록 설정합니다.
+>   (코드 생략)
+> 애노테이션이 달린 클래스의 패키지가 기본적으로 사용되기 때문에, JavaConfig 변형은 패키지를 명시적으로 설정하지 않습니다.
+> 스캔할 패키지를 변경하려면, basePackage 속성 중 하나인 `@EnableJpaRepositories` 애노테이션을 사용하십시오.
+> 4. 다음 예제와 같이, 리포지토리를 주입받아 사용하십시오.
+>   (코드 생략)
+>
+> 다음 섹션에서는 각 단계를 자세히 설명합니다.
+> - 리포지토리 인터페이스 정의
+> - 쿼리 메서드 정의
+> - 리포지토리 인스턴스 생성
+> - 사용자 정의 Spring Data 리포지토리 만들기
+
+<br>
+
+## 8.3. Defining Repository Interfaces
+
+> 리포지토리 인터페이스 정의
+
+<br>
+
+To define a repository interface, you first need to define a domain class-specific repository interface.
+The interface must extend Repository and be typed to the domain class and an ID type.
+If you want to expose CRUD methods for that domain type, you may extend CrudRepository, or one of its variants instead of Repository.
+
+> 리포지토리 인터페이스를 정의하기 위해, 먼저 도메인 클래스에 특화된 리포지토리 인터페이스를 정의해야 합니다.
+> 인터페이스는 반드시 Repository 를 확장해야 하고, 도메인 클래스와 식별자 타입으로 타입이 지정됩니다.
+> 만약 CRUD 메서드들을 사용하려는 경우, `Repository` 대신 `CrudRepository` 나 이것의 변형을 확장할 수 있습니다.
