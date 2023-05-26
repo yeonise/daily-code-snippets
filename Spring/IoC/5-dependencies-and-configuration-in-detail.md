@@ -600,4 +600,97 @@ approaches at the same time.
 
 # XML Shortcut with the c-namespace
 
-추가 예정쓰
+Similar to the XML Shortcut with the p-namespace, the c-namespace, introduced in Spring 3.1, allows inlined attributes
+for configuring the constructor arguments rather then nested constructor-arg elements.
+
+> 스프링 3.1에 도입된 c-네임스페이스는 p-네임스페이스의 XML 지름길과 유사하게 중첩된 `constructor-arg` 요소가 아닌 생성자 인수를 구성하기 위한 인라인 속성을 허용합니다. 뭔 말이야
+
+<br>
+
+The following example uses the c: namespace to do the same thing as the from Constructor-based Dependency Injection:
+
+> 아래의 예제에서는 `c:` 네임스페이스를 사용하여 생성자 기반 의존성 주입에서와 동일한 작업을 수행합니다:
+
+```xml
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="beanTwo" class="x.y.ThingTwo"/>
+	<bean id="beanThree" class="x.y.ThingThree"/>
+
+	<!-- traditional declaration with optional argument names -->
+	<bean id="beanOne" class="x.y.ThingOne">
+		<constructor-arg name="thingTwo" ref="beanTwo"/>
+		<constructor-arg name="thingThree" ref="beanThree"/>
+		<constructor-arg name="email" value="something@somewhere.com"/>
+	</bean>
+
+	<!-- c-namespace declaration with argument names -->
+	<bean id="beanOne" class="x.y.ThingOne" c:thingTwo-ref="beanTwo"
+		c:thingThree-ref="beanThree" c:email="something@somewhere.com"/>
+
+</beans>
+```
+
+The c: namespace uses the same conventions as the p: one (a trailing -ref for bean references) for setting the
+constructor arguments by their names. Similarly, it needs to be declared in the XML file even though it is not defined
+in an XSD schema (it exists inside the Spring core).
+
+> `c:` 네임스페이스는 생성자 인수를 이름으로 설정하기 위해 `p:` 하나(bean 참조의 경우 후행 `-ref`)와 동일한 규칙을 사용합니다. 마찬가지로, XSD 스키마에 정의되어 있지 않더라도 XML 파일에
+> 선언해야 합니다(스프링 코어 내부에 존재).
+
+<br>
+
+For the rare cases where the constructor argument names are not available (usually if the bytecode was compiled without
+debugging information), you can use fallback to the argument indexes, as follows:
+
+> 생성자 인수 이름을 사용할 수 없는 드문 경우(일반적으로 디버깅 정보 없이 바이트코드를 컴파일한 경우)에는 아래와 같이 인자 인덱스에 대한 `fallback`을 사용할 수 있습니다:
+
+```xml
+<!-- c-namespace index declaration -->
+<bean id="beanOne" class="x.y.ThingOne" c:_0-ref="beanTwo" c:_1-ref="beanThree"
+	c:_2="something@somewhere.com"/>
+```
+
+<br>
+
+Due to the XML grammar, the index notation requires the presence of the leading _, as XML attribute names cannot start
+with a number (even though some IDEs allow it). A corresponding index notation is also available for <constructor-arg>
+elements but not commonly used since the plain order of declaration is usually sufficient there.
+{: .notice--primary}
+
+> XML 문법으로 인해 인덱스 표기법에는 선행 `_`가 있어야 하는데, 이는 XML 속성 이름이 숫자로 시작할 수 없기 때문입니다(일부 IDE에는 허용하긴 함~). `<constructor-arg>` 요소에도 해당
+> 인덱스 표기법을 사용할 수 있지만, 일반적으로 일반 선언 순서로 충분하기 때문에 일반적으로 사용되지는 않습니다.
+
+<br>
+
+In practice, the constructor resolution mechanism is quite efficient in matching arguments, so unless you really need
+to, we recommend using the name notation throughout your configuration.
+
+> 실제로 생성자 확인 메커니즘은 인수를 일치시키는 데 매우 효율적이므로 꼭 필요한 경우가 아니라면, 구성 전체에서 이름 표기법을 사용하는 것이 좋습니다.
+
+<br>
+
+# Compound Property Names
+
+You can use compound or nested property names when you set bean properties, as long as all components of the path except
+the final property name are not null. Consider the following bean definition:
+
+> 최종 속성 이름을 제외한 경로의 모든 구성 요소가 `null`이 아닌 한, bean 프로퍼티를 설정할 때 복합 또는 중첩 속성 이름을 사용할 수 있습니다. 아래의 빈 정의를 살펴보겠습니다:
+
+```xml
+<bean id="something" class="things.ThingOne">
+	<property name="fred.bob.sammy" value="123" />
+</bean>
+```
+
+The something bean has a fred property, which has a bob property, which has a sammy property, and that final sammy
+property is being set to a value of 123. In order for this to work, the fred property of something and the bob property
+of fred must not be null after the bean is constructed. Otherwise, a NullPointerException is thrown.
+
+> `something` bean에는 `fred` 프로퍼티가 있고, `fred` 프로퍼티에는 `bob` 프로터티가 있으며, `bob` 프로퍼티에는 `sammy` 프로퍼티가 있고, 최종 `sammy`
+> 프로퍼티는 `123`의 값으로 설정되어 있습니다. 이것이 작동하려면 bean이 생성된 후, `something`의 `fred` 프로퍼티와 `fred`의 `bob` 프로퍼티가 `null`이 아니어야 합니다. 그렇지
+> 않으면 `NullPointerException`이 발생합니다.
