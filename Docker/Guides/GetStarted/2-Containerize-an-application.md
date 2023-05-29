@@ -211,6 +211,47 @@ access the application.
 > `-p` 옵션을 사용하여 호스트의 포트 3000번과 컨테이너의 포트 3000번을 설정합니다. 즉, 호스트의 3000번 포트로 요청이 들어오면 컨테이너의 3000번 포트로 이동됩니다.
 > 포트 매핑없이 애플리케이션에 접근하는 것은 불가능합니다.
 
+2. After a few seconds, open your web browser to `http://localhost:3000`. You should see your app.
 
+> 몇 초후에, 여러분들의 웹 브라우저를 열고 `http://localhost:3000`으로 접속해보세요. 여러분들은 애플리케이션을 볼수 있을 것입니다.
+
+![](https://docs.docker.com/get-started/images/todo-list-empty.png)
+
+3. Go ahead and add an item or two and see that it works as you expect. You can mark items as complete and remove them.
+   Your frontend is successfully storing items in the backend.
+
+> 애플리케이션 한두가지 항목을 추가하여 예상대로 작동하는지 확인해보세요.
+> 여러분들은 항목을 완료로 표시하고 제거할 수 있습니다. 애플리케이션의 프론트엔드가 백엔드에 항목을 성공적으로 저장할 것입니다.
+
+At this point, you should have a running todo list manager with a few items, all built by you.
+If you take a quick look at your containers, you should see at least one container running that is using the
+getting-started image and on port 3000. To see your containers, you can use the CLI or Docker Desktop’s graphical
+interface.
+
+> 이때, 사용자가 작성한 몇가지 항목으로 작업 관리자를 실행해야 합니다.
+> 만약 여러분들이 여러분들의 컨테이너들을 빠르게 살펴보자면, 여러분들은 최소 한개의 컨테이너가 수행되는 것을 볼 수 있습니다.
+> 이 컨테이너는 포트 3000번에 getting-started 이미지를 사용하고 있을 것입니다.
+> 여러분들의 컨테이너들을 보기 위해서는, 여러분들은 CLI 또는 도커 데스크탑의 GUI를 사용할 수 있습니다.
+
+**CLI**
+
+```
+$ docker ps
+```
+
+**Docker Desktop**
+In Docker Desktop, select the Containers tab to see a list of your containers.
+
+> 도커 데스크톱에서, 여러분들의 컨테이너들의 리스르를 보기 위해서 컨테이너 탭을 선택하세요.
+
+![](https://docs.docker.com/get-started/images/dashboard-two-containers.png)
+
+### 다음 단계(Next steps)
+
+In this short section, you learned the basics about creating a Dockerfile to build a container image. Once you built an
+image, you started a container and saw the running app.
+
+> 이번 짧은 부분에서는, 여러분들은 컨테이너 이미지를 빌드하기 위해서 Dockerfile을 생성하는 것에 대한 기본적인 것을 배웠습니다.
+> 일단 여러분들이 이미지를 빌드하였다면, 여러분들은 컨테이너를 시작하고 실행해중인 애플리케이션을 볼 수 있었습니다.
 
 
