@@ -6,4 +6,4 @@
 
 - [Part 1: Overview](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/GetStarted/Overview.md)
     - YongHwanKim
-- [Part 2: Containerize an application]()
+- [Part 2: Containerize an application](https://github.com/yonghwankim-dev/daily-code-snippets/blob/main/Docker/Guides/GetStarted/2-Containerize-an-application.md)
