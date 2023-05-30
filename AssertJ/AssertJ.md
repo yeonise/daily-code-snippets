@@ -12,7 +12,7 @@
 - [2.5.11. Iterable and array assertions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-11-iterable-and-array-assertions.md) - Seoyeon
 - [2.5.12. Exception assertions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-12-exception-assertions.md) - Seoyeon
 - [2.5.15. Soft assertions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-15-soft-assertions.md) - Seoyeon
-- [2.5.16. Assumptions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-15-assumptions.md) - Seoyeon
+- [2.5.16. Assumptions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-5-16-assumptions.md) - Seoyeon
 
 ### 2.6 Extending assertions
 

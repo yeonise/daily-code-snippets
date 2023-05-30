@@ -1,4 +1,4 @@
-## 2.5.3. Assertion Description
+## 2.5.4. Overriding error message
 
 AssertJ tries its best to give helpful error messages,
 but you can always change it with `overridingErrorMessage()` or `withFailMessage()`.
