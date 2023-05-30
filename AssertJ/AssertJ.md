@@ -17,3 +17,7 @@
 ### 2.6 Extending assertions
 
 - [2.6.1 Conditions](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-6-1-conditions.md) - Seoyeon
+
+### 2.7 Migrating assertions
+
+- [2.7.1 Assertions migration scripts](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/Core/2-7-1-assertions-migration-scripts.md) - Seoyeon
