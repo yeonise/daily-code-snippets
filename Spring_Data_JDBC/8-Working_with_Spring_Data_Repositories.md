@@ -240,3 +240,60 @@ If you want to expose CRUD methods for that domain type, you may extend CrudRepo
 > 리포지토리 인터페이스를 정의하기 위해, 먼저 도메인 클래스에 특화된 리포지토리 인터페이스를 정의해야 합니다.
 > 인터페이스는 반드시 Repository 를 확장해야 하고, 도메인 클래스와 식별자 타입으로 타입이 지정됩니다.
 > 만약 CRUD 메서드들을 사용하려는 경우, `Repository` 대신 `CrudRepository` 나 이것의 변형을 확장할 수 있습니다.
+
+<br>
+
+### 8.3.1. Fine-tuning Repository Definition
+> 미세한 조정을 위한 리포지토리 정의
+
+<br> 
+
+There are a few variants how you can get started with your repository interface.
+
+The typical approach is to extend CrudRepository, which gives you methods for CRUD functionality.
+CRUD stands for Create, Read, Update, Delete.
+With version 3.0 we also introduced ListCrudRepository which is very similar to the CrudRepository but for those methods that return multiple entities it returns a List instead of an Iterable which you might find easier to use.
+
+If you are using a reactive store you might choose ReactiveCrudRepository, or RxJava3CrudRepository depending on which reactive framework you are using.
+
+If you are using Kotlin you might pick CoroutineCrudRepository which utilizes Kotlin’s coroutines.
+
+> 사용자 정의 리포지토리 인터페이스를 사용하는데 몇 가지 방법이 있습니다.
+> 
+> 가장 일반적인 방법은 CRUD 기능을 제공하는 `CrudRepository` 를 확장하는 것입니다.
+> CRUD 는 생성, 읽기, 수정, 삭제를 의미합니다.
+> 3.0 버전 이후부터는 `Iterable` 대신 사용하기 쉬운 `List`를 반환하는 `ListCrudyRepository`를 지원합니다. 
+> 
+> 만약 반응형 저장소를 사용한다면 사용중인 반응형 프레임워크에 따라 `ReactiveCrudRpository` 또는 `RxJava3CrudRepository`를 사용할 수 있습니다.
+> 
+> 만약 Kotlin을 사용하는 경우, Kotlin 을 활용하는 `CoroutineCrudRepository` 를 사용할 수 있습니다.
+
+<br>
+
+Additional you can extend PagingAndSortingRepository, ReactiveSortingRepository, RxJava3SortingRepository, or CoroutineSortingRepository if you need methods that allow to specify a Sort abstraction or in the first case a Pageable abstraction.
+Note that the various sorting repositories no longer extended their respective CRUD repository as they did in Spring Data Versions pre 3.0.
+Therefore, you need to extend both interfaces if you want functionality of both.
+
+If you do not want to extend Spring Data interfaces, you can also annotate your repository interface with @RepositoryDefinition.
+Extending one of the CRUD repository interfaces exposes a complete set of methods to manipulate your entities.
+If you prefer to be selective about the methods being exposed, copy the methods you want to expose from the CRUD repository into your domain repository.
+When doing so, you may change the return type of methods.
+Spring Data will honor the return type if possible.
+For example, for methods returning multiple entities you may choose Iterable<T>, List<T>, Collection<T> or a VAVR list.
+
+> 정렬을 추상화한 메서드나, 페이징을 추상화한 메서드가 필요한 경우 추가적으로 `PaginAndSortingRepository`, `ReactiveSortingRepository`, `RxJava3SortingRepository`, `CoroutineSortingRepository` 를 확장할 수 있습니다.
+> 정렬 리포지토리를 사용하고 싶을 때 3.0 이전 버전에서 처럼 리포지토리 각각의 CRUD 리포지토리 인터페이스를 확장하지 않습니다.
+> 따라서, 두 가지 정렬 기능을 사용하고 싶다면, 두 인터페이스를 모두 확장해야 합니다.
+> 
+> `Spring Data` 인터페이스를 확장하지 않으려면, 당신의 리포지토리 인터페이스에 `@RepositoryDefinition` 애노테이션을 붙여 사용할 수 있습니다.
+> CRUD 리포지토리를 하나라도 확장하게 되면, 인터페이스는 엔티티를 조작하는 많은 메서드 집합에 노출됩니다. 
+> 만약 선택적으로 메서드를 노출하려면, CRUD 리포지토리에서 원하는 메서드만을 복사해 당신의 도메인 리포지토리에서 사용하십시오.
+> 이때 메서드의 반환 타입을 변경할 수도 있습니다.
+> `Spring Data` 는 호환 가능한 경우 다양한 반환 타입을 사용할 수 있습니다.
+> 에를 들어 여러개의 엔티티를 반환하는 메서드의 반환타입을 `Iterable`, `List`, `Collection`, `VAVR 목록` 에서 고를 수 있습니다.  
+
+<br>
+
+If many repositories in your application should have the same set of methods you can define your own base interface to inherit from.
+
+> 당신의 애플리케이션에서 많은 리포지토리들이 똑같은 메서드 집합이 필요한 경우, 당신만의 베이스 인터페이스를 만들고, 다른 리포지토리들이 상속하도록 할 수 있습니다.
