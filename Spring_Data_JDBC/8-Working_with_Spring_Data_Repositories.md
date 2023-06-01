@@ -295,5 +295,48 @@ For example, for methods returning multiple entities you may choose Iterable<T>,
 <br>
 
 If many repositories in your application should have the same set of methods you can define your own base interface to inherit from.
+Such an interface must be annotated with @NoRepositoryBean.
+This prevents Spring Data to try to create an instance of it directly and failing because it can’t determine the entity for that repository, since it still contains a generic type variable.
+
+The following example shows how to selectively expose CRUD methods (findById and save, in this case):
+
+Example 7. Selectively exposing CRUD methods
+```java
+@NoRepositoryBean
+interface MyBaseRepository<T, ID> extends Repository<T, ID> {
+
+  Optional<T> findById(ID id);
+
+  <S extends T> S save(S entity);
+}
+
+interface UserRepository extends MyBaseRepository<User, Long> {
+  User findByEmailAddress(EmailAddress emailAddress);
+}
+```
+
+In the prior example, you defined a common base interface for all your domain repositories and exposed findById(…) as well as save(…).
+These methods are routed into the base repository implementation of the store of your choice provided by Spring Data (for example, if you use JPA, the implementation is SimpleJpaRepository), because they match the method signatures in CrudRepository.
+So the UserRepository can now save users, find individual users by ID, and trigger a query to find Users by email address.
+
+Note
+The intermediate repository interface is annotated with @NoRepositoryBean.
+Make sure you add that annotation to all repository interfaces for which Spring Data should not create instances at runtime.
 
 > 당신의 애플리케이션에서 많은 리포지토리들이 똑같은 메서드 집합이 필요한 경우, 당신만의 베이스 인터페이스를 만들고, 다른 리포지토리들이 상속하도록 할 수 있습니다.
+> 이러한 인터페이스엔 반드시 `@NoRepositoryBean` 애노테이션을 붙여야 합니다.
+> 이 애노테이션은 `Spring Data` 가 해당 인터페이스의 인스턴스를 생성하려고 시도하고, 실패하는 것 (해당 리포지토리 엔티티를 확인할 수 없기 때문에) 을 방지합니다.
+> (왜냐하면 해당 인터페이스는 일반 타입 변수를 포함하기 때문에)
+> 
+> 다음 예제는 어떻게 CRUD 메서드 중 일부만 선택적으로 노출하는지를 보여줍니다. (findById, save)
+>
+> 예제 7. 선택적으로 CRUD 메서드 사용
+> (코드 생략)
+> 
+> 앞선 예제에서는, 공통으로 사용할 당신만의 인터페이스를 정의하기 위해서, domain 리포지토리를 확장한 뒤, 사용할 특정 메서드들을 노출했습니다. 
+> 이러한 메서드들은 `CrudRepository` 와 메서드 시그니처가 같기 때문에, `Spring Data` 가 제공하는 기본 리포지토리 구현체로 라우팅됩니다. (예를들어, 만약 당신이 JPA를 사용용한다면, `SimpleJpaRepository` 구현체로 라우팅됩니다.) 
+> 그래서 `UserRepository` 는 이제 유저를 저장하고, id , email 을 이용해 개별 유저를 찾을 수 있습니다.
+> 
+> **노트**
+> 중간 매개체가 되는 리포지토리 인터페이스는 `@NoRepositoryBean` 애노테이션을 붙입니다.
+> `Spring Data` 가 런타임에 인스턴스를 생성하면 안되는 리포지토리 인터페이스엔 해당 주석을 반드시 붙여야 합니다.
