@@ -121,3 +121,83 @@ Annotating a class with `@ToString` will cause lombok to generate an implementat
 By setting the `includeFieldNames` parameter to true you can add some clarity (but also quite some length) to the output of the `toString()` method.
 
 > `includeFieldNames` 파라미터를 true로 설정하면 `toString()` 메서드의 출력에 명확성(약간의 길이 뿐만 아니라)을 추가할 수 있다.
+
+By default, all non-static fields will be printed. If you want to skip some fields, you can annotate these fields with `@ToString.Exclude`. Alternatively, you can specify exactly which fields you wish to be used by using `@ToString(onlyExplicitlyIncluded = true)`, then marking each field you want to include with `@ToString.Include`.
+
+> 기본적으로, 모든 non-static 필드는 출력된다. 몇몇 필드는 출력되지 않기를 원한다면, `@ToString.Exclude`를 필드에 붙일 수 있다. 또는 어떤 필드는 명확하게 나타나기를 원한다면 `@ToString(onlyExplicitlyIncluded = true)`를 사용할 수 있다, 그리고 원하는 필드에 `@ToString.Include`를 붙여서 사용한다.
+
+By setting `callSuper` to true, you can include the output of the superclass implementation of `toString` to the output. Be aware that the default implementation of `toString()` in `java.lang.Object` is pretty much meaningless, so you probably don't want to do this unless you are extending another class.
+
+> `callSuper`를 true로 설정하면, 출력에 슈퍼 클래스의 `toString`을 포함할 수 있다. `java.lang.Object`의 기본적인 `toString()`은 꽤 의미가 없다는 것을 알아둬라, 그래서 아마 다른 클래스를 확장하지 않는 한 이것을 원하지 않을 것이다.
+
+You can also include the output of a method call in your `toString`. Only instance (non-static) methods that take no arguments can be included. To do so, mark the method with `@ToString.Include`.
+
+> 또한 `toString` 메서드가 출력에 포함되기를 원할 것이다. 오직 인자를 가지지 않는 (non-static) 메서드만 포함될 수 있다. 그렇게 하기 위해서는 메서드에 `@ToString.Include`를 붙여라.
+
+You can change the name used to identify the member with `@ToString.Include(name = "some other name")`, and you can change the order in which the members are printed via `@ToString.Include(rank = -1)`. Members without a rank are considered to have rank 0, members of a higher rank are printed first, and members of the same rank are printed in the same order they appear in the source file.
+
+> 멤버변수를 식별하기 위해서 `@ToString.Include(name = "some other name")`로 이름을 변경할 수 있고, `@ToString.Include(rank = -1)`를 통해서 출력되는 멤버변수의 순서를 변경할 수 있다. rank가 없는 멤버변수는 rank0으로 고려된다, 높은 rank의 멤버변수가 먼저 출력되고, 같은 rank의 멤버변수는 소스 파일에 나타나는 순서대로 출력된다.
+
+### With Lombok
+```
+
+import lombok.ToString;
+
+@ToString
+public class ToStringExample {
+  private static final int STATIC_VAR = 10;
+  private String name;
+  private Shape shape = new Square(5, 10);
+  private String[] tags;
+  @ToString.Exclude private int id;
+  
+  public String getName() {
+    return this.name;
+  }
+  
+  @ToString(callSuper=true, includeFieldNames=true)
+  public static class Square extends Shape {
+    private final int width, height;
+    
+    public Square(int width, int height) {
+      this.width = width;
+      this.height = height;
+    }
+  }
+}
+```
+
+### Vanilla Java
+```
+
+import java.util.Arrays;
+
+public class ToStringExample {
+  private static final int STATIC_VAR = 10;
+  private String name;
+  private Shape shape = new Square(5, 10);
+  private String[] tags;
+  private int id;
+  
+  public String getName() {
+    return this.name;
+  }
+  
+  public static class Square extends Shape {
+    private final int width, height;
+    
+    public Square(int width, int height) {
+      this.width = width;
+      this.height = height;
+    }
+    
+    @Override public String toString() {
+      return "Square(super=" + super.toString() + ", width=" + this.width + ", height=" + this.height + ")";
+    }
+  }
+  
+  @Override public String toString() {
+    return "ToStringExample(" + this.getName() + ", " + this.shape + ", " + Arrays.deepToString(this.tags) + ")";
+  }
+}
+```
