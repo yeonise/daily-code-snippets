@@ -201,3 +201,17 @@ public class ToStringExample {
   }
 }
 ```
+
+## @EqualsAndHashCode
+
+### Equality made easy: Generates `hashCode` and `equals` implementations from the fields of your object.
+
+> 객체의 필드들의 `hashCode`와 `equals`의 구현을 만들어준다.
+
+Any class definition may be annotated with `@EqualsAndHashCode` to let lombok generate implementations of the `equals(Object other)` and `hashCode()` methods. By default, it'll use all non-static, non-transient fields, but you can modify which fields are used (and even specify that the output of various methods is to be used) by marking type members with `@EqualsAndHashCode.Include` or `@EqualsAndHashCode.Exclude`. Alternatively, you can specify exactly which fields or methods you wish to be used by marking them with `@EqualsAndHashCode.Include` and using `@EqualsAndHashCode(onlyExplicitlyIncluded = true)`.
+
+> `@EqualsAndHashCode`를 붙인 클래스를 정의하면 lombok이 `equals(Object other)`와 `hashCode` 메서드를 생성하도록 한다. 기본적으로 non-static, non-transient 필드에만 사용되지만 타입 멤버에 `@EqualsAndHashCode.Include` 또는 `@EqualsAndHashCode.Exclude`를 붙여줘서 필드를 사용되도록(그리고 다양한 메서드의 출력이 사용되도록 특정) 변경할 수 있다. 또는 필드나 메서드에 `@EqualsAndHashCode.Include` 붙이거나 `@EqualsAndHashCode(onlyExplicitlyIncluded = true)`를 사용해서 사용되도록 정확하게 지정할 수 있다.
+
+If applying `@EqualsAndHashCode` to a class that extends another, this feature gets a bit trickier. Normally, auto-generating an `equals` and `hashCode` method for such classes is a bad idea, as the superclass also defines fields, which also need equals/hashCode code but this code will not be generated. By setting `callSuper` to true, you can include the `equals` and `hashCode` methods of your superclass in the generated methods. For `hashCode`, the result of `super.hashCode()` is included in the hash algorithm, and for `equals`, the generated method will return false if the super implementation thinks it is not equal to the passed in object. Be aware that not all `equals` implementations handle this situation properly. However, lombok-generated `equals` implementations do handle this situation properly, so you can safely call your superclass equals if it, too, has a lombok-generated `equals` method. If you have an explicit superclass you are forced to supply some value for `callSuper` to acknowledge that you've considered it; failure to do so results in a warning.
+
+> 만약 다른 클래스를 확장하는 클래스에 `@EqualsAndHashCode`를 적용하면, 이 기능은 조금 까다로워진다. 보통 그런 클래스들에 `equals` 와 `hashCode`메서드를 자동 생성 하는 것은 좋지 않다, 슈퍼클래스 또한 필드를 정의하고 있고 그 필드들도 equals/hashCode 메서드를 필요로 하지만 이 코드는 생성되지 않기 때문이다. `callSuper`를 true로 설정해주면, 슈퍼클래스에도 `equals`와 `hashCode`메서드를 생성시키도록 할 수 있다. `hashCode`의 경우, `super.hashCode()`의 결과가 hash 알고리즘을 포함하게 되고, `equals`의 경우, 생성된 메서드는 통과된 객체가 슈퍼 클래스의 구현된 메서드에서 같지 않다고 생각되면 false를 리턴하게 된다. 그러나 모든 구현된 `equals` 메서드가 이 상황 처럼 적절하게 다뤄지지 않는 것을 인지해야 한다. 그러나, lombok이 생성한 `equals` 메서드는 이 상황을 적절하게 다룬다, 그래서 만약 슈퍼클래스도 lombok이 생성한 `equals` 메서드를 가지고 있다면 안전하게 슈퍼클래스의 equals를 호출할 수 있다. 만약 명시적인 슈퍼클래스를 가지고 있다면 이것을 고려했다는 것을 인지하기 위해서 `callSuper`를 제공해야 한다; 그렇게 하지 못했다면 경고가 표시된다.
