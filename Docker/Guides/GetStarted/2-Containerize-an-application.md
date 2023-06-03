@@ -90,10 +90,12 @@ In the Windows Command Prompt, run the following commands listed below.
 Change directory to the app directory. Replace \path\to\app with the path to your
 getting-started\app directory.
 
-> app 디렉토리로 디렉토리를 변경합니다. 여러분들의 getting-started/app 디렉토리로 경로를 /path/to/app으로 대신합니다.
+> app 디렉토리로 현재 디렉토리를 변경합니다. 아래 명령어에서 `\path\to\app`을 여러분들의 getting-started\app 디렉토리로 변경하세요.
 
 ```shell
 $ cd \path\to\app
+=>
+$ cd .\getting-started\app
 ```
 
 Create an empty file named Dockerfile.
