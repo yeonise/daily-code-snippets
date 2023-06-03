@@ -151,10 +151,13 @@ EXPOSE 3000
 In the terminal, change directory to the getting-started/app directory. Replace /path/to/app with the path to your
 getting-started/app directory.
 
-> 터미널에서 getting-started/app 디렉토리를 변경합니다. getting-started/app 디렉토리의 경로를 `/path/too/app`으로 변경합니다.
+> 터미널에서 getting-started/app 디렉토리로 현재 디렉토리를 변경합니다.
+> `/path/to/app` 명령어를 여러분들의 getting-started/app 디렉토리 경로로 변경하세요.
 
 ```shell
 $ cd /path/to/app
+=>
+$ cd ./getting-started/app
 ```
 
 Build the container image.
@@ -162,7 +165,7 @@ Build the container image.
 > 컨테이너 이미지를 빌드합니다.
 
 ```shell
-$ docker build -t getting-started
+$ docker build -t getting-started .
 ```
 
 The docker build command uses the Dockerfile to build a new container image. You might have noticed that Docker
@@ -180,7 +183,7 @@ container from this image.
 
 > 도커가 이미지를 다운로드한 후에, Dockerfile에 있는 명령어들은 여러분들의 애플리케이션에 복사되고 여러분들의 애플리케이션의 종속성들을
 > 설치하기 위해서 yarn 명령어를 사용합니다.
-> CMD 명령어는 이 이미지에서 컨테이너를 시작할 때 실행할 기본 명령어를 지정합니다. 즉, 컨테이너가 생성되자마자 애플레킹션이 실행됩니다.
+> CMD 명령어는 이 이미지에서 컨테이너를 시작할 때 실행할 기본 명령어를 지정합니다. 즉, 컨테이너가 생성되자마자 애플리케이션이 실행됩니다.
 
 Finally, the -t flag tags your image. Think of this simply as a human-readable name for the final image. Since you named
 the image getting-started, you can refer to that image when you run a container.
@@ -191,13 +194,13 @@ the image getting-started, you can refer to that image when you run a container.
 The . at the end of the docker build command tells Docker that it should look for the Dockerfile in the current
 directory.
 
-> 도커 빌드 명령어 마지막에 `.`은 도커에게 현재 디렉토리에 Dockerfile 참조하라고 알려주는 것입니다.
+> 도커 빌드 명령어 마지막에 `.`은 도커에게 현재 디렉토리에 존재하는 Dockerfile 파일을 참조하라고 알려주는 것입니다.
 
 ### 앱 컨테이너 실행하기(Start an app container🔗)
 
 Now that you have an image, you can run the application in a container. To do so, you will use the `docker run` command.
 
-> 지금 여러분들은 이미지를 가지고 있습니다. 여러분드릉ㄴ 컨테이너에서 애플리케이션을 실행할 수 있습니다. 그러기 위해서 여러분들은 `docker run` 명령어를 사용할 것입니다.
+> 지금 여러분들은 이미지를 가지고 있습니다. 여러분들은 컨테이너에서 애플리케이션을 실행할 수 있습니다. 그러기 위해서 여러분들은 `docker run` 명령어를 사용할 것입니다.
 
 1. Start your container using the docker run command and specify the name of the image you just created:
 
