@@ -12,6 +12,7 @@ A Docker ID allows you to access Docker Hub which is the world’s largest libra
 Create a Docker ID for free if you don’t have one.
 
 > 도커 아이디
+>
 > 도커 아이디는 여러분들에게 컨테이너 이미지를 위한 커뮤니티이자 세계의 가장 큰 라이브러리인 도커 허브에 접근하는 것을 허용합니다.
 > 만약 여러분들이 도커 아이디를 가지고 있지 않다면 무료로 도커 아이디를 생성하세요.
 
@@ -82,6 +83,13 @@ To fix this, you need to “tag” your existing image you’ve built to give it
 2. Login to the Docker Hub using the command docker login -u YOUR-USER-NAME.
 
 > `docker login -u YOUR-USER-NAME` 명령어를 사용하여 도커 허브에 로그인하세요.
+> 도커 18 버전 이후에는 아래와 같은 명령어를 통해서 도커 허브에 로그인하세요.
+
+```
+$ vim ~/my_password.txt
+{도커 허브 비밀번호 작성}
+$ cat ~/my_password.txt | docker login --username {도커허브 사용자이름} --password-stdin
+```
 
 3. Use the `docker tag` command to give the getting-started image a new name. Be sure to swap out `YOUR-USER-NAME` with
    your
@@ -116,7 +124,7 @@ Now that your image has been built and pushed into a registry, try running your 
 never seen this container image. To do this, you will use Play with Docker.
 
 > 지금 여러분들의 이미지는 빌드되었고 레지스트리로 푸시되었습니다. 이 컨테이너 이미지를 본적이 없는 새로운 인스턴스에서 앱을 실행해보세요.
-> 이것을 하기 위해서 여러분들은 도커에서 Play를 사용할 것입니다.
+> 이것을 하기 위해서 여러분들은 `Play with Dodcker`를 사용할 것입니다.
 
 Note
 
@@ -133,8 +141,9 @@ Docker buildx also supports building multi-platform images. To learn more,
 see [Mult-platform images](https://docs.docker.com/build/building/multi-platform/).
 
 > 참고
-> Play with Docker는 amd64 플랫폼을 사용합니다. 만약 여러분들이 Apple Silicon이 있는 Mac 기반 ARM을 사용 중이라면,
-> 여러분들은 여러분들의 저장소에 새로운 이미지를 푸시하고 Play with Docker와 호환되기 위해서 이미지를 재빌드해야 합니다.
+> 
+> `Play with Docker`는 amd64 플랫폼을 사용합니다. 만약 여러분들이 Apple Silicon이 있는 Mac 기반 ARM을 사용 중이라면,
+> 여러분들은 여러분들의 저장소에 새로운 이미지를 푸시하고 `Play with Docker`와 호환되기 위해서 이미지를 재빌드해야 합니다.
 > amd64 플랫폼을 대상으로 이미지를 빌드하기 위해서 `--platform` 플래그를 사용하세요.
 
 ```shell
