@@ -223,3 +223,128 @@ Setting `callSuper` to true when you don't extend anything (you extend `java.lan
 NEW in Lombok 0.10: Unless your class is `final` and extends `java.lang.Object`, lombok generates a `canEqual` method which means JPA proxies can still be equal to their base class, but subclasses that add new state don't break the equals contract. The complicated reasons for why such a method is necessary are explained in this paper: `How to Write an Equality Method in Java`. If all classes in a hierarchy are a mix of scala case classes and classes with lombok-generated equals methods, all equality will 'just work'. If you need to write your own equals methods, you should always override `canEqual` if you change `equals` and `hashCode`.
 
 > NEW in Lombok 0.10 : 클래스가 `final`이고 `java.lang.Object`를 확장하지 않는 한, lombok은 JPA proxi가 그들의 기본 클래스와 같은지 확인할 수 있는 `canEqual` 메서드를 생성한다, 그러나 새로운 상태를 추가하는 서브 클래스는 동등 계약을 깨지 않는다. 이 메서드가 필요한지에 대한 복잡한 이유는 이 논문에 설명되어 있다: `How to Write an Equality Method in Java`. 만약 모든 클래스의 계층구조가 스칼라 케이스 클래스들과 lombok이 생성한 equals 메서드를 가지는 클래스들의 혼합이라면 모든 equality는 '그냥 작동한다'. 만약 당신이 자신만의 equals 메서드를 작성하고 싶은 경우, `equals`와 `hachCode`를 바꾼다면 `canEqual`을 항상 오버라이드 해야 한다.
+
+NEW in Lombok 1.14.0: To put annotations on the `other` parameter of the `equals` (and, if relevant, `canEqual`) method, you can use `onParam=@__({@AnnotationsHere})`. Be careful though! This is an experimental feature. For more details see the documentation on the `onX` feature.
+
+> NEW in Lombok 1.14.0: `equals`(만약 관련 있다면,`canEqual`)메서드의 다른 `other` 파라미터에 애노테이션을 붙이면, `onParam=@__({@AnnotationsHere})`를 사용할 수 있다. 그렇지만 주의해라! 이것은 실험적 기능이다. 더 자세한 내용은 `onX` 문서에서 볼 수 있다.
+
+NEW in Lombok 1.18.16: The result of the generated `hashCode()` can be cached by setting `cacheStrategy` to a value other than `CacheStrategy.NEVER`. Do not use this if objects of the annotated class can be modified in any way that would lead to the result of `hashCode()` changing.
+
+> NEW in Lombok 1.18.16: 생성된 `hashCode()`의 결과는 `CacheStrategy.NEVER` 이외의 값에 `cacheStrategy` 설정에 의해서 캐시될 수 있다. 애노테이션이 달린 클래스가 `hashCode()`의 변경 결과로 이어지는 수정이 생길 수 있는 경우 사용하지 마라.
+
+### With Lombok
+```
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode
+public class EqualsAndHashCodeExample {
+  private transient int transientVar = 10;
+  private String name;
+  private double score;
+  @EqualsAndHashCode.Exclude private Shape shape = new Square(5, 10);
+  private String[] tags;
+  @EqualsAndHashCode.Exclude private int id;
+  
+  public String getName() {
+    return this.name;
+  }
+  
+  @EqualsAndHashCode(callSuper=true)
+  public static class Square extends Shape {
+    private final int width, height;
+    
+    public Square(int width, int height) {
+      this.width = width;
+      this.height = height;
+    }
+  }
+}
+```
+
+### Vanilla Java
+```
+
+import java.util.Arrays;
+
+public class EqualsAndHashCodeExample {
+  private transient int transientVar = 10;
+  private String name;
+  private double score;
+  private Shape shape = new Square(5, 10);
+  private String[] tags;
+  private int id;
+  
+  public String getName() {
+    return this.name;
+  }
+  
+  @Override public boolean equals(Object o) {
+    if (o == this) return true;
+    if (!(o instanceof EqualsAndHashCodeExample)) return false;
+    EqualsAndHashCodeExample other = (EqualsAndHashCodeExample) o;
+    if (!other.canEqual((Object)this)) return false;
+    if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+    if (Double.compare(this.score, other.score) != 0) return false;
+    if (!Arrays.deepEquals(this.tags, other.tags)) return false;
+    return true;
+  }
+  
+  @Override public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final long temp1 = Double.doubleToLongBits(this.score);
+    result = (result*PRIME) + (this.name == null ? 43 : this.name.hashCode());
+    result = (result*PRIME) + (int)(temp1 ^ (temp1 >>> 32));
+    result = (result*PRIME) + Arrays.deepHashCode(this.tags);
+    return result;
+  }
+  
+  protected boolean canEqual(Object other) {
+    return other instanceof EqualsAndHashCodeExample;
+  }
+  
+  public static class Square extends Shape {
+    private final int width, height;
+    
+    public Square(int width, int height) {
+      this.width = width;
+      this.height = height;
+    }
+    
+    @Override public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof Square)) return false;
+      Square other = (Square) o;
+      if (!other.canEqual((Object)this)) return false;
+      if (!super.equals(o)) return false;
+      if (this.width != other.width) return false;
+      if (this.height != other.height) return false;
+      return true;
+    }
+    
+    @Override public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      result = (result*PRIME) + super.hashCode();
+      result = (result*PRIME) + this.width;
+      result = (result*PRIME) + this.height;
+      return result;
+    }
+    
+    protected boolean canEqual(Object other) {
+      return other instanceof Square;
+    }
+  }
+}
+```
+
+## @Data
+
+### All together now: A shortcut for `@ToString`, `@EqualsAndHashCode`, `@Getter` on all fields, `@Setter` on all non-final fields, and `@RequiredArgsConstructor`!
+> 모든 것을 다같이 사용: 짧은 `@ToString, `@EqualsAndHashCode`, 모든 필드에 `@Getter`, non-final 필드에 `@Setter`, 그리고 `@RequiredArgsConstructor`
+
+### OverView
+
+`@Data` is a convenient shortcut annotation that bundles the features of `@ToString`, `@EqualsAndHashCode`, `@Getter` / `@Setter` and `@RequiredArgsConstructor` together: In other words, `@Data` generates all the boilerplate that is normally associated with simple POJOs (Plain Old Java Objects) and beans: getters for all fields, setters for all non-final fields, and appropriate `toString`, `equals` and `hashCode` implementations that involve the fields of the class, and a constructor that initializes all final fields, as well as all non-final fields with no initializer that have been marked with `@NonNull`, in order to ensure the field is never null.
+
+> `@Data`는 편리한 `@ToString`, `@EqualsAndHashCode`, `@Getter` / `@Setter` 그리고 `@RequiredArgsConstructor` 기능들의 묶음 애노테이션이다: 다시 말해서, `@Data`는 보통 POJOs와 beans와 관련있는 모든 상용구들을 생성해준다: 모든 필드에 getter, 모든 non-final 필드에 setter, 클래스의 필드들을 포함하는 적절한 `toString`, `equals`, `hashCode`의 구현, 그리고 필드가 절대 null이 아님을 보장하기 위해서 `@NonNull`이 붙어진 생성자에 없는 non-final 필드 뿐만 아니라 모든 final 필드들을 초기화하는 생성자.
