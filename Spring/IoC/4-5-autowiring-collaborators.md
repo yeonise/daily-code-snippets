@@ -103,17 +103,59 @@ In the latter scenario, you have several options:
 <br>
 
 - Abandon autowiring in favor of explicit wiring.
-- Avoid autowiring for a bean definition by setting its autowire-candidate attributes to false, as described in the next section.
-- Designate a single bean definition as the primary candidate by setting the primary attribute of its <bean/> element to true.
-- Implement the more fine-grained control available with annotation-based configuration, as described in Annotation-based Container Configuration.
+- Avoid autowiring for a bean definition by setting its autowire-candidate attributes to false, as described in the next
+  section.
+- Designate a single bean definition as the primary candidate by setting the primary attribute of its <bean/> element to
+  true.
+- Implement the more fine-grained control available with annotation-based configuration, as described in
+  Annotation-based Container Configuration.
 
 > - `autowiring`을 포기하고 명시적 `wiring`을 사용하세요.
 > - 다음 섹션에 설명된 대로 `autowire-candidate` 속성을 `false`로 설정하여 bean 정의에 대한 `autowiring`을 방지합니다.
 > - `<bean/>` 요소의 `primary` 속성을 `true`로 설정하여 단일 bean 정의를 `primary` 후보로 지정합니다.
-> - 주석-기반 컨테이너 구성에 설명된 대로 주석-기반 구성에서 사용할 수 있는 보다 세분화된 제어 기능을 구현하세요. (세분화된 제어 기능이 아직은 뭔지 모르겠음. 아래아래아래아래 섹션에 있으니 그때까지 기다리자.)
+> - 주석-기반 컨테이너 구성에 설명된 대로 주석-기반 구성에서 사용할 수 있는 보다 세분화된 제어 기능을 구현하세요. (세분화된 제어 기능이 아직은 뭔지 모르겠음. 아래아래아래아래 섹션에 있으니 그때까지
+    기다리자.)
 
 <br>
 
 # Excluding a Bean from Autowiring
 
-다음 이 시간에..
+On a per-bean basis, you can exclude a bean from autowiring. In Spring’s XML format, set the autowire-candidate
+attribute of the <bean/> element to false. The container makes that specific bean definition unavailable to the
+autowiring infrastructure (including annotation style configurations such as @Autowired ).
+
+> bean 단위로 `autowiring`에서 bean을 제외할 수 있습니다. 스프링의 XML 형식에서, `<bean/>` 요소의 `autowire-candiate` 속성을 `false`로 설정합니다. 컨테이너는
+> 해당 특정 bean 정의를 `autowiring` 인프라 구조에서 사용할 수 없게 만듭니다(`@Autowired`와 같은 어노테이션 스타일 구성 포함).
+
+<br>
+
+The autowire-candidate attribute is designed to only affect type-based autowiring. It does not affect explicit
+references by name, which get resolved even if the specified bean is not marked as an autowire candidate. As a
+consequence, autowiring by name nevertheless injects a bean if the name matches.
+{: .notice--primary}
+
+> `autowire-candiate` 속성은 타입-기반 `autowiring`에만 영향을 미치도록 설계되었습니다. 지정된 bean이 `autowire` 후보로 표시되지 않은 경우에도 해결되는 이름에 의한 명시적
+> 참조에는 영향을 미치지 않습니다. 따라서, 이름에 의한 `autowiring`은 이름이 일치하는 경우 bean을 삽입합니다.
+
+<br>
+
+You can also limit autowire candidates based on pattern-matching against bean names. The top-level <beans/> element
+accepts one or more patterns within its default-autowire-candidates attribute. For example, to limit autowire candidate
+status to any bean whose name ends with Repository, provide a value of *Repository. To provide multiple patterns, define
+them in a comma-separated list. An explicit value of true or false for a bean definition’s autowire-candidate attribute
+always takes precedence. For such beans, the pattern matching rules do not apply.
+
+> bean 이름에 대한 패턴 매칭을 기반으로 `autowiring` 후보를 제한할 수도 있습니다. 최상위 `<beans/>` 요소는 `default-autowire-candidates` 속성 내에서 하나 이상의
+> 패턴을 허용합니다. 예를 들어, `autowire` 후보 상태를 이름이 `Repository`로 끝나는 모든 bean으로 제한하려면 `*Repsository` 값을 제공합니다. 여러 패턴을 제공하려면, 쉼표로
+> 구분된
+> 목록으로 정의합니다. bean 정의의 `autowire-candidate` 속성에 대해 `true` 또는 `false`의 명시적 값이 항상 우선시됩니다. 이러한 bean의 경우, 패턴 매칭 규칙이 적용되지
+> 않습니다.
+
+<br>
+
+These techniques are useful for beans that you never want to be injected into other beans by autowiring. It does not
+mean that an excluded bean cannot itself be configured by using autowiring. Rather, the bean itself is not a candidate
+for autowiring other beans.
+
+> 이러한 기술은 `autowiring`을 통해 다른 bean에 주입하지 않으려는 bean에 유용합니다. 그렇다고 `autowiring`을 사용하여 제외된 bean 자체를 구성할 수 없다는 의미는 아닙니다. 오히려
+> 해당 bean 자체는 다른 bean을 `autowiring`할 수 있는 후보가 아닙니다.
