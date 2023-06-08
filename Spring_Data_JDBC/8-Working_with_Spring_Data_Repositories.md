@@ -340,3 +340,73 @@ Make sure you add that annotation to all repository interfaces for which Spring 
 > **노트**
 > 중간 매개체가 되는 리포지토리 인터페이스는 `@NoRepositoryBean` 애노테이션을 붙입니다.
 > `Spring Data` 가 런타임에 인스턴스를 생성하면 안되는 리포지토리 인터페이스엔 해당 주석을 반드시 붙여야 합니다.
+
+<br>
+
+### 8.3.2. Using Repositories with Multiple Spring Data Modules
+> 다양한 Spring Data 모듈과 함께 리포지토리 사용하기
+
+<br>
+
+Using a unique Spring Data module in your application makes things simple, because all repository interfaces in the defined scope are bound to the Spring Data module.
+Sometimes, applications require using more than one Spring Data module.
+In such cases, a repository definition must distinguish between persistence technologies.
+When it detects multiple repository factories on the class path, Spring Data enters strict repository configuration mode.
+Strict configuration uses details on the repository or the domain class to decide about Spring Data module binding for a repository definition:
+
+1. If the repository definition extends the module-specific repository, it is a valid candidate for the particular Spring Data module.
+2. If the domain class is annotated with the module-specific type annotation, it is a valid candidate for the particular Spring Data module.
+   Spring Data modules accept either third-party annotations (such as JPA’s @Entity) or provide their own annotations (such as @Document for Spring Data MongoDB and Spring Data Elasticsearch).
+
+> 하나의 Spring Data 모듈을 사용하면 작업이 간단해집니다. 
+> 왜냐하면 모든 리포지토리 인터페이스가 하나의 Spring Data 모듈에 의존하기 때문입니다.
+> 그러나 때때로는, 애플리케이션은 하나 이상의 Spring Data 모듈을 사용해야 합니다.
+> 이러한 경우, 리포지토리 정의는 DB 지속성 기술을 구분해야 합니다. 
+> 클래스 경로에서 여러 리포지토리 팩토리를 감지하면, Spring Data 는 엄격한 리포지토리 설정 모드로 들어갑니다. 
+> 엄격한 설정은 리포지토리 또는 도메인 클래스에 대한 세부정보를 사용하여 리포지토리 정의에알맞는 Spring Data 모듈을 결정합니다.
+>
+> 1. 만약 리포지토리 정의가 특정 모듈에만 특화된 리포지토리를 확장하는 경우, 특정 Spring Data 모듈을 사용할 후보입니다. 
+> 2. 만약 도메인 클래스에 특정 모듈에만 특화된 애노테이션이 붙어있는 경우, 특정 Spring Data 모듈을 사용할 후보입니다.
+> Spring Data 모듈은 third-party 애노테이션을 사용을 허용하거나, Spring Data 모듈의 애노테이션을 자체 제공합니다.
+
+<br>
+
+The following example shows a repository that uses module-specific interfaces (JPA in this case):
+Example 8. Repository definitions using module-specific interfaces
+```java
+interface MyRepository extends JpaRepository<User, Long> { }
+
+@NoRepositoryBean
+interface MyBaseRepository<T, ID> extends JpaRepository<T, ID> { … }
+
+interface UserRepository extends MyBaseRepository<User, Long> { … }
+```
+MyRepository and UserRepository extend JpaRepository in their type hierarchy. 
+They are valid candidates for the Spring Data JPA module.
+
+> 다음의 예제들은 특정 모듈에 특화된 인터페이스들을 사용하는 리포지토리를 보여줍니다. (이 경우엔 JPA)
+> 예제 8. 특정 모듈에 특화된 인터페이스들을 사용하는 리포지토리 정의들
+> (코드 생략)
+> `MyRepository` 와 `UserRepository` 는 `JpaRepository` 를 그들의 타입계층에서 확장합니다. 
+> 이들은 Spring Data JPA 모듈의 유효한 후보입니다.
+
+<br>
+
+The following example shows a repository that uses generic interfaces:
+Example 9. Repository definitions using generic interfaces
+```java
+interface AmbiguousRepository extends Repository<User, Long> { … }
+
+@NoRepositoryBean
+interface MyBaseRepository<T, ID> extends CrudRepository<T, ID> { … }
+
+interface AmbiguousUserRepository extends MyBaseRepository<User, Long> { … }
+```
+AmbiguousRepository and AmbiguousUserRepository extend only Repository and CrudRepository in their type hierarchy.
+While this is fine when using a unique Spring Data module, multiple modules cannot distinguish to which particular Spring Data these repositories should be bound.
+
+> 다음의 예제들은 일반 인터페이스들을 사용하는 리포지토리를 보여줍니다. 
+> 예제 9. 일반 인터페이스들을 사용하는 리포지토리 정의들
+> (코드 생략)
+> `AmbiguousRepository` 와 `AmbiguousUserRepository` 는 `Repository` 와 `CrudRepository` 만을 그들의 타입계층내에서 확장합니다. 
+> 하나의 Spring Data 모듈을 사용할 땐 문제가 되지 않지만, 여러개의 Spring Data 모듈들을 사용하는 경우 어떤 Spring Data 가 리포지토리에 바인딩되어야 하는 지 구분할 수 없습니다. 
