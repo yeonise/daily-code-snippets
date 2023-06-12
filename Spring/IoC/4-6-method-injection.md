@@ -175,4 +175,74 @@ example:
 
 <br>
 
+The bean identified as commandManager calls its own createCommand() method whenever it needs a new instance of the
+myCommand bean. You must be careful to deploy the myCommand bean as a prototype if that is actually what is needed. If
+it is a singleton, the same instance of the myCommand bean is returned each time.
+
+> `commandManager`로 식별된 bean은 `myCommnad` bean의 새 인스턴스가 필요할 대마다 자체 `createCommand()` 메서드를 호출합니다. 실제로 필요한 경우, `myCommand`
+> bean을 프로토타입으로 배포하는데 주의해야 합니다. 싱글톤인 경우, 매번 동일한 `myCommand` bean 인스턴스가 반환됩니다.
+
+<br>
+
+Alternatively, within the annotation-based component model, you can declare a lookup method through the @Lookup
+annotation, as the following example shows:
+
+> 또는 아래 예시와 같이, 어노테이션 기반 컴포넌트 모델에서 `@Lookup` 어노테이션을 통해 조회 메서드를 선언할 수 있습니다:
+
+```java
+public abstract class CommandManager {
+
+	public Object process(Object commandState) {
+		Command command = createCommand();
+		command.setState(commandState);
+		return command.execute();
+	}
+
+	@Lookup("myCommand")
+	protected abstract Command createCommand();
+}
+```
+
+<br>
+
+Or, more idiomatically, you can rely on the target bean getting resolved against the declared return type of the lookup
+method:
+
+> 또는 더 관용적으로, 대상 bean이 조회 메서드의 선언된 리턴 타입에 대해 확인되는 것에 의존할 수 있습니다:
+
+```java
+public abstract class CommandManager {
+
+	public Object process(Object commandState) {
+		Command command = createCommand();
+		command.setState(commandState);
+		return command.execute();
+	}
+
+	@Lookup
+	protected abstract Command createCommand();
+}
+```
+
+Note that you should typically declare such annotated lookup methods with a concrete stub implementation, in order for
+them to be compatible with Spring’s component scanning rules where abstract classes get ignored by default. This
+limitation does not apply to explicitly registered or explicitly imported bean classes.
+
+> 추상 클래스가 기본적으로 무시되는 스프링의 컴포넌트 검색 규칙과 호환되도록 하려면, 일반적으로 아래와 같은 주석이 달린 조회 메서드를 구체적인 stub 구현으로 선언해야 한다는 점을 유의하세요. 이 제한은
+> 명시적으로 등록되거나, 명시적으로 가져온 bean 클래스에는 적용되지 않습니다.
+
+<br>
+
+Another way of accessing differently scoped target beans is an ObjectFactory/ Provider injection point. See Scoped Beans
+as Dependencies. You may also find the ServiceLocatorFactoryBean (in the org.springframework.beans.factory.config
+package) to be useful.
+{. :notice--primary}
+
+> 다른 범위의 대상 bean에 접근하는 또 다른 방법은 `ObjectFactory`/`Provider` 주입 포인트입니다. 범위가 지정된 bean을 의존성으로 참고하세요.
+> 또한 `org.springframwork.beans.factory.config` 패키지 에 있는 `ServiceLocatorFactoryBean`이 유용할 수 있습니다.
+
+<br>
+
+## Arbitrary(임의) Method Replacement
+
 다음 이 시간에..
