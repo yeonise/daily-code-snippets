@@ -410,3 +410,122 @@ While this is fine when using a unique Spring Data module, multiple modules cann
 > (코드 생략)
 > `AmbiguousRepository` 와 `AmbiguousUserRepository` 는 `Repository` 와 `CrudRepository` 만을 그들의 타입계층내에서 확장합니다. 
 > 하나의 Spring Data 모듈을 사용할 땐 문제가 되지 않지만, 여러개의 Spring Data 모듈들을 사용하는 경우 어떤 Spring Data 가 리포지토리에 바인딩되어야 하는 지 구분할 수 없습니다. 
+
+<br>
+
+The following example shows a repository that uses domain classes with annotations:
+Example 10. Repository definitions using domain classes with annotations
+
+```java
+interface PersonRepository extends Repository<Person, Long> { … }
+
+@Entity
+class Person { … }
+
+interface UserRepository extends Repository<User, Long> { … }
+
+@Document
+class User { … }
+```
+PersonRepository references Person, which is annotated with the JPA @Entity annotation, so this repository clearly belongs to Spring Data JPA.
+UserRepository references User, which is annotated with Spring Data MongoDB’s @Document annotation.
+
+> 다음 예제는 애노테이션이 붙은 도메인 클래스 리포지토리를 보여줍니다. 
+> 예제 10) 애노테이션이 붙은 도메인 클래스를 사용하는 리포지토리 정의
+> (코드 생략)
+> `PersonRepository` 는 `@Entity` 애노테이션이 붙은 `Person` 클래스를 참조합니다. 
+> 그래서 이 리포지토리는 Spring Data JPA 에 종속됩니다.
+> `UserRepository` 는 `MongoDB` 의 `@Document` 애노테이션이 붙은 `User` 클래스를 참조합니다.
+
+<br>
+
+The following bad example shows a repository that uses domain classes with mixed annotations:
+Example 11. Repository definitions using domain classes with mixed annotations
+```java
+interface JpaPersonRepository extends Repository<Person, Long> { … }
+
+interface MongoDBPersonRepository extends Repository<Person, Long> { … }
+
+@Entity
+@Document
+class Person { … }
+
+```
+This example shows a domain class using both JPA and Spring Data MongoDB annotations.
+It defines two repositories, JpaPersonRepository and MongoDBPersonRepository.
+One is intended for JPA and the other for MongoDB usage.
+Spring Data is no longer able to tell the repositories apart, which leads to undefined behavior.
+
+> 다음의 잘못된 예제는 애노테이션을 혼합한 도메인 클래스를 사용하는 리포지토리를 보여줍니다.
+> 예제 11) 여러개의 애노테이션을 붙인 도메인 클래스를 사용하는 리포지토리 정의
+> (코드 생략)
+> 다음 예제는 `JPA` 와 `Spring Data MongoDB` 애노테이션을 모두 사용하는 도메인 클래스를 보여줍니다.
+> 현재 `JpaPersonRepository` 와 `MongoDBPersonRepository` 를 정의하였습니다.
+> 하나는 `JPA` 용이고, 다른 하나는 `MongoDB` 용 입니다.
+> Spring Data 는 리포지토리를 구분할 수 없으므로, 정의되지 않은 동작이 발생합니다.
+
+<br>
+
+Repository type details and distinguishing domain class annotations are used for strict repository configuration to identify repository candidates for a particular Spring Data module.
+Using multiple persistence technology-specific annotations on the same domain type is possible and enables reuse of domain types across multiple persistence technologies.
+However, Spring Data can then no longer determine a unique module with which to bind the repository.
+
+> 리포지토리 타입 세부정보와 구별되는 도메인 클래스용 애노테이션은 특정 Spring Data 모듈을 사용하는 리포지토리를 구분하기 위해 사용됩니다. 
+> 동일한 도메인 타입에서 다양한 persistence 기술의 애노테이션을 사용할 수 있고, 다양한 persistence 기술에서 동일한 도메인 타입을 재사용할 수 있습니다.
+> 하지만 이 경우, Spring Data 는 더 이상 리포지토리에서 사용할 단일 모듈을 결정할 수 없습니다.
+
+<br>
+
+The last way to distinguish repositories is by scoping repository base packages.
+Base packages define the starting points for scanning for repository interface definitions, which implies having repository definitions located in the appropriate packages.
+By default, annotation-driven configuration uses the package of the configuration class.
+The base package in XML-based configuration is mandatory.
+
+The following example shows annotation-driven configuration of base packages:
+Example 12. Annotation-driven configuration of base packages
+```java
+@EnableJpaRepositories(basePackages = "com.acme.repositories.jpa")
+@EnableMongoRepositories(basePackages = "com.acme.repositories.mongo")
+class Configuration { … }
+```
+
+> 리포지토리를 식별하는 마지막 방법은 리포지토리의 기본 패키지 범위를 지정하는 것입니다.
+> 기본 패키지는 리포지토리 인터페이스 정의의 스캔 시작점을 정의합니다.
+> 이는 적절한 패키지에 적절한 리포지토리 정의가 있음을 의미합니다.
+> 기본적으로, 애노테이션 기반 설정은 설정 클래스의 패키지를 기본 패키지 위치로 설정합니다.
+> XML 기반 설정은 기본 패키지 위치 설정이 필수 입니다. 
+> 
+> 다음의 예제는 기본 패키지의 애노테이션 기반 설정을 보여줍니다. 
+> 예제 12) 기본 패키지의 애노테이션 기반 설정
+> (코드 생략)
+
+<br>
+
+## 8.4. Defining Query Methods
+
+> 쿼리 메서드 정의
+
+<br>
+
+The repository proxy has two ways to derive a store-specific query from the method name:
+- By deriving the query from the method name directly.
+- By using a manually defined query.
+Available options depend on the actual store. 
+However, there must be a strategy that decides what actual query is created.
+The next section describes the available options.
+
+> 리포지토리 프록시에는 메서드 이름을 사용하여 특정 쿼리를 만드는 두 가지 방법이 있습니다.
+> - 메서드 이름에서 직접 쿼리를 만들기
+> - 수동으로 직접 쿼리를 만들기
+> 사용가능한 옵션은 실제 저장된 데이터에 따라 다릅니다.
+> 하지만 실제 어떤 쿼리를 생성할지 결정하는 전략이 있어야 합니다.
+> 다음 섹션에서 사용가능한 옵션들을 설명합니다.
+
+<br>
+
+### 8.4.1. Query Lookup Strategies
+> 쿼리 조회 전략
+
+The following strategies are available for the repository infrastructure to resolve the query. 
+
+> 
