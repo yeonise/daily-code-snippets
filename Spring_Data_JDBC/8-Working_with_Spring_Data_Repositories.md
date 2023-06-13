@@ -526,6 +526,73 @@ The next section describes the available options.
 ### 8.4.1. Query Lookup Strategies
 > 쿼리 조회 전략
 
-The following strategies are available for the repository infrastructure to resolve the query. 
+The following strategies are available for the repository infrastructure to resolve the query.
+For Java configuration, you can use the queryLookupStrategy attribute of the EnableJpaRepositories annotation.
+Some strategies may not be supported for particular datastores.
 
+- CREATE attempts to construct a store-specific query from the query method name.
+  The general approach is to remove a given set of well known prefixes from the method name and parse the rest of the method.
+  You can read more about query construction in “Query Creation”.
+- USE_DECLARED_QUERY tries to find a declared query and throws an exception if it cannot find one.
+  The query can be defined by an annotation somewhere or declared by other means.
+  See the documentation of the specific store to find available options for that store.
+  If the repository infrastructure does not find a declared query for the method at bootstrap time, it fails.
+- CREATE_IF_NOT_FOUND (the default) combines CREATE and USE_DECLARED_QUERY.
+  It looks up a declared query first, and, if no declared query is found, it creates a custom method name-based query.
+  This is the default lookup strategy and, thus, is used if you do not configure anything explicitly.
+  It allows quick query definition by method names but also custom-tuning of these queries by introducing declared queries as needed.
+
+> 리포지토리 환경에서 쿼리를 해결하기 위해 다음의 전략들을 사용할 수 있습니다. 
+> Java 설정의 경우, `EnableJpaRepositories` 애노테이션의 `queryLookupStrategy` 속성을 사용할 수 있습니다. 
+> 일부 전략은 특정 데이터베이스에선 지원되지 않습니다.
 > 
+> - `CREATE` 는 쿼리 메서드 이름을 이용해 DB별로 특화된 쿼리를 만듭니다.
+> 일반적인 접근 방식은 메서드 이름에서 파생된 접두사 집합을 제거하고, 메서드의 나머지 부분을 분석합니다.
+> "Query Creation" 란에서 쿼리 생성에 관한 자세한 정보를 얻을 수 있습니다.
+> - `USE_DECLARED_QUERY` 는 선언된 쿼리를 찾고, 만약 선언된 쿼리가 없으면 예외를 발생시킵니다.
+> 쿼리는 애노테이션으로 정의되거나 다른 방식으로 선언될 수 있습니다.
+> 특정 DB 문서를 읽으면서 적용가능한 옵션이 있는지 확인하십시오.
+> 만약 리포지토리 인프라가 부트스트랩 시간에 선언된 쿼리를 찾지 못한다면 실패합니다.
+> - `CREATE_IF_NOT_FOUND` 는 `CREATE` 와 `USE_DECLARED_QUERY`를 결합한 옵션입니다.
+> 먼저 선언된 쿼리를 찾고, 선언된 쿼리가 없다면 메서드 이름 기반 쿼리를 만듭니다.
+> 이것은 쿼리 조회 전략의 기본 옵션으로, 명시적으로 설정하지 않으면 기본적으로 사용됩니다. 
+> 이 전략에선, 메서드 이름 기반의 빠른 쿼리 정의와 사용자가 직접 만든 쿼리를 모두 사용할 수 있습니다. 
+
+<br>
+
+### 8.4.2. Query Creation
+
+> 쿼리 생성
+
+The query builder mechanism built into the Spring Data repository infrastructure is useful for building constraining queries over entities of the repository.
+
+The following example shows how to create a number of queries:
+Example 13. Query creation from method names
+```java
+interface PersonRepository extends Repository<Person, Long> {
+
+  List<Person> findByEmailAddressAndLastname(EmailAddress emailAddress, String lastname);
+
+  // Enables the distinct flag for the query
+  List<Person> findDistinctPeopleByLastnameOrFirstname(String lastname, String firstname);
+  List<Person> findPeopleDistinctByLastnameOrFirstname(String lastname, String firstname);
+
+  // Enabling ignoring case for an individual property
+  List<Person> findByLastnameIgnoreCase(String lastname);
+  // Enabling ignoring case for all suitable properties
+  List<Person> findByLastnameAndFirstnameAllIgnoreCase(String lastname, String firstname);
+
+  // Enabling static ORDER BY for a query
+  List<Person> findByLastnameOrderByFirstnameAsc(String lastname);
+  List<Person> findByLastnameOrderByFirstnameDesc(String lastname);
+}
+
+```
+Parsing query method names is divided into subject and predicate.
+
+> Spring Data 리포지토리 인프라에 내장된 쿼리 생성 메커니즘은 엔티티에 대한 제약 쿼리를 빌드하는 데 유용합니다. 
+> 
+> 다음 예제들은 다양한 쿼리를 만드는 예제를 보여줍니다.
+> 예제 13) 메서드 이름을 통한 쿼리 생성 
+> (코드 생략)
+> 쿼리 메서드 명 분석은 목적어와 술어로 나뉩니다.
