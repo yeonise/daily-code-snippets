@@ -245,4 +245,92 @@ package) to be useful.
 
 ## Arbitrary(임의) Method Replacement
 
-다음 이 시간에..
+A less useful form of method injection than lookup method injection is the ability to replace arbitrary methods in a
+managed bean with another method implementation. You can safely skip the rest of this section until you actually need
+this functionality.
+
+> Lookup 메서드 주입보다 덜 유용한 메서드 주입 형태는 관리되는 bean의 임의의 메서드를 다른 메서드 구현으로 대체하는 기능입니다. 이 기능이 실제로 필요할 때까지는 이 섹션의 나머지 부분들을 건너뛰어도
+> 됩니다.
+
+<br>
+
+With XML-based configuration metadata, you can use the replaced-method element to replace an existing method
+implementation with another, for a deployed bean. Consider the following class, which has a method called computeValue
+that we want to override:
+
+> XML-기반 구성 메타데이터를 사용하면 `replaced-method` 요소를 사용하여 배포된 bean에 대해 기존 메서드 구현을 다른 메서드로 대체할 수 있습니다. 재정의하려면 `computeValue`라는
+> 메서드가 있는 다음 클래스를 생각해 보겠습니다:
+
+```java
+public class MyValueCalculator {
+
+	public String computeValue(String input) {
+		// some real code...
+	}
+
+	// some other methods...
+}
+```
+
+<br>
+
+A class that implements the org.springframework.beans.factory.support.MethodReplacer interface provides the new method
+definition, as the following example shows:
+
+> 아래의 예제에서 볼 수 있듯이, `org.springframework.beans.factory.support.MethodReplacer` 인터페이스를 구현하는 클래스는 새로운 메서드 정의를 제공합니다:
+
+```java
+/**
+ * meant to be used to override the existing computeValue(String)
+ * 기존 computeValue(String)를 재정의하는 데 사용됨
+ * implementation in MyValueCalculator
+ * MyValueCalculator 구현
+ */
+public class ReplacementComputeValue implements MethodReplacer {
+
+	public Object reimplement(Object o, Method m, Object[] args) throws Throwable {
+		// get the input value, work with it, and return a computed result
+		// 입력 값을 가져와서, 작업하고, 계산된 결과를 반환
+		String input = (String) args[0];
+		...
+		return ...;
+	}
+}
+```
+
+<br>
+
+The bean definition to deploy the original class and specify the method override would resemble the following example:
+
+> 원본 클래스를 배포하고 메서드 오버라이드를 지정하는 bean 정의는 아래의 예제와 유사합니다:
+
+```xml
+<bean id="myValueCalculator" class="x.y.z.MyValueCalculator">
+	<!-- arbitrary method replacement -->
+	<replaced-method name="computeValue" replacer="replacementComputeValue">
+		<arg-type>String</arg-type>
+	</replaced-method>
+</bean>
+
+<bean id="replacementComputeValue" class="a.b.c.ReplacementComputeValue"/>
+```
+
+You can use one or more <arg-type/> elements within the <replaced-method/> element to indicate the method signature of
+the method being overridden. The signature for the arguments is necessary only if the method is overloaded and multiple
+variants exist within the class. For convenience, the type string for an argument may be a substring of the fully
+qualified type name. For example, the following all match java.lang.String:
+
+> 재정의되는 메서드의 메서드 시그니처를 나타내기 위해 `<replaced-method/>` 요소 내에 하나 이상의 `<arg-type/>` 요소를 사용할 수 있습니다. 인수의 시그니처는 메서드가 오버로드되고,
+> 클래스 내에 여러 변형이 존재하는 경우에만 필요합니다. 편의상 인수의 타입 문자열은 정규화된 타입 이름의 `substring`일 수 있습니다. 예를 들어 아래는 모두 `java.lang.String`과
+> 일치합니다:
+
+```java
+java.lang.String
+String
+Str
+```
+
+Because the number of arguments is often enough to distinguish between each possible choice, this shortcut can save a
+lot of typing, by letting you type only the shortest string that matches an argument type.
+
+> 인수의 수는 가능한 각 선택 사항을 구분하기에 충분한 경우가 많으므로, 이 `shortcut`을 사용하면 인수 유형과 일치하는 가장 짧은 문자열만 입력할 수 있으므로 많은 타이핑을 절약할 수 있습니다.
