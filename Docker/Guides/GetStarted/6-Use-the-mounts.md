@@ -17,7 +17,7 @@ changes you make to the code immediately, as soon as you save a file. This means
 processes in the
 container that watch for filesystem changes and respond to them.
 
-> 바인드 마운트는 호스트의 파일 시스템에서 컨테이너로 디렉토리를 공유할 수 있는 마운트의 다른 유형입니다.
+> **바인드 마운트는 호스트의 파일 시스템에서 컨테이너로 디렉토리를 공유할 수 있는 마운트의 다른 유형입니다.**
 > 애플리케이션이 동작할 때 여러분들은 소스 코드를 컨테이너로 바인드 마운트할 수 있습니다.
 > 컨테이너는 파일이 저장되자마자 즉시 코드 변경에 대한 내용을 확인합니다.
 > 즉, 컨테이너에서 파일 시스템의 변경사항을 감시하고 이에 응답하는 프로세스를 실행할 수 있다는 것을 의미합니다.
