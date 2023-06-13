@@ -16,3 +16,5 @@
     - YongHwanKim
 - [Part 6: Use the mounts](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/GetStarted/6-Use-the-mounts.md)
     - YongHwanKim
+- [Part 7: Multi container apps](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/GetStarted/7-Multi-container-apps.md)
+    - YongHwanKim
