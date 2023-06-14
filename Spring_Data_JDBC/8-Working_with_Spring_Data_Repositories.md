@@ -615,6 +615,10 @@ However, there are some general things to notice:
   You can combine property expressions with AND and OR.
   You also get support for operators such as Between, LessThan, GreaterThan, and Like for the property expressions.
   The supported operators can vary by datastore, so consult the appropriate part of your reference documentation.
+- The method parser supports setting an IgnoreCase flag for individual properties (for example, findByLastnameIgnoreCase(…)) or for all properties of a type that supports ignoring case (usually String instances — for example, findByLastnameAndFirstnameAllIgnoreCase(…)).
+  Whether ignoring cases is supported may vary by store, so consult the relevant sections in the reference documentation for the store-specific query method.
+- You can apply static ordering by appending an OrderBy clause to the query method that references a property and by providing a sorting direction (Asc or Desc).
+  To create a query method that supports dynamic sorting, see “Paging, Iterating Large Results, Sorting”.
 
 > 부록에는 정렬과 대소문자를 포함한 모든 쿼리 메서드 키워드들이 있습니다. 
 > 첫 번째 `By` 는 실제 술어 부분을 나누는 구분자 역할을 합니다.
@@ -625,4 +629,8 @@ However, there are some general things to notice:
 > - 일반적으로 표현식은 속성 탐색과 연산자의 조합입니다. 
 > 당신은 `AND` 와 `OR` 를 사용해 속성을 결합할 수 있습니다.
 > 또한 `Between`, `LessThan`, `GreaterThan`, `Like` 와 같은 연산자를 사용할 수 있습니다.
-> 지원되는 연산자는 사용하는 DB에 따라 다르기 때문에, 참조 문서에 해당 부분을 참조하십시오.
+> 지원되는 연산자는 사용하는 DB에 따라 다르기 때문에, 참조 문서에 해당 부분을 참고하십시오.
+> - 메서드 파서는 개별속성 또는 모든 속성의 대소문자를 무시하는 플래그를 지원합니다. (`findByLastnameIgnoreCase(...)` 나 `findByLastnameAndFirstnameAllIgnoreCase(…)` 같은)
+> 해당 옵션의 지원 여부 역시 DB에 따라 다르므로, 참조 문서의 관련 섹션을 참고하십시오.
+> - `OrderBy` 절을 추가하여 특정 속성에 대한 정적 정렬을 적용할 수 있고, `Asc`, `Desc` 절을 추가하여 정렬 방향을 설정할 수 있습니다.
+> 동적 정렬을 지원하는 쿼리 메서드를 생성하려면, "Paging, Iterating Large Results, Sorting" 섹션을 참고하십시오.
