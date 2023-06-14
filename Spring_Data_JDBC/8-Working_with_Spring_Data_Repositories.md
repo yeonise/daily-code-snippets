@@ -589,6 +589,9 @@ interface PersonRepository extends Repository<Person, Long> {
 
 ```
 Parsing query method names is divided into subject and predicate.
+The first part (find…By, exists…By) defines the subject of the query, the second part forms the predicate.
+The introducing clause (subject) can contain further expressions.
+Any text between find (or other introducing keywords) and By is considered to be descriptive unless using one of the result-limiting keywords such as a Distinct to set a distinct flag on the query to be created or Top/First to limit query results.
 
 > Spring Data 리포지토리 인프라에 내장된 쿼리 생성 메커니즘은 엔티티에 대한 제약 쿼리를 빌드하는 데 유용합니다. 
 > 
@@ -596,3 +599,30 @@ Parsing query method names is divided into subject and predicate.
 > 예제 13) 메서드 이름을 통한 쿼리 생성 
 > (코드 생략)
 > 쿼리 메서드 명 분석은 목적어와 술어로 나뉩니다.
+> `find By`, `exists..By` 와 같은 첫 번째 부분은 쿼리의 목적어이고, 두 번째 부분은 술어입니다. 
+> 소개하는 부분 (목적어)은 부연설명을 추가할 수 있습니다.
+> `Distinct` 나 `Top/First`처럼 쿼리 결과에 영향을 주는 키워드만 아니라면 `find` 와 `By` 사이에 들어간 글자는 부연설명으로 취급됩니다. 
+
+<br>
+
+The appendix contains the full list of query method subject keywords and query method predicate keywords including sorting and letter-casing modifiers.
+However, the first By acts as a delimiter to indicate the start of the actual criteria predicate.
+At a very basic level, you can define conditions on entity properties and concatenate them with And and Or.
+
+The actual result of parsing the method depends on the persistence store for which you create the query.
+However, there are some general things to notice:
+- The expressions are usually property traversals combined with operators that can be concatenated.
+  You can combine property expressions with AND and OR.
+  You also get support for operators such as Between, LessThan, GreaterThan, and Like for the property expressions.
+  The supported operators can vary by datastore, so consult the appropriate part of your reference documentation.
+
+> 부록에는 정렬과 대소문자를 포함한 모든 쿼리 메서드 키워드들이 있습니다. 
+> 첫 번째 `By` 는 실제 술어 부분을 나누는 구분자 역할을 합니다.
+> 기본적인 수준에서, 조건이나 엔티티 속성을 `And` 나 `Or` 로 연결할 수 있습니다.
+> 
+> 메서드 구문 분석의 실제 결과는 당신이 사용하는 DB에 따라 다릅니다.
+> 하지만, 몇 가지 일반적인 주의사항이 있습니다.
+> - 일반적으로 표현식은 속성 탐색과 연산자의 조합입니다. 
+> 당신은 `AND` 와 `OR` 를 사용해 속성을 결합할 수 있습니다.
+> 또한 `Between`, `LessThan`, `GreaterThan`, `Like` 와 같은 연산자를 사용할 수 있습니다.
+> 지원되는 연산자는 사용하는 DB에 따라 다르기 때문에, 참조 문서에 해당 부분을 참조하십시오.
