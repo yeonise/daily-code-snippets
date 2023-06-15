@@ -57,4 +57,46 @@ SimpleThreadScope. For instructions on how to register this or any other custom 
 
 ## The Singleton Scope
 
-다음 이 시간에..
+Only one shared instance of a singleton bean is managed, and all requests for beans with an ID or IDs that match that
+bean definition result in that one specific bean instance being returned by the Spring container.
+
+> 싱글톤 bean의 공유 인스턴스는 하나만 관리되며, 해당 bean 정의와 일치하는 ID를 가진 bean에 대한 모든 요청은 해당 특정 bean 인스턴스 하나만 스프링 컨테이너에서 반환됩니다.
+
+<br>
+
+To put it another way, when you define a bean definition and it is scoped as a singleton, the Spring IoC container
+creates exactly one instance of the object defined by that bean definition. This single instance is stored in a cache of
+such singleton beans, and all subsequent requests and references for that named bean return the cached object. The
+following image shows how the singleton scope works:
+
+> 다시 말해, bean 정의를 ㅓㅈㅇ의하고 해당 정의가 싱글톤으로 범위가 지정되면, 스프링 IoC 컨테이너는 해당 bean 정의에 의해 정의된 객체의 인스턴스를 정확히 하나만 생성합니다. 이 단일 인스턴스는 이러한
+> 싱글톤 bean의 캐시에 저장되며, 해당 명명된 bean에 대한 모든 후속 요청 및 참조는 캐시된 객체를 반환합니다. 다음 이미지는 싱글톤 범위의 작동 방식을 보여줍니다:
+
+<br>
+
+![](https://docs.spring.io/spring-framework/reference/_images/singleton.png)
+
+<br>
+
+Spring’s concept of a singleton bean differs from the singleton pattern as defined in the Gang of Four (GoF) patterns
+book. The GoF singleton hard-codes the scope of an object such that one and only one instance of a particular class is
+created per ClassLoader. The scope of the Spring singleton is best described as being per-container and per-bean. This
+means that, if you define one bean for a particular class in a single Spring container, the Spring container creates one
+and only one instance of the class defined by that bean definition. The singleton scope is the default scope in Spring.
+To define a bean as a singleton in XML, you can define a bean as shown in the following example:
+
+> 스프링의 싱글톤 bean 개념은 GoF(Gang of Four) 패턴 책에 정의된 싱글톤 패턴과 다릅니다. GoF 싱글톤은 객체의 범위를 하드 코딩하여 특정 클래스의 인스턴스가 ClassLoader당 하나만
+> 생성되도록 합니다. 스프링 싱글톤의 범위는 컨테이너별 및 bean별로 설명하는 것이 가장 좋습니다. 즉, 단일 스프링 컨테이너에서 특정 클래스에 대해 하나의 bean을 정의하면, 스프링 컨테이너는 해당 bean
+> 정의에 의해 정의된 클래스의 인스턴스를 하나만 생성합니다. 싱글톤 범위는 스프링의 기본 범위입니다. XML에서 bean을 싱글톤으로 정의하려면, 아래의 예제와 같이 빈을 정의할 수 있습니다:
+
+```xml
+<bean id="accountService" class="com.something.DefaultAccountService"/>
+
+<!-- the following is equivalent, though redundant (singleton scope is the default) -->
+<!-- 아래는 중복되지만, 동등합니다 (싱글톤 범위가 기본값입니다) -->
+<bean id="accountService" class="com.something.DefaultAccountService" scope="singleton"/>
+```
+
+<br>
+
+## The Prototype Scope
