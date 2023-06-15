@@ -634,3 +634,66 @@ However, there are some general things to notice:
 > 해당 옵션의 지원 여부 역시 DB에 따라 다르므로, 참조 문서의 관련 섹션을 참고하십시오.
 > - `OrderBy` 절을 추가하여 특정 속성에 대한 정적 정렬을 적용할 수 있고, `Asc`, `Desc` 절을 추가하여 정렬 방향을 설정할 수 있습니다.
 > 동적 정렬을 지원하는 쿼리 메서드를 생성하려면, "Paging, Iterating Large Results, Sorting" 섹션을 참고하십시오.
+
+<br>
+
+### 8.4.3. Property Expressions
+> 속성 표현식
+
+<br>
+
+Property expressions can refer only to a direct property of the managed entity, as shown in the preceding example.
+At query creation time, you already make sure that the parsed property is a property of the managed domain class.
+However, you can also define constraints by traversing nested properties.
+Consider the following method signature:
+```java
+List<Person> findByAddressZipCode(ZipCode zipCode);
+```
+Assume a Person has an Address with a ZipCode.
+In that case, the method creates the x.address.zipCode property traversal.
+The resolution algorithm starts by interpreting the entire part (AddressZipCode) as the property and checks the domain class for a property with that name (uncapitalized).
+If the algorithm succeeds, it uses that property.
+If not, the algorithm splits up the source at the camel-case parts from the right side into a head and a tail and tries to find the corresponding property
+— in our example, AddressZip and Code.
+If the algorithm finds a property with that head, it takes the tail and continues building the tree down from there, splitting the tail up in the way just described.
+If the first split does not match, the algorithm moves the split point to the left (Address, ZipCode) and continues.
+
+> 속성 표현식은 앞의 예제와 같이 엔티티와 바로 연결되는 속성들만 참조할 수 있습니다.
+> 쿼리 생성시에, 파싱된 속성들이 도메인 클래스가 관리하는 속성인지를 이미 확인했습니다.
+> 하지만, 중첩된 속성을 순회하여 제약조건을 정의할 수도 있습니다. 
+> 다음의 메서드 시그니쳐를 보겠습니다.
+> (코드 생략)
+> `Person` 객체(사람)가 `Zipcode` 객체(우편번호)가 있는 `Address` 객체(주소)를 가지고 있다 가정하겠습니다.
+> 이 경우에, 이 메서드는 `x.address.zipCode` 와 같이 속성을 순회합니다.
+> 구문 분석 알고리즘은 처음에 By 절 이하의 전체 부분 (`AddressZipCode`) 을 속성으로 간주하고, 해당 이름을 가진 도메인 클래스가 있는지 검사합니다.
+> 만약, 도메인 클래스를 찾으면 해당 클래스를 속성으로 사용합니다.
+> 그렇지 않다면, 알고리즘은 카멜 케이스를 기준으로 머리와 꼬리를 크게 나눠서 알맞는 속성을 찾으려고 시도합니다.
+> 위 예시에서는, `AddressZip` 과 `Code` 로 쪼갭니다.
+> 만약 알고리즘이 머리 부분과 매치되는 속성을 찾으면, 꼬리 부분을 가져와 머리 부분 아래로 트리를 만들고, 꼬리를 위와 같은 방식으로 다시 나눕니다.
+> 만약 첫 번째 분할에서 머리 부분과 매치되는 속성을 찾지 못하면, 분할하는 부분을 좀 더 왼쪽으로 옮기고 다시 진행합니다. (`Address`, `ZipCode`)
+
+<br>
+
+Although this should work for most cases, it is possible for the algorithm to select the wrong property.
+Suppose the Person class has an addressZip property as well.
+The algorithm would match in the first split round already, choose the wrong property, and fail (as the type of addressZip probably has no code property).
+
+To resolve this ambiguity you can use _ inside your method name to manually define traversal points.
+So our method name would be as follows:
+
+```java
+List<Person> findByAddress_ZipCode(ZipCode zipCode);
+```
+
+Because we treat the underscore character as a reserved character, we strongly advise following standard Java naming conventions (that is, not using underscores in property names but using camel case instead).
+
+> 이 방식은 대부분의 경우 잘 동작하지만, 잘못된 속성을 선택하게 되는 경우도 있습니다.
+> 만약 `Person` 클래스에 `addressZip` 속성도 있다고 가정해봅시다.
+> 알고리즘은 첫 번째 분할에서 매치되는 속성을 찾아, 결국 사용자가 원하지 않는 잘못된 속성을 선택해 실패하게 됩니다. (`addressZip` 이 파라미터로 넘어오지 않았기 때문에)
+> 
+> 이러한 애매모호함을 해결하기 위해, `_` 기호를 메서드 이름에 수동으로 넣어줘 순회 지점을 정의할 수 있습니다.
+> 이 경우, 메서드 명은 다음과 같습니다.
+> (코드 생략)
+> 
+> 언더스코어 문자를 예약된 문자로 취급하기 때문에, 저희는 Java naming conventions 를 따를 것을 강력히 권장합니다.
+> (속성 이름을 언더스코어 대신 카멜 케이스를 사용할 것을 권장)
