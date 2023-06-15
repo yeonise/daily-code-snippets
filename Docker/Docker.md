@@ -18,3 +18,5 @@
     - YongHwanKim
 - [Part 7: Multi container apps](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/GetStarted/7-Multi-container-apps.md)
     - YongHwanKim
+- [Part 8: Use docker compose](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/GetStarted/8-Use-docker-compose.md)
+    - YongHwanKim
