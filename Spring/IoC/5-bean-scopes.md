@@ -100,3 +100,66 @@ To define a bean as a singleton in XML, you can define a bean as shown in the fo
 <br>
 
 ## The Prototype Scope
+
+The non-singleton prototype scope of bean deployment results in the creation of a new bean instance every time a request
+for that specific bean is made. That is, the bean is injected into another bean or you request it through a getBean()
+method call on the container. As a rule, you should use the prototype scope for all stateful beans and the singleton
+scope for stateless beans.
+
+> 싱글톤이 아닌 프로토타입 범위의 bean 배포는 특정 bean에 대한 요청이 있을 때마다 새로운 bean 인스턴스를 생성합니다. 즉, bean이 다른 bean에 주입되거나 컨테이너에서 `getBean()` 메서드
+> 호출을 통해 요청됩니다. 일반적으로 모든 stateful bean들에게는 프로토타입 범위를 사용하고, stateless bean에는 싱글톤 범위를 사용해야 합니다.
+
+<br>
+
+The following diagram illustrates the Spring prototype scope:
+
+> 아래의 다이어그램은 스프링 프로토타입 범위를 보여줍니다:
+
+![](https://docs.spring.io/spring-framework/reference/_images/prototype.png)
+
+<br>
+
+(A data access object (DAO) is not typically configured as a prototype, because a typical DAO does not hold any
+conversational state. It was easier for us to reuse the core of the singleton diagram.)
+
+> (데이터 액세스 객체(DAO)는 일반적으로 포로토타입으로 구성되지 않는데, 이는 일반적인 DAO가 대화 상태를 보유하지 않기 때문입니다. 싱글톤 다이어그램의 핵심을 재사용하는 것이 더 쉬웠습니다.)
+
+<br>
+
+The following example defines a bean as a prototype in XML:
+
+> 아래의 예제는 XML에서 bean을 프로토타입으로 정의합니다:
+
+```xml
+<bean id="accountService" class="com.something.DefaultAccountService" scope="prototype"/>
+```
+
+<br>
+
+In contrast to the other scopes, Spring does not manage the complete lifecycle of a prototype bean. The container
+instantiates, configures, and otherwise assembles a prototype object and hands it to the client, with no further record
+of that prototype instance. Thus, although initialization lifecycle callback methods are called on all objects
+regardless of scope, in the case of prototypes, configured destruction lifecycle callbacks are not called. The client
+code must clean up prototype-scoped objects and release expensive resources that the prototype beans hold. To get the
+Spring container to release resources held by prototype-scoped beans, try using a custom bean post-processor, which
+holds a reference to beans that need to be cleaned up.
+
+> 다른 범위와 달리, 스프링은 프로토타입 bean의 전체 라이프사이클을 관리하지 않습니다. 컨테이너는 프로토타입 객체를 인스턴스화, 구성 및 기타 방식으로 모은 후 클라이언트에 전달하며, 해당 프로토타입 인스턴스에
+> 대한 추가 기록은 남기지 않습니다. 따라서, 초기화 라이프사이클 콜백 메서드는 범위에 관계없이 모든 객체에서 호출되지만, 프로토타입의 경우 구성된 소멸 라이프사이클 콜백은 호출되지 않습니다. 클라이언트 코드는
+> 프로토타입 범위의 객체를 정리하고, 프로토타입 bean이 보유하고 있는 값비싼 리소스를 해제해야 합니다. 스프링 컨테이너가 프로토타입 범위의 빈이 보유한 리소스를 해제하도록 하려면 정리해야 하는 빈에 대한 참조가
+> 있는 커스텀 bean post-processor를 사용해 보세요.
+
+<br>
+
+In some respects, the Spring container’s role in regard to a prototype-scoped bean is a replacement for the Java new
+operator. All lifecycle management past that point must be handled by the client. (For details on the lifecycle of a
+bean in the Spring container, see Lifecycle Callbacks.)
+
+> 어떤 측면에서는, 프로토타입 범위의 bean에 대한 스프링 컨테이너의 역할이 자바의 새로운 연산자를 대체합니다. 그 이후의 모든 라이프사이클 관리는 클라이언트에서 처리해야 합니다. (스프링 컨테이너에서 bean의
+> 라이프사이클에 대한 자세한 내용은 라이프사이클 콜백을 참조하세요.)
+
+<br>
+
+## Singleton Beans with Prototype-bean Dependencies
+
+다음 이 시간에..
