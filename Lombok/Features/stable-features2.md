@@ -356,3 +356,162 @@ public class EqualsAndHashCodeExample {
 All generated getters and setters will be `public`. To override the access level, annotate the field or class with an explicit `@Setter` and/or `@Getter` annotation. You can also use this annotation (by combining it with `AccessLevel.NONE`) to suppress generating a getter and/or setter altogether.
 
 > 모든 생성된 getter와 setter들은 `public`이다. 접근 레벨에서 override 하면, 필드 또는 클래스에 명시적으로 `@Setter` 또는 `@Getter` 애노테이션을 붙인다. 또한 이 애노테이션을 (`AccessLevel.NONE`와 결합해서) 사용해서 getter와 setter가 전부 생성되는 것을 막을 수 있다.
+
+All fields marked as `transient` will not be considered for `hashCode` and `equals`. All static fields will be skipped entirely (not considered for any of the generated methods, and no setter/getter will be made for them).
+
+> `transient`로 마크된 모든 필드는 `hashCode`와 `equals`로 고려되지 않는다. 오든 static 필드는 전적으로 스킵된다(모든 생성된 메서드가 고려되지 않고 setter/getter는 만들어지지 않는다.)
+
+If the class already contains a method with the same name and parameter count as any method that would normally be generated, that method is not generated, and no warning or error is emitted. For example, if you already have a method with signature `equals(AnyType param)`, no `equals` method will be generated, even though technically it might be an entirely different method due to having different parameter types. The same rule applies to the constructor (any explicit constructor will prevent `@Data` from generating one), as well as `toString`, `equals`, and all getters and setters. You can mark any constructor or method with `@lombok.experimental.Tolerate` to hide them from lombok.
+
+> 만약 클래스에 이미 같은 이름과 파라미터 개수를 가지는 일반적으로 생성된 메서드가 존재한다면, 그 메서드는 생성되지 않는다, 그리고 warning이나 error가 발생하지 않는다. 예를 들면 만약 `equals(AnyType param)`이 이미 있다면 `equals`메서드는 생성되지 않는다, 비록 기술적으로 이것이 다른 파라미터 타입을 가지고 있어서 전적으로 다른 메서드 일지라도 생성되지 않는다. `toString`, `equals` 그리고 getter, setter 뿐만 아니라 생성자에도 같은 규칙이 적용된다(명시적인 생성자는 `@Data`가 하나를 생성하는 것을 막는다). 생성자나 메서드에 `@lombok.experimental.Tolerate`를 붙이면 lombok으로 부터 숨긴다.
+
+`@Data` can handle generics parameters for fields just fine. In order to reduce the boilerplate when constructing objects for classes with generics, you can use the `staticConstructor` parameter to generate a private constructor, as well as a static method that returns a new instance. This way, javac will infer the variable name. Thus, by declaring like so: `@Data(staticConstructor="of") class Foo<T> { private T x;}` you can create new instances of `Foo` by writing: `Foo.of(5);` instead of having to write: `new Foo<Integer>(5);`.
+
+> `@Data`는 필드에 대한 generics 파라미터를 잘 다룬다. generics를 가지는 클래스의 객체를 생성할 때 상용구를 줄이기 위해서, private 생성자를 생성할 때 `staticConstructor` 파라미터를 사용할 수 있다, 새로운 인스턴스를 반환하는 static 메서드 뿐 아니라. 이 경우에, javac는 변하기 쉬운 이름을 추론한다. 따라서, 다음과 같이 정의한다: `@Data(staticConstructor="of") class Foo<T> { private T x;}`  
+다음처럼 작성하면 `new Foo<Integer>(5);`와 같이 작성하는 대신에 `Foo`의 인스턴스를 생성할 수 있다: `Foo.of(5)`
+
+### With Lombok
+```
+
+import lombok.AccessLevel;
+import lombok.Setter;
+import lombok.Data;
+import lombok.ToString;
+
+@Data public class DataExample {
+  private final String name;
+  @Setter(AccessLevel.PACKAGE) private int age;
+  private double score;
+  private String[] tags;
+  
+  @ToString(includeFieldNames=true)
+  @Data(staticConstructor="of")
+  public static class Exercise<T> {
+    private final String name;
+    private final T value;
+  }
+}
+```
+
+### Vanilla Java
+```
+import java.util.Arrays;
+
+public class DataExample {
+  private final String name;
+  private int age;
+  private double score;
+  private String[] tags;
+  
+  public DataExample(String name) {
+    this.name = name;
+  }
+  
+  public String getName() {
+    return this.name;
+  }
+  
+  void setAge(int age) {
+    this.age = age;
+  }
+  
+  public int getAge() {
+    return this.age;
+  }
+  
+  public void setScore(double score) {
+    this.score = score;
+  }
+  
+  public double getScore() {
+    return this.score;
+  }
+  
+  public String[] getTags() {
+    return this.tags;
+  }
+  
+  public void setTags(String[] tags) {
+    this.tags = tags;
+  }
+  
+  @Override public String toString() {
+    return "DataExample(" + this.getName() + ", " + this.getAge() + ", " + this.getScore() + ", " + Arrays.deepToString(this.getTags()) + ")";
+  }
+  
+  protected boolean canEqual(Object other) {
+    return other instanceof DataExample;
+  }
+  
+  @Override public boolean equals(Object o) {
+    if (o == this) return true;
+    if (!(o instanceof DataExample)) return false;
+    DataExample other = (DataExample) o;
+    if (!other.canEqual((Object)this)) return false;
+    if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+    if (this.getAge() != other.getAge()) return false;
+    if (Double.compare(this.getScore(), other.getScore()) != 0) return false;
+    if (!Arrays.deepEquals(this.getTags(), other.getTags())) return false;
+    return true;
+  }
+  
+  @Override public int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    final long temp1 = Double.doubleToLongBits(this.getScore());
+    result = (result*PRIME) + (this.getName() == null ? 43 : this.getName().hashCode());
+    result = (result*PRIME) + this.getAge();
+    result = (result*PRIME) + (int)(temp1 ^ (temp1 >>> 32));
+    result = (result*PRIME) + Arrays.deepHashCode(this.getTags());
+    return result;
+  }
+  
+  public static class Exercise<T> {
+    private final String name;
+    private final T value;
+    
+    private Exercise(String name, T value) {
+      this.name = name;
+      this.value = value;
+    }
+    
+    public static <T> Exercise<T> of(String name, T value) {
+      return new Exercise<T>(name, value);
+    }
+    
+    public String getName() {
+      return this.name;
+    }
+    
+    public T getValue() {
+      return this.value;
+    }
+    
+    @Override public String toString() {
+      return "Exercise(name=" + this.getName() + ", value=" + this.getValue() + ")";
+    }
+    
+    protected boolean canEqual(Object other) {
+      return other instanceof Exercise;
+    }
+    
+    @Override public boolean equals(Object o) {
+      if (o == this) return true;
+      if (!(o instanceof Exercise)) return false;
+      Exercise<?> other = (Exercise<?>) o;
+      if (!other.canEqual((Object)this)) return false;
+      if (this.getName() == null ? other.getValue() != null : !this.getName().equals(other.getName())) return false;
+      if (this.getValue() == null ? other.getValue() != null : !this.getValue().equals(other.getValue())) return false;
+      return true;
+    }
+    
+    @Override public int hashCode() {
+      final int PRIME = 59;
+      int result = 1;
+      result = (result*PRIME) + (this.getName() == null ? 43 : this.getName().hashCode());
+      result = (result*PRIME) + (this.getValue() == null ? 43 : this.getValue().hashCode());
+      return result;
+    }
+  }
+}
+```
