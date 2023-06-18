@@ -14,6 +14,9 @@
 - [Dependencies](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/IoC/4-dependencies.md) - Sully
   - [Dependency Injection](https://github.com/won4885/daily-code-snippets/blob/main/Spring/IoC/4-1-dependency-injection.md) - Sully 
   - [Dependencies And Configuration In Detail](https://github.com/won4885/daily-code-snippets/blob/main/Spring/IoC/4-2-dependencies-and-configuration-in-detail.md) - Sully
+  - [Using Depends On](https://github.com/won4885/daily-code-snippets/blob/main/Spring/IoC/4-3-using-depends-on.md) - Sully
+  - [Lazy Initialized Beans](https://github.com/won4885/daily-code-snippets/blob/main/Spring/IoC/4-4-lazy-initialized-beans.md) - Sully
+  - [Autowiring Collaborators](https://github.com/won4885/daily-code-snippets/blob/main/Spring/IoC/4-5-autowiring-collaborators.md) - Sully
 
 <br/>
 
