@@ -697,3 +697,52 @@ Because we treat the underscore character as a reserved character, we strongly a
 > 
 > 언더스코어 문자를 예약된 문자로 취급하기 때문에, 저희는 Java naming conventions 를 따를 것을 강력히 권장합니다.
 > (속성 이름을 언더스코어 대신 카멜 케이스를 사용할 것을 권장)
+
+<br>
+
+### 8.4.4 Paging, Iterating Large Results, Sorting
+> 페이징, 대규모 결과 조회, 정렬
+
+<br>
+
+To handle parameters in your query, define method parameters as already seen in the preceding examples.
+Besides that, the infrastructure recognizes certain specific types like Pageable and Sort, to apply pagination and sorting to your queries dynamically.
+The following example demonstrates these features:
+
+Example 14. Using Pageable, Slice, and Sort in query methods
+```java
+Page<User> findByLastname(String lastname, Pageable pageable);
+
+Slice<User> findByLastname(String lastname, Pageable pageable);
+
+List<User> findByLastname(String lastname, Sort sort);
+
+List<User> findByLastname(String lastname, Pageable pageable);
+```
+**Important**
+APIs taking Sort and Pageable expect non-null values to be handed into methods.
+If you do not want to apply any sorting or pagination, use `Sort.unsorted()` and `Pageable.unpaged()`.
+
+
+> 쿼리 속 파라미터를 처리하기 위해, 앞의 예제에서 본 것처럼 메서드 파라미터를 정의하였습니다.
+> 그 외에도, 인프라는 `Pageable`, `Sort` 와 같은 객체를 사용하여, 페이징과 정렬을 동적으로 수행합니다. 
+> 다음의 예제들은 이러한 특성들을 보여줍니다.
+> 
+> 예제 14) `Pageable`, `Slice`, `Sort` 를 사용하는 쿼리 메서드
+> (코드 생략)
+> `Sort` 와 `Pageable` 을 사용하는 API는 널이 아닌값이 전달될 것으로 예상합니다.
+> 만약 정렬이나 페이징을 적용하지 않으려면, `Sort.unsorted()` 나 `Pageable.unpaged()` 메서드를 사용하십시오.
+
+<br>
+
+The first method lets you pass an `org.springframework.data.domain.Pageable` instance to the query method to dynamically add paging to your statically defined query.
+A Page knows about the total number of elements and pages available.
+It does so by the infrastructure triggering a count query to calculate the overall number.
+As this might be expensive (depending on the store used), you can instead return a Slice.
+A Slice knows only about whether a next Slice is available, which might be sufficient when walking through a larger result set.
+
+> 첫 번째 메서드를 사용하면 `Pageable` 객체를 쿼리 메서드에 전달하여 정적으로 정의된 쿼리에 동적인 페이징을 추가할 수 있습니다.
+> `Page` 는 사용 가능한 모든 요소와 페이지 개수를 알고 있습니다.
+> 인프라가 카운트 쿼리를 날려 전체적인 숫자를 계산합니다.
+> 만약 이것이 고비용의 쿼리인 경우, `Slice` 를 대체제로 사용할 수 있습니다.
+> `Slice` 객체는 다음 `Slice` 가 존재하는지만 알고있어, 대용량의 결과물을 조회해야하는 경우, 대용으로 사용할 수 있습니다. 
