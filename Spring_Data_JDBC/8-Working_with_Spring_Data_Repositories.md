@@ -914,4 +914,61 @@ Table 1. Consuming Large Query Results
 >| Flux<T>       | 스트림 소비량에 맞는 덩어리.           | 일반적으로 커서를 사용하는 단일 쿼리.                                                             | 스토어 모듈은 반응형 인프라를 제공해야 합니다.                                                                                                                                                                      |
 >| Slice<T>      | 현재 오프셋부터 (페이지사이즈 + 1) 개수 만큼. | 오프셋에서 시작하는 데이터를 가져오는 일대다 쿼리에 제한을 적용합니다.                                           | `Slice` 는 다음 `Slice` 로만 이동할 수 있습니다.   <br/> - `Slice` 는 가져올 데이터가 더 있는지 알려줍니다. <br/> - 오프셋 기반 쿼리는 오프셋이 너무 크면 비효율적입니다. 왜냐하면 데이터베이스가 전체 결과를 구체화해야 하기 때문입니다. <br/> - `Window` 는 더 가져올 정보들이 있는지 알려줍니다. |
 >| Page<T>       | 현재 오프셋부터 페이지사이즈 개수 만큼. | 오프셋에서 시작하는 데이터를 가져오는 일대다 쿼리에 제한을 적용합니다. 추가적으로, 전체 요소 개수를 파악하기 위한 count 쿼리가 필요합니다. | 종종, 카운트 쿼리는 많은 비용을 필요로 합니다. <br/> - 오프셋 기반 쿼리는 오프셋이 너무 크면 비효율적입니다. 왜냐하면 데이터베이스가 전체 결과를 구체화해야 하기 때문입니다.                                                                                                                                                            |
+
+<br>
+
+**Paging and Sorting**
+You can define simple sorting expressions by using property names.
+You can concatenate expressions to collect multiple criteria into one expression.
+
+Example 15. Defining sort expressions
+```java
+Sort sort = Sort.by("firstname").ascending()
+  .and(Sort.by("lastname").descending());
+```
+For a more type-safe way to define sort expressions, start with the type for which to define the sort expression and use method references to define the properties on which to sort.
+
+Example 16. Defining sort expressions by using the type-safe API
+```java
+TypedSort<Person> person = Sort.sort(Person.class);
+
+Sort sort = person.by(Person::getFirstname).ascending()
+  .and(person.by(Person::getLastname).descending());
+
+```
+
+**Note**
+TypedSort.by(…) makes use of runtime proxies by (typically) using CGlib, which may interfere with native image compilation when using tools such as Graal VM Native.
+
+If your store implementation supports Querydsl, you can also use the generated metamodel types to define sort expressions:
+
+Example 17. Defining sort expressions by using the Querydsl API
+```java
+QSort sort = QSort.by(QPerson.firstname.asc())
+  .and(QSort.by(QPerson.lastname.desc()));
+```
+
+> **페이징과 정렬**
+> 속성 이름을 사용해서 간단한 정렬 표현식을 정의할 수 있습니다.
+> 표현식을 합쳐 여러 기준을 하나의 표현식으로 정의할 수 있습니다.
 > 
+> 예제 15) 정렬 표현식 정의
+> (코드 생략)
+> 더욱 type-safe 하게 정렬 표현식을 정의하기 위해서, 정렬 표현식을 정의할 유형부터 시작하고 메서드 참조를 사용하여 정렬할 속성을 정의합니다.
+> 
+> 예제 16) type-safe API 를 사용하여 정렬 표현식 정의하기
+> (코드 생략)
+> 
+> **참고**
+> `TypedSort.by(...)` 는 CGlib을 사용한 런타임 프록시를 사용하므로, Graal VM Native 툴을 사용할 때 네이티브 이미지 컴파일을 방해할 수 있습니다.
+> 
+> 만약 Querydsl 을 사용한다면, 생성된 메타모델 타입을 사용하여 정렬 표현식을 정의할 수 있습니다. 
+> 
+> 예제 17) Querydsl API를 사용해 정렬표현식 정의
+> (코드 생략)
+
+<br>
+
+## 8.4.5. Limiting Query Results
+
+> 쿼리 결과 제한
