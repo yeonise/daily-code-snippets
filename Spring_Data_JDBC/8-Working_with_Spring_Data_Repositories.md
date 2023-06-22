@@ -972,3 +972,95 @@ QSort sort = QSort.by(QPerson.firstname.asc())
 ## 8.4.5. Limiting Query Results
 
 > 쿼리 결과 제한
+
+<br>
+
+You can limit the results of query methods by using the first or top keywords, which you can use interchangeably.
+You can append an optional numeric value to top or first to specify the maximum result size to be returned.
+If the number is left out, a result size of 1 is assumed.
+The following example shows how to limit the query size:
+
+Example 18. Limiting the result size of a query with Top and First
+```java
+User findFirstByOrderByLastnameAsc();
+
+User findTopByOrderByAgeDesc();
+
+Page<User> queryFirst10ByLastname(String lastname, Pageable pageable);
+
+Slice<User> findTop3ByLastname(String lastname, Pageable pageable);
+
+List<User> findFirst10ByLastname(String lastname, Sort sort);
+
+List<User> findTop10ByLastname(String lastname, Pageable pageable);
+
+
+```
+
+> `first` 나 `top` 키워드를 사용하여, 쿼리 메서드의 결과를 제한할 수 있으며, 이 키워드는 서로 바꿔서 사용할 수 있습니다.
+> 당신은 `top` 이나 `first` 뒤에 숫자값을 추가하여 반환할 결과값의 크기를 지정할 수 있습니다.
+> 만약 숫자가 없다면 하나만 반환합니다.
+> 다음의 예제들은 쿼리 사이즈를 제한하는 방법을 보여줍니다.
+> 
+> 예제 18) `Top`, `First` 키워드를 사용하여 쿼리 결과 크기를 제한하기
+> (코드 생략)
+
+<br>
+
+The limiting expressions also support the Distinct keyword for datastores that support distinct queries.
+Also, for the queries that limit the result set to one instance, wrapping the result into with the Optional keyword is supported.
+
+If pagination or slicing is applied to a limiting query pagination (and the calculation of the number of available pages), it is applied within the limited result.
+
+**Note**
+Limiting the results in combination with dynamic sorting by using a Sort parameter lets you express query methods for the 'K' smallest as well as for the 'K' biggest elements.
+
+> 제한 표현식은 `Distinct` 키워드도 지원합니다.
+> 또한 쿼리 결과가 하나인 경우, 결과물은 `Optional` 로 감쌀 수 있습니다.
+> 
+> 만약 페이지네이션과 슬라이싱이 제한된 쿼리에 적용될 경우, (페이지 계산과 같은 동작들은) 제한된 결과 내에서 적용됩니다.
+> 
+> **참고**
+> `Sort` 파라미터를 사용하여 객체 크기를 제한하면, `K` 개의 가장 작은 요소뿐만 아니라, `K`개의 가장 큰 요소들을 가져오는 쿼리 메서드를 정의할 수 있습니다. 
+
+<br>
+
+## 8.4.6. Repository Methods Returning Collections or Iterables
+
+> `Collections` 또는 `Iterables` 를 반환하는 리포지토리 메서드 
+
+<br>
+
+Query methods that return multiple results can use standard Java Iterable, List, and Set.
+Beyond that, we support returning Spring Data’s Streamable, a custom extension of Iterable, as well as collection types provided by Vavr.
+Refer to the appendix explaining all possible query method return types.
+
+> 쿼리 메서드는 `Iterable`, `List`, `Set` 과 같은 다양한 복수 결과물을 반환할 수 있습니다.
+> 게다가, Spring Data의 `Streamable` 이나, Vavr 에서 제공하는 컬렉션 유형들을 반환할 수 있습니다.
+> 쿼리 메서드가 반환할 수 있는 모든 반환타입에 대한 참고는 부록을 참고하십시오.
+
+<br>
+
+**Using Streamable as Query Method Return Type**
+You can use Streamable as alternative to Iterable or any collection type.
+It provides convenience methods to access a non-parallel Stream (missing from Iterable) and the ability to directly ….filter(…) and ….map(…) over the elements and concatenate the Streamable to others:
+
+Example 19. Using Streamable to combine query method results
+```java
+interface PersonRepository extends Repository<Person, Long> {
+  Streamable<Person> findByFirstnameContaining(String firstname);
+  Streamable<Person> findByLastnameContaining(String lastname);
+}
+
+Streamable<Person> result = repository.findByFirstnameContaining("av")
+  .and(repository.findByLastnameContaining("ea"));
+
+
+```
+
+> **쿼리 메서드의 반환타입으로 `Streamable` 을 사용하기** 
+> 당신은 `Iterable` 이나 다른 컬렉션 타입을 반환하는 대신, `Streambale` 을 반환할 수 있습니다.
+> 이것은 병렬이 아닌 스트림을 사용하는 편리한 메서드들을 제공하고 (`Iterable` 엔 없는), `.filter()` 나 `.map()` 을 사용하여 요소들을 다른 `Streamable` 에 연결할 수 있습니다.
+> 
+> 예제 19) `Streamable` 을 사용하여 쿼리 메서드 결과물을 결합하기
+> (코드 생략)
