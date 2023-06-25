@@ -277,7 +277,8 @@ target
 ```
 
 This line excludes the `target` directory, which contains output from Maven, from the Docker `build
-context`. There are many good reasons to carefully structure a `.dockerignore` file, but this one-line
+context`. There are many good reasons to carefully structure a `.dockerignore` file, but this
+one-line
 file is good enough for now.
 
 > 이 라인은 Docker의 `build context`에서 메이븐의 출력을 포함하는 `target` 디렉토리를 제외합니다.
@@ -285,6 +286,164 @@ file is good enough for now.
 
 ### 이미지 빌드하기(Build an image)
 
+Now that we’ve created our Dockerfile, let’s build our image. To do this, we use the `docker build`
+command. The `docker build` command builds Docker images from a Dockerfile and a “context”. A
+build’s
+context is the set of files located in the specified PATH or URL. The Docker build process can
+access any of the files located in this context.
 
+> 지금 우리는 Dockerfile을 생성하였습니다. 이미지를 빌드해봅시다. 그러기 위해서는 `docker build` 명령어를 사용해야 합니다.
+> `docker build` 명령어는 Dockerfile과 컨텍스트로부터 도커 이미지를 빌드하는 명령어입니다.
+> 빌드의 컨텍스트란 명세된 PATH 또는 URL에 위치한 파일 집합입니다.
+> 도커 빌드 처리는 이 컨텍스트에 위치한 어떤 파일이든 접근할 수 있습니다.
+
+The build command optionally takes a `--tag` flag. The tag is used to set the name of the image and
+an
+optional tag in the format `name:tag`. We’ll leave off the optional `tag` for now to help simplify
+things. If we do not pass a tag, Docker uses “latest” as its default tag. You can see this in the
+last line of the build output.
+
+> 빌드 명령어는 선택적으로 `--tag` 옵션을 붙일 수 있습니다. tag는 이미지의 이름을 설정하는데 사용됩니다.
+> 그리고 `name:tag` 형식으로 선택적으로 붙일 수 있습니다.
+> 우리는 단순하게 돕기 위해서 태그는 일단 생략하겠습니다.
+> 만약 우리가 tag를 전달할 수 없다면 도커는 기본 태그로서 "latest" 태그를 사용합니다.
+> 여러분들은 빌드 결과의 마지막 줄에서 "latest" 태그를 볼 수 있습니다.
+
+Let’s build our first Docker image.
+
+> 우리의 첫번째 도커 이미지를 빌드해봅시다.
+
+```shell
+$ docker build --tag java-docker .
+```
+
+```shell
+Sending build context to Docker daemon  5.632kB
+Step 1/7 : FROM eclipse-temurin:17-jdk-jammy
+Step 2/7 : WORKDIR /app
+...
+Successfully built a0bb458aabd0
+Successfully tagged java-docker:latest
+```
+
+### 로컬 이미지 보기(View local images)
+
+To see a list of images we have on our local machine, we have two options. One is to use the CLI and
+the other is to use [Docker Desktop](https://docs.docker.com/desktop/use-desktop/images/). As we are
+currently working in the terminal let’s take a look at
+listing images using the CLI.
+
+> 로컬 머신에서 우리가 가진 이미지의 리스트를 보기 위해서 두가지 옵션이 있습니다.
+> 하나는 CLI을 사용하는 것이고 다른 하나는 도커 데스크톱을 사용하는 것입니다.
+> 우리는 현재 터미널에서 작업하고 있기 때문에 CLI을 사용하여 이미지들의 목록을 봅시다.
+
+To list images, simply run the docker images command.
+
+> 이미지들의 목록을 보기 위하여 간단하게 `docker images` 명령어를 실행하세요.
+
+```shell
+$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED          SIZE
+java-docker         latest              b1b5f29f74f0        47 minutes ago   567MB
+```
+
+You should see at least the image we just built java-docker:latest.
+
+> 여러분들은 java-docker:latest 이미지를 볼 수 있을 것입니다.
+
+### 태그 이미지(Tag images)
+
+An image name is made up of slash-separated name components. Name components may contain lowercase
+letters, digits, and separators. A separator is defined as a period, one or two underscores, or one
+or more dashes. A name component may not start or end with a separator.
+
+> 이미지 이름은 슬래시로 구분된 이름 구성요소로 구성됩니다.
+> 이름 구성요소들은 소문자, 숫자, 구분자가 포함될 수 있습니다.
+> 구분자는 마침표, 하나 또는 두개의 밑줄 또는 하나 이상의 대시로 정의됩니다.
+> 이름 구성요소는 구분자를 가지고 시작하거나 종료되지 않을 수 있습니다.
+
+An image is made up of a manifest and a list of layers. Do not worry too much about manifests and
+layers at this point other than a “tag” points to a combination of these artifacts. You can have
+multiple tags for an image. Let’s create a second tag for the image we built and take a look at its
+layers.
+
+> 이미지는 manifest와 레이어들의 목록으로 구성됩니다.
+> 태그가 이러한 아티팩트들의 조합을 가리키는 것 이외에는 이 시점에서 manifest와 레이어에 대해서 너무 걱정하지 마세요.
+> 여러분들은 이미지에 대한 여러개의 태그들을 가질 수 있습니다.
+> 우리가 빌드한 이미지를 대상으로 두번째 태그를 생성해봅시다. 그리고 레이어를 확인해봅시다.
+
+To create a new tag for the image we’ve built above, run the following command:
+
+> 우리가 위에서 빌드한 이미지에 새로운 태그를 생성하기 위해서는 다음 명령어를 실행하세요.
+
+```shell
+$ docker tag java-docker:latest java-docker:v1.0.0
+```
+
+The `docker tag` command creates a new tag for an image. It does not create a new image. The tag
+points to the same image and is just another way to reference the image.
+
+> `docker tag` 명령어는 이미지를 대상으로 새로운 태그를 생성합니다.
+> 새로운 태그를 생성하는 것은 새로운 이미지를 생성하지 않습니다.
+> 태그는 같은 이미지를 대상으로 가리킵니다. 그리고 이미지를 참조하는 또다른 방법입니다.
+
+Now, run the `docker images` command to see a list of our local images.
+
+> 지금 로컬 이미지들의 목록을 보기 위해서 `docker images` 명령어를 실행하세요.
+
+```shell
+$ docker images
+REPOSITORY    TAG      IMAGE ID		  CREATED		  SIZE
+java-docker   latest   b1b5f29f74f0	  59 minutes ago	567MB
+java-docker   v1.0.0   b1b5f29f74f0	  59 minutes ago	567MB
+```
+
+You can see that we have two images that start with java-docker. We know they are the same image
+because if you take a look at the IMAGE ID column, you can see that the values are the same for the
+two images.
+
+> java-docker를 가지고 시작하는 우리가 가진 두개의 이미지들을 볼 수 있습니다.
+> 우리는 두개의 이미지들이 같은 이미지인 것을 알 수 있습니다. 왜냐하면 IMAGE ID 컬럼 값이 동일하기 때문입니다.
+
+Let’s remove the tag that we just created. To do this, we’ll use the `rmi` command. The `rmi`
+command
+stands for “remove image”.
+
+> 우리가 방금 생성한 태그를 삭제해봅시다. 그러기 위해서는 우리는 `rmi` 명령어를 사용할 것입니다.
+> `rmi` 명령어는 "remove image"의 줄임말입니다.
+
+```shell
+$ docker rmi java-docker:v1.0.0
+Untagged: java-docker:v1.0.0
+```
+
+Note that the response from Docker tells us that the image has not been removed but only “untagged”.
+You can check this by running the `docker images` command.
+
+> 도커로부터의 응답은 우리에게 이미지가 삭제되지 않고 오직 "untagged"라고 응답하고 있습니다.
+> 여러분들은 `docker images` 명령어를 실행해서 이것을 확인할 수 있습니다.
+
+```shell
+$ docker images
+REPOSITORY      TAG     IMAGE ID        CREATED              SIZE
+java-docker    	latest	b1b5f29f74f0	59 minutes ago	     567MB
+```
+
+Our image that was tagged with `:v1.0.0` has been removed, but we still have the java-docker:latest
+tag available on our machine.
+
+> `:v1.0.0` 태그가 삭제되었습니다. 그러나 우리는 여전히 우리의 머신에서 이용가능한 java-docker:latest 태그를 가지고 있습니다.
+
+### 다음 단계(Next steps)
+
+In this module, we took a look at setting up our example Java application that we’ll use for the
+rest of the tutorial. We also created a Dockerfile that we used to build our Docker image. Then, we
+took a look at tagging our images and removing images. In the next module, we’ll take a look at how
+to:
+
+> 이 모듈에서는 튜토리얼의 나머지 부분에 사용할 자바 애플리케이션 예제를 설정하는 방법에 대해서 살펴봤습니다.
+> 우리는 또한 도커 이미지를 빌드하기 위해서 Dockerfile을 생성하였습니다.
+> 그리고나서 우리는 우리의 이미지에 태그하고 삭제해봤습니다.
+> 다음 모듈에서는 우리는 컨테이너를 실행하는 방법에 대해서 보도록 하겠습니다.
 
 
