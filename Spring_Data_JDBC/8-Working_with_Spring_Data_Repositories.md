@@ -1064,3 +1064,71 @@ Streamable<Person> result = repository.findByFirstnameContaining("av")
 > 
 > 예제 19) `Streamable` 을 사용하여 쿼리 메서드 결과물을 결합하기
 > (코드 생략)
+
+<br>
+
+**Returning Custom Streamable Wrapper Types**
+
+Providing dedicated wrapper types for collections is a commonly used pattern to provide an API for a query result that returns multiple elements.
+Usually, these types are used by invoking a repository method returning a collection-like type and creating an instance of the wrapper type manually.
+You can avoid that additional step as Spring Data lets you use these wrapper types as query method return types if they meet the following criteria:
+
+1. The type implements Streamable.
+2. The type exposes either a constructor or a static factory method named of(…) or valueOf(…) that takes Streamable as an argument.
+
+The following listing shows an example:
+```java
+class Product {                                         (1)
+  MonetaryAmount getPrice() { … }
+}
+
+@RequiredArgsConstructor(staticName = "of")
+class Products implements Streamable<Product> {         (2)
+
+  private final Streamable<Product> streamable;
+
+  public MonetaryAmount getTotal() {                    (3)
+    return streamable.stream()
+      .map(Priced::getPrice)
+      .reduce(Money.of(0), MonetaryAmount::add);
+  }
+
+
+  @Override
+  public Iterator<Product> iterator() {                 (4)
+    return streamable.iterator();
+  }
+}
+
+interface ProductRepository implements Repository<Product, Long> {
+  Products findAllByDescriptionContaining(String text);                 (5)
+}
+
+```
+1. A Product entity that exposes API to access the product’s price.
+2. 	A wrapper type for a Streamable<Product> that can be constructed by using Products.of(…) (factory method created with the Lombok annotation).
+    A standard constructor taking the Streamable<Product> will do as well.
+3. 	The wrapper type exposes an additional API, calculating new values on the Streamable<Product>.
+4. 	Implement the Streamable interface and delegate to the actual result.
+5. 	That wrapper type Products can be used directly as a query method return type.
+    You do not need to return Streamable<Product> and manually wrap it after the query in the repository client.
+
+> **사용자 설정의 `Streamable` 반환 타입**
+> 
+> 컬렉션에 맞는 전용 래퍼 타입을 제공하는 것은 여러 요소를 반환하는 API를 제공할 때 일반적으로 사용되는 패턴입니다.
+> 보통, 이러한 타입들은 콜렉션과 유사한 타입을 반환하는 리포지토리 메서드를 호출하고, 래퍼 타입 인스턴스를 수동으로 생성합니다.
+> `Spring Data`는 다음의 기준들을 만족하는 경우, 래퍼타입을 쿼리 메서드의 반환타입으로 사용해서 추가적인 과정을 피할 수 있습니다.
+> 
+> 1. 반환 유형은 `Streamable` 을 구현합니다.
+> 2. 반환 유형은 `Streamable` 을 인수로 받는 생성자나 `of(...), valueOf(...)` 와 같은 정적 팩토리 메서드에 노출됩니다.
+>
+> 다음은 예제들입니다.
+> 
+> (코드 생략)
+> 1. `Product`는 제품 가격을 알 수 있도록, API를 노출하는 엔티티입니다.
+> 2. `Products.of(...)` 을 통해 생성될 수 있는 `Streambale<Product>` 래퍼 타입입니다. (롬복 애노테이션으로 만들어진 팩토리 메서드)
+> `Streamable<Product>` 를 받는 표준 생성자도 가능합니다.
+> 3. 래퍼 타입은 `Streamable<Product>` 를 계산하는 추가적인 API 를 제공합니다.
+> 4. `Streamable` 인터페이스를 구현하고 실제 결과를 위임합니다.
+> 5. Products 래퍼 타입은 쿼리 메서드의 반환타입으로 바로 사용될 수 있습니다.
+> 당신은 `Streamable<Product>` 를 반환하거나, 직접 래핑하여 반환할 필요가 없습니다.
