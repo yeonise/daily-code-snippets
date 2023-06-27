@@ -160,3 +160,117 @@ sseBuilder.complete();
 ```
 
 > 지금까지 글을 요약하자면, Spring Web MVC의 WebMvc.fn은 함수형 프로그래밍 모델을 사용하여 경량화된 HTTP 요청 처리 방식을 제공합니다. HandlerFunction과 RouterFunction을 사용하여 요청을 처리하고 라우팅할 수 있으며, ServerRequest와 ServerResponse를 통해 HTTP 요청 및 응답에 대한 액세스를 제공합니다.
+
+### Handler Classes
+
+We can write a handler function as a lambda, as the following example shows:
+
+> 우리는 다음과 같이 람다를 사용하여 handler 함수를 작성할 수 있습니다:
+
+``` java
+HandlerFunction<ServerResponse> helloWorld =
+  request -> ServerResponse.ok().body("Hello World");
+```
+
+That is convenient, but in an application we need multiple functions, and multiple inline lambda’s can get messy. Therefore, it is useful to group related handler functions together into a handler class, which has a similar role as `@Controller` in an annotation-based application. For example, the following class exposes a reactive `Person` repository:
+
+> 이것은 편리하지만 여러 함수가 필요한 애플리케이션에서 인라인 람다 표현식을 여러 개 사용하면 지저분해질 수 있습니다. 따라서 handler 함수를 클래스로 그룹화하는 것이 좋습니다. 해당 클래스는 어노테이션 기반 애플리케이션에서의 `@Controller`와 비슷한 역할을 합니다. 예를 들어 다음 클래스는 반응형 `Person` repositoriy를 보여줍니다:
+
+``` java
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
+
+public class PersonHandler {
+
+	private final PersonRepository repository;
+
+	public PersonHandler(PersonRepository repository) {
+		this.repository = repository;
+	}
+
+	public ServerResponse listPeople(ServerRequest request) { (1)
+		List<Person> people = repository.allPeople();
+		return ok().contentType(APPLICATION_JSON).body(people);
+	}
+
+	public ServerResponse createPerson(ServerRequest request) throws Exception { (2)
+		Person person = request.body(Person.class);
+		repository.savePerson(person);
+		return ok().build();
+	}
+
+	public ServerResponse getPerson(ServerRequest request) { (3)
+		int personId = Integer.parseInt(request.pathVariable("id"));
+		Person person = repository.getPerson(personId);
+		if (person != null) {
+			return ok().contentType(APPLICATION_JSON).body(person);
+		}
+		else {
+			return ServerResponse.notFound().build();
+		}
+	}
+
+}
+```
+
+1. listPeople is a handler function that returns all Person objects found in the repository as JSON.
+2. createPerson is a handler function that stores a new Person contained in the request body.
+3. getPerson is a handler function that returns a single person, identified by the id path variable. We retrieve that Person from the repository and create a JSON response, if it is found. If it is not found, we return a 404 Not Found response.
+
+> 1. listPeople은 리포지토리에 있는 모든 Person 객체를 JSON으로 반환하는 handler 함수입니다.
+> 2. createPerson은 요청 본문에 포함된 새 Person을 저장하는 handler 함수입니다.
+> 3. getPerson은 id 경로 변수로 식별되는 단일 Person 객체를 반환하는 핸들러 함수입니다. 리포지토리에서 해당 사람을 검색하여 찾을 수 있는 경우, JSON 응답을 생성합니다. 찾을 수 없으면 404 Not Found 응답을 반환합니다.
+
+### Validation
+
+A functional endpoint can use Spring’s validation facilities to apply validation to the request body. For example, given a custom Spring Validator implementation for a Person:
+
+> 함수형 엔드포인트는 Spring의 유효성 검사 기능을 사용하여 요청 본문에 유효성 검사를 적용할 수 있습니다. 예를 들어, Person에 대한 사용자 정의 Spring 유효성 검사기 구현이 있다고 가정해 보겠습니다:
+
+``` java
+public class PersonHandler {
+
+	private final Validator validator = new PersonValidator(); (1)
+
+	// ...
+
+	public ServerResponse createPerson(ServerRequest request) {
+		Person person = request.body(Person.class);
+		validate(person); (2)
+		repository.savePerson(person);
+		return ok().build();
+	}
+
+	private void validate(Person person) {
+		Errors errors = new BeanPropertyBindingResult(person, "person");
+		validator.validate(person, errors);
+		if (errors.hasErrors()) {
+			throw new ServerWebInputException(errors.toString()); (3)
+		}
+	}
+}
+```
+
+1. Create Validator instance.
+2. Apply validation.
+3. Raise exception for a 400 response.
+
+> 1. Validator 인스턴스를 생성합니다.
+> 2. 유효성 검사를 적용합니다.
+> 3. 400 응답에 대한 예외를 발생시킵니다.
+
+Handlers can also use the standard bean validation API (JSR-303) by creating and injecting a global `Validator` instance based on `LocalValidatorFactoryBean`.
+
+> 또한 핸들러는 `LocalValidatorFactoryBean`을 기반으로 한 전역 `Validator` 인스턴스를 생성하고 주입하여 표준 빈 유효성 검사 API를 사용할 수 있습니다.
+
+## RouterFunction
+
+### Predicates
+
+### Routes
+
+### Nested Routes
+
+## Running a Server
+
+## Filtering Handler Functions
