@@ -41,4 +41,5 @@
     - YongHwanKim
 - [Part 6: Configure CI CD](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/6-Configure-CI-CD.md)
     - YongHwanKim
-
+- [Part 7: Deploy Your App](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/7-Deploy-Your-App.md)
+    - YongHwanKim
