@@ -39,3 +39,6 @@
     - YongHwanKim
 - [Part 5: Run Your Tests](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/5-Run-Your-Tests.md)
     - YongHwanKim
+- [Part 6: Configure CI CD](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/6-Configure-CI-CD.md)
+    - YongHwanKim
+
