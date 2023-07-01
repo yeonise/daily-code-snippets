@@ -29,17 +29,17 @@
 
 #### Java
 
-- [Part 1: Overview](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/1-Overview.md)
+- [Part 1: Overview](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Language_Specific_Guides/Java/1-Overview.md)
     - YongHwanKim
-- [Part 2: Build Images](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/2-Build-Images.md)
+- [Part 2: Build Images](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Language_Specific_Guides/Java/2-Build-Images.md)
     - YongHwanKim
-- [Part 3: Run Containers](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/3-Run-Containers.md)
+- [Part 3: Run Containers](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Language_Specific_Guides/Java/3-Run-Containers.md)
     - YongHwanKim
-- [Part 4: Develop Your App](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/4-Develop-Your-App.md)
+- [Part 4: Develop Your App](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Language_Specific_Guides/Java/4-Develop-Your-App.md)
     - YongHwanKim
-- [Part 5: Run Your Tests](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/5-Run-Your-Tests.md)
+- [Part 5: Run Your Tests](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Language_Specific_Guides/Java/5-Run-Your-Tests.md)
     - YongHwanKim
-- [Part 6: Configure CI CD](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/6-Configure-CI-CD.md)
+- [Part 6: Configure CI CD](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Language_Specific_Guides/Java/6-Configure-CI-CD.md)
     - YongHwanKim
-- [Part 7: Deploy Your App](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Guides/Language_Specific_Guides/Java/7-Deploy-Your-App.md)
+- [Part 7: Deploy Your App](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Language_Specific_Guides/Java/7-Deploy-Your-App.md)
     - YongHwanKim
