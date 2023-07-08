@@ -1,4 +1,4 @@
-### What will you learn in this module?
+## What will you learn in this module?
 
 The Node.js getting started guide teaches you how to create a containerized Node.js application using Docker. In this
 guide, you’ll learn how to:
