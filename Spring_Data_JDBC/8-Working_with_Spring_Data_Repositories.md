@@ -1132,3 +1132,94 @@ interface ProductRepository implements Repository<Product, Long> {
 > 4. `Streamable` 인터페이스를 구현하고 실제 결과를 위임합니다.
 > 5. Products 래퍼 타입은 쿼리 메서드의 반환타입으로 바로 사용될 수 있습니다.
 > 당신은 `Streamable<Product>` 를 반환하거나, 직접 래핑하여 반환할 필요가 없습니다.
+
+<br>
+
+**Support for Vavr Collections**
+Vavr is a library that embraces functional programming concepts in Java.
+It ships with a custom set of collection types that you can use as query method return types, as the following table shows:
+
+| Vavr collection type   | Used Vavr implementation type       | Valid Java source types	  |
+|------------------------|----------------------------|---------------------------|
+| io.vavr.collection.Seq | io.vavr.collection.List                 | java.util.Iterable|
+| io.vavr.collection.Set | io.vavr.collection.LinkedHashSet                 | java.util.Iterable|
+| io.vavr.collection.Map | io.vavr.collection.LinkedHashMap                 | java.util.Map|
+
+You can use the types in the first column (or subtypes thereof) as query method return types and get the types in the second column used as implementation type, depending on the Java type of the actual query result (third column).
+Alternatively, you can declare Traversable (the Vavr Iterable equivalent), and we then derive the implementation class from the actual return value.
+That is, a java.util.List is turned into a Vavr List or Seq, a java.util.Set becomes a Vavr LinkedHashSet Set, and so on.
+
+> **`Vavr` 컬렉션 지원**
+> `Vavr` 은 자바의 함수형 프로그래밍 개념을 수용하는 라이브러리입니다.
+> 이것은 쿼리 메서드 반환타입을 사용할 수 있는 사용자 지정 컬렉션 세트를 제공합니다. (다음 테이블 참조)
+> (테이블 생략)
+> 
+> 당신은 첫 번째 열의 타입 (또는 그 하위 타입)을 쿼리 메서드의 반환 타입으로 사용할 수 있고, 실제 가져올 땐, 구현 타입인 두번째 열의 타입으로 가져옵니다.
+> 또는, `Traversable` (`Vavr Iterable` 과 동등한) 을 선언한 다음, 실제 반환 값에서 구현 클래스를 파생할 수 있습니다. 
+> 즉, `java.util.List` 는 `Vavr List` 나 `Seq` 으로 바뀌고, `java.util.Set` 은 `Vavr LinkedHashSet` 으로 바뀝니다. 
+
+<br>
+
+## 8.4.7 Streaming Query Results
+
+> 쿼리 결과 streaming
+
+<br>
+
+You can process the results of query methods incrementally by using a Java 8 Stream<T> as the return type.
+Instead of wrapping the query results in a Stream, data store-specific methods are used to perform the streaming, as shown in the following example:
+
+Example 20. Stream the result of a query with Java 8 Stream<T>
+```java
+@Query("select u from User u")
+Stream<User> findAllByCustomQueryAndStream();
+
+Stream<User> readAllByFirstnameNotNull();
+
+@Query("select u from User u")
+Stream<User> streamAllPaged(Pageable pageable);
+```
+
+**Note**
+A Stream potentially wraps underlying data store-specific resources and must, therefore, be closed after usage.
+You can either manually close the Stream by using the close() method or by using a Java 7 try-with-resources block, as shown in the following example:
+
+Example 21. Working with a Stream<T> result in a try-with-resources block
+```java
+try (Stream<User> stream = repository.findAllByCustomQueryAndStream()) {
+  stream.forEach(…);
+}
+```
+
+**Note**
+Not all Spring Data modules currently support Stream<T> as a return type.
+
+> 당신은 쿼리 메서드의 반환타입으로 자바 8의 `Stream` 을 사용하여 점진적으로 데이터를 처리할 수 있습니다.
+> 쿼리 결과물을 `Stream` 으로 감싸는 대신에, 다음 예제와 같이 데이터 저장소의 특화된 메서드를 사용하여 streaming 을 수행합니다.
+> 
+> 예제 20) 자바 8 스트림을 사용하여 쿼리 결과를 streaming 하기
+> (코드 생략)
+> 
+> **참고**
+> `Stream` 은 기본 데이터 저장소별 리소스를 감싸고 있을 가능성이 있으므로 사용후에 반드시 닫아야 합니다.
+> `close()` 메서드를 사용하여 수동으로 `Stream` 을 닫아주거나, 자바 7의 `try-with-resources` 블록을 사용할 수 있습니다.
+> 
+> 예제 21) `try-with-resources` 블록내에서 `Stream` 사용하기
+> (코드 생략)
+>
+> **참고**
+> 모든 Spring Data 모듈이 `Stream` 을 지원하지는 않습니다.
+
+<br>
+
+## 8.4.8 Null Handling of Repository Methods
+
+> 리포지토리 메서드의 Null 처리 
+
+<br>
+
+As of Spring Data 2.0, repository CRUD methods that return an individual aggregate instance use Java 8’s Optional to indicate the potential absence of a value.
+Besides that, Spring Data supports returning the following wrapper types on query methods:
+
+> Spring Data 2.0 부터, CRUD 리포지토리 메서드는 단건 조회 시, 자바 8의 `Optional` 객체로 값을 반환하여 해당 값이 없을 가능성을 나타냅니다.
+> 그 외에도, Spring Data 는 쿼리 메서드의 반환 타입들로 다음의 래퍼 타입들을 사용할 수 있습니다.
