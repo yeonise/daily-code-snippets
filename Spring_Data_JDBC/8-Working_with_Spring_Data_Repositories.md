@@ -1221,5 +1221,61 @@ Not all Spring Data modules currently support Stream<T> as a return type.
 As of Spring Data 2.0, repository CRUD methods that return an individual aggregate instance use Java 8’s Optional to indicate the potential absence of a value.
 Besides that, Spring Data supports returning the following wrapper types on query methods:
 
+- com.google.common.base.Optional
+- scala.Option
+- io.vavr.control.Option
+
+Alternatively, query methods can choose not to use a wrapper type at all.
+The absence of a query result is then indicated by returning null.
+Repository methods returning collections, collection alternatives, wrappers, and streams are guaranteed never to return null but rather the corresponding empty representation.
+See “Repository query return types” for details.
+
 > Spring Data 2.0 부터, CRUD 리포지토리 메서드는 단건 조회 시, 자바 8의 `Optional` 객체로 값을 반환하여 해당 값이 없을 가능성을 나타냅니다.
 > 그 외에도, Spring Data 는 쿼리 메서드의 반환 타입들로 다음의 래퍼 타입들을 사용할 수 있습니다.
+> 
+> (반환타입 생략)
+> 
+> 또는 쿼리 메서드에서 래퍼 타입을 전혀 사용하지 않도록 선택할 수 있습니다.
+> 쿼리 결과가 없는 경우, null 을 반환합니다.
+> 컬렉션이나 컬렉션 대체 타입, 래퍼 타입, 스트림을 반환하는 리포지토리 메서드는 null 대신 빈 컬렉션을 반환합니다.
+> 자세한 내용은 "리포지토리 쿼리의 반환 타입" 을 참고하십시오.
+
+<br>
+
+Nullability Annotations
+
+> **Nullability 주석**
+
+<br>
+
+You can express nullability constraints for repository methods by using Spring Framework’s nullability annotations.
+They provide a tooling-friendly approach and opt-in null checks during runtime, as follows:
+
+- @NonNullApi: Used on the package level to declare that the default behavior for parameters and return values is, respectively, neither to accept nor to produce null values.
+- @NonNull: Used on a parameter or return value that must not be null (not needed on a parameter and return value where @NonNullApi applies).
+- @Nullable: Used on a parameter or return value that can be null.
+
+Spring annotations are meta-annotated with JSR 305 annotations (a dormant but widely used JSR).
+JSR 305 meta-annotations let tooling vendors (such as IDEA, Eclipse, and Kotlin) provide null-safety support in a generic way, without having to hard-code support for Spring annotations.
+To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s @NonNullApi in package-info.java, as shown in the following example:
+
+Example 22. Declaring Non-nullability in package-info.java
+```java
+@org.springframework.lang.NonNullApi
+package com.acme;
+```
+
+> 스프링 프레임워크의 nullability 주석을 사용하여 리포지토리에 nullability 제약 조건을 걸 수 있습니다.
+> 다음과 같이 쉬운 접근 방식을 제공하며, 런타임 중에 null 을 체크할 수 있습니다.
+> 
+> - @NonNullApi : 패키지 수준에서 선언하여 사용합니다. 
+> 기본 동작은 파라미터와 반환값 모두 null 값을 허용하지 않습니다.
+> - @NonNull : null 이 아니어야 하는 파라미터나 반환값에 사용합니다. (@NonNullApi 가 적용된 곳엔 사용하지 않아도 됩니다.)
+> - @Nullable : null 이 될 수 있는 파라미터나 반환값에 사용합니다.
+> 
+> 스프링 애노테이션은 JSR 305 애노테이션과 함께 메타 애노테이션으로 사용됩니다. (JSR은 휴면 상태이지만 널리 사용됩니다.)
+> JSR 305 메타 애노테이션은 IDEA, Eclipse, Kotlin 과 같은 업체가 스프링 어노테이션을 하드코딩할 필요 없이 일반적인 방식으로 null-safety 지원을 제공합니다
+> 쿼리 메서드의 nullability 제약조건을 런타임 시점에 활성화하려면, 다음예제와 같이 스프링의 @NonNullApi 를 사용하여 패키지 수준에서 null이 불가하도록 해야합니다. 
+> 
+> 예제 22) package-info.java 의 Non-nullability 선언
+> (코드 생략)
