@@ -1279,3 +1279,74 @@ package com.acme;
 > 
 > 예제 22) package-info.java 의 Non-nullability 선언
 > (코드 생략)
+
+<br>
+
+Once non-null defaulting is in place, repository query method invocations get validated at runtime for nullability constraints.
+If a query result violates the defined constraint, an exception is thrown.
+This happens when the method would return null but is declared as non-nullable (the default with the annotation defined on the package in which the repository resides).
+If you want to opt-in to nullable results again, selectively use @Nullable on individual methods.
+Using the result wrapper types mentioned at the start of this section continues to work as expected: an empty result is translated into the value that represents absence.
+
+The following example shows a number of the techniques just described:
+
+Example 23. Using different nullability constraints
+```java
+package com.acme;                                                       (1)
+
+import org.springframework.lang.Nullable;
+
+interface UserRepository extends Repository<User, Long> {
+
+  User getByEmailAddress(EmailAddress emailAddress);                    (2)
+
+  @Nullable
+  User findByEmailAddress(@Nullable EmailAddress emailAdress);          (3)
+
+  Optional<User> findOptionalByEmailAddress(EmailAddress emailAddress); (4)
+}
+```
+1. The repository resides in a package (or sub-package) for which we have defined non-null behavior.
+2. Throws an EmptyResultDataAccessException when the query does not produce a result. 
+Throws an IllegalArgumentException when the emailAddress handed to the method is null.
+3. Returns null when the query does not produce a result. 
+Also accepts null as the value for emailAddress.
+4. Returns Optional.empty() when the query does not produce a result.
+Throws an IllegalArgumentException when the emailAddress handed to the method is null.
+
+> null 이 아닌 기본값이 적용되면, 리포지토리 쿼리 메서드 호출은 런타임에 null 가능성에 대해 검사합니다.
+> 만약 쿼리 결과물이 정의된 제약조건을 위배하면, 예외가 발생합니다.
+> 이러한 상황은 메서드가 non-nullable 로 정의되어 있는데, null값을 반환할 경우 발생합니다. (리포지토리가 있는 패키지에 정의된 어노테이션의 기본값)
+> null 가능성이 있는 결과물을 옵트인하려면, @Nullable 애노테이션을 개별 메서드에서 선택적으로 사용하십시오.
+> 이 섹션의 시작부분에서 언급한 result wrapper 타입을 사용하면 예상대로 작동합니다: 빈 결과값은 부재를 나타내는 값으로 변환됩니다.
+> 
+> 다음의 예제는 방금 설명한 몇 가지 기술들을 설명합니다.
+> 
+> 예제 23) 다른 nullability 제약 조건 사용
+> (코드 생략)
+> 
+> 1. 리포지토리는 null을 사용할 수 있는 동작을 정의한 패키지에 있습니다.
+> 2. 쿼리의 결과물이 없는 경우, `EmptyResultDataAccessException` 을 발생시킵니다.
+> 만약 메서드에 넘겨진 (파라미터) `emailAddress` 가 null 이면 `IllegalArgumentException` 을 발생시킵니다.
+> 3. 쿼리의 결과물이 없는 경우, null 을 반환합니다.
+> 또한 `emailAddress` 가 null 일 수 있습니다.
+> 4. 쿼리의 결과물이 없는 경우, `Optional.empty()` 를 반환합니다.
+> 만약 메서드에 넘겨진 `emailAddress` 가 null 일 경우 `IllegalArgumentException` 을 발생시킵니다.
+
+<br>
+
+**Nullability in Kotlin-based Repositories**
+
+> **코틀린 베이스 리포지토리에서의 nullability**
+
+<br>
+
+Kotlin has the definition of nullability constraints baked into the language.
+Kotlin code compiles to bytecode, which does not express nullability constraints through method signatures but rather through compiled-in metadata.
+Make sure to include the kotlin-reflect JAR in your project to enable introspection of Kotlin’s nullability constraints.
+Spring Data repositories use the language mechanism to define those constraints to apply the same runtime checks, as follows:
+
+> 코틀린은 언어 자체로 nullability 제약 조건이 정의되어 있습니다.
+> 코틀린 코드는 바이트코드로 컴파일되며, 메서드 시그니처로 nullability 제약조건을 표현하지 않고, 컴파일된 메타데이터를 통해 표현합니다. 
+> kotlin-reflect JAR 를 당신의 프로젝트의 포함시켜 코틀린의 nullability 제약 조건 검사기능을 사용할 수 있습니다.
+> 스프링 데이터 리포지토리는 언어 메커니즘을 사용하여 동일한 런타임에 검사하기 위해 다음과 같이 제약 조건을 정의합니다.
