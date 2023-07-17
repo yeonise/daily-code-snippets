@@ -2,14 +2,15 @@
 
 > 스프링 데이터 리포지토리 사용법
 
-The goal of the Spring Data repository abstraction is to significantly reduce the amount of boilerplate code required to
-implement data access layers for various persistence stores.
+<br>
+
+The goal of the Spring Data repository abstraction is to significantly reduce the amount of boilerplate code required to implement data access layers for various persistence stores.
 
 > Spring Data 리포지토리 추상화의 목표는, 데이터 접근 계층에서 다양한 DB에 접근하기 위해 필요한 상용구 코드들을 상당수 제거하는 것입니다.
 
 <br>
 
-Spring Data repository documentation and your module
+**Spring Data repository documentation and your module**
 
 This chapter explains the core concepts and interfaces of Spring Data repositories.
 The information in this chapter is pulled from the Spring Data Commons module.
@@ -17,7 +18,7 @@ It uses the configuration and code samples for the Jakarta Persistence API (JPA)
 “Repository query keywords” covers the query method keywords supported by the repository abstraction in general.
 For detailed information on the specific features of your module, see the chapter on that module of this document.
 
-> Spring Data 리포지토리 문서 및 모듈
+> **Spring Data 리포지토리 문서 및 모듈**
 >
 > 이 챕터에서 Spring Data 리포지토리의 핵심 개념과 인터페이스에 대해 설명합니다.
 > 이 장의 정보는 Spring Data Commons 모듈에서 가져왔습니다.
@@ -31,12 +32,12 @@ For detailed information on the specific features of your module, see the chapte
 
 > 핵심 컨셉
 
+<br>
+
 The central interface in the Spring Data repository abstraction is Repository.
 It takes the domain class to manage as well as the identifier type of the domain class as type arguments.
-This interface acts primarily as a marker interface to capture the types to work with and to help you to discover
-interfaces that extend this one.
-The CrudRepository and ListCrudRepository interfaces provide sophisticated CRUD functionality for the entity class that
-is being managed.
+This interface acts primarily as a marker interface to capture the types to work with and to help you to discover interfaces that extend this one.
+The CrudRepository and ListCrudRepository interfaces provide sophisticated CRUD functionality for the entity class that is being managed.
 
 Example 3. CrudRepository Interface
 
@@ -67,8 +68,7 @@ public interface CrudRepository<T, ID> extends Repository<T, ID> {
 6. Indicates whether an entity with the given ID exists.
 
 The methods declared in this interface are commonly referred to as CRUD methods.
-`ListCrudRepository` offers equivalent methods, but they return List where the CrudRepository methods return an
-Iterable.
+`ListCrudRepository` offers equivalent methods, but they return List where the CrudRepository methods return an Iterable.
 
 > Spring Data 리포지토리 추상화의 핵심 인터페이스는 리포지토리입니다.
 > 관리할 도메인 클래스와 도메인 클래스의 식별자 타입을 타입 변수로 사용합니다. (`<클래스, 식별자>`)
@@ -89,10 +89,9 @@ Iterable.
 
 <br>
 
-Note
+**Note**
 We also provide persistence technology-specific abstractions, such as `JpaRepository` or `MongoRepository`.
-Those interfaces extend CrudRepository and expose the capabilities of the underlying persistence technology in addition
-to the rather generic persistence technology-agnostic interfaces such as CrudRepository.
+Those interfaces extend CrudRepository and expose the capabilities of the underlying persistence technology in addition to the rather generic persistence technology-agnostic interfaces such as CrudRepository.
 
 > 우리는 특정 기술에 맞춰진 추상화를 제공하기도 합니다. (`JpaRepository` 나 `MongoRepository` 같은)
 > 이러한 인터페이스들은 `CrudRepository` 를 상속합니다.
@@ -100,8 +99,7 @@ to the rather generic persistence technology-agnostic interfaces such as CrudRep
 
 <br>
 
-Additional to the CrudRepository, there is a PagingAndSortingRepository abstraction that adds additional methods to ease
-paginated access to entities:
+Additional to the CrudRepository, there is a PagingAndSortingRepository abstraction that adds additional methods to ease paginated access to entities:
 
 Example 4. PagingAndSortingRepository interface
 
@@ -172,8 +170,7 @@ interface UserRepository extends CrudRepository<User, Long> {
 Standard CRUD functionality repositories usually have queries on the underlying datastore.
 With Spring Data, declaring those queries becomes a four-step process:
 
-1. Declare an interface extending Repository or one of its subinterfaces and type it to the domain class and ID type
-   that it should handle, as shown in the following example:
+1. Declare an interface extending Repository or one of its subinterfaces and type it to the domain class and ID type that it should handle, as shown in the following example:
 
 ```java
 interface PersonRepository extends Repository<Person, Long> { …
@@ -198,10 +195,8 @@ class Config { …
 }
 ```
 
-Note that the JavaConfig variant does not configure a package explicitly, because the package of the annotated class is
-used by default.
-To customize the package to scan, use one of the basePackage… attributes of the data-store-specific repository’s
-@EnableJpaRepositories-annotation.
+Note that the JavaConfig variant does not configure a package explicitly, because the package of the annotated class is used by default.
+To customize the package to scan, use one of the basePackage… attributes of the data-store-specific repository’s `@EnableJpaRepositories` annotation.
 
 4. Inject the repository instance and use it, as shown in the following example:
 
@@ -257,8 +252,7 @@ The sections that follow explain each step in detail:
 
 To define a repository interface, you first need to define a domain class-specific repository interface.
 The interface must extend Repository and be typed to the domain class and an ID type.
-If you want to expose CRUD methods for that domain type, you may extend CrudRepository, or one of its variants instead
-of Repository.
+If you want to expose CRUD methods for that domain type, you may extend CrudRepository, or one of its variants instead of Repository.
 
 > 리포지토리 인터페이스를 정의하기 위해, 먼저 도메인 클래스에 특화된 리포지토리 인터페이스를 정의해야 합니다.
 > 인터페이스는 반드시 Repository 를 확장해야 하고, 도메인 클래스와 식별자 타입으로 타입이 지정됩니다.
@@ -276,11 +270,9 @@ There are a few variants how you can get started with your repository interface.
 
 The typical approach is to extend CrudRepository, which gives you methods for CRUD functionality.
 CRUD stands for Create, Read, Update, Delete.
-With version 3.0 we also introduced ListCrudRepository which is very similar to the CrudRepository but for those methods
-that return multiple entities it returns a List instead of an Iterable which you might find easier to use.
+With version 3.0 we also introduced ListCrudRepository which is very similar to the CrudRepository but for those methods that return multiple entities it returns a List instead of an Iterable which you might find easier to use.
 
-If you are using a reactive store you might choose ReactiveCrudRepository, or RxJava3CrudRepository depending on which
-reactive framework you are using.
+If you are using a reactive store you might choose ReactiveCrudRepository, or RxJava3CrudRepository depending on which reactive framework you are using.
 
 If you are using Kotlin you might pick CoroutineCrudRepository which utilizes Kotlin’s coroutines.
 
@@ -296,18 +288,13 @@ If you are using Kotlin you might pick CoroutineCrudRepository which utilizes Ko
 
 <br>
 
-Additional you can extend PagingAndSortingRepository, ReactiveSortingRepository, RxJava3SortingRepository, or
-CoroutineSortingRepository if you need methods that allow to specify a Sort abstraction or in the first case a Pageable
-abstraction.
-Note that the various sorting repositories no longer extended their respective CRUD repository as they did in Spring
-Data Versions pre 3.0.
+Additional you can extend PagingAndSortingRepository, ReactiveSortingRepository, RxJava3SortingRepository, or CoroutineSortingRepository if you need methods that allow to specify a Sort abstraction or in the first case a Pageable abstraction.
+Note that the various sorting repositories no longer extended their respective CRUD repository as they did in Spring Data Versions pre 3.0.
 Therefore, you need to extend both interfaces if you want functionality of both.
 
-If you do not want to extend Spring Data interfaces, you can also annotate your repository interface with
-@RepositoryDefinition.
+If you do not want to extend Spring Data interfaces, you can also annotate your repository interface with `@RepositoryDefinition`.
 Extending one of the CRUD repository interfaces exposes a complete set of methods to manipulate your entities.
-If you prefer to be selective about the methods being exposed, copy the methods you want to expose from the CRUD
-repository into your domain repository.
+If you prefer to be selective about the methods being exposed, copy the methods you want to expose from the CRUD repository into your domain repository.
 When doing so, you may change the return type of methods.
 Spring Data will honor the return type if possible.
 For example, for methods returning multiple entities you may choose Iterable<T>, List<T>, Collection<T> or a VAVR list.
@@ -327,11 +314,9 @@ For example, for methods returning multiple entities you may choose Iterable<T>,
 
 <br>
 
-If many repositories in your application should have the same set of methods you can define your own base interface to
-inherit from.
+If many repositories in your application should have the same set of methods you can define your own base interface to inherit from.
 Such an interface must be annotated with @NoRepositoryBean.
-This prevents Spring Data to try to create an instance of it directly and failing because it can’t determine the entity
-for that repository, since it still contains a generic type variable.
+This prevents Spring Data to try to create an instance of it directly and failing because it can’t determine the entity for that repository, since it still contains a generic type variable.
 
 The following example shows how to selectively expose CRUD methods (findById and save, in this case):
 
@@ -352,18 +337,13 @@ interface UserRepository extends MyBaseRepository<User, Long> {
 }
 ```
 
-In the prior example, you defined a common base interface for all your domain repositories and exposed findById(…) as
-well as save(…).
-These methods are routed into the base repository implementation of the store of your choice provided by Spring Data (
-for example, if you use JPA, the implementation is SimpleJpaRepository), because they match the method signatures in
-CrudRepository.
-So the UserRepository can now save users, find individual users by ID, and trigger a query to find Users by email
-address.
+In the prior example, you defined a common base interface for all your domain repositories and exposed findById(…) as well as save(…).
+These methods are routed into the base repository implementation of the store of your choice provided by Spring Data (for example, if you use JPA, the implementation is SimpleJpaRepository), because they match the method signatures in CrudRepository.
+So the UserRepository can now save users, find individual users by ID, and trigger a query to find Users by email address.
 
-Note
+**Note**
 The intermediate repository interface is annotated with @NoRepositoryBean.
-Make sure you add that annotation to all repository interfaces for which Spring Data should not create instances at
-runtime.
+Make sure you add that annotation to all repository interfaces for which Spring Data should not create instances at runtime.
 
 > 당신의 애플리케이션에서 많은 리포지토리들이 똑같은 메서드 집합이 필요한 경우, 당신만의 베이스 인터페이스를 만들고, 다른 리포지토리들이 상속하도록 할 수 있습니다.
 > 이러한 인터페이스엔 반드시 `@NoRepositoryBean` 애노테이션을 붙여야 합니다.
@@ -392,21 +372,15 @@ runtime.
 
 <br>
 
-Using a unique Spring Data module in your application makes things simple, because all repository interfaces in the
-defined scope are bound to the Spring Data module.
+Using a unique Spring Data module in your application makes things simple, because all repository interfaces in the defined scope are bound to the Spring Data module.
 Sometimes, applications require using more than one Spring Data module.
 In such cases, a repository definition must distinguish between persistence technologies.
-When it detects multiple repository factories on the class path, Spring Data enters strict repository configuration
-mode.
-Strict configuration uses details on the repository or the domain class to decide about Spring Data module binding for a
-repository definition:
+When it detects multiple repository factories on the class path, Spring Data enters strict repository configuration mode.
+Strict configuration uses details on the repository or the domain class to decide about Spring Data module binding for a repository definition:
 
-1. If the repository definition extends the module-specific repository, it is a valid candidate for the particular
-   Spring Data module.
-2. If the domain class is annotated with the module-specific type annotation, it is a valid candidate for the particular
-   Spring Data module.
-   Spring Data modules accept either third-party annotations (such as JPA’s @Entity) or provide their own annotations (
-   such as @Document for Spring Data MongoDB and Spring Data Elasticsearch).
+1. If the repository definition extends the module-specific repository, it is a valid candidate for the particular Spring Data module.
+2. If the domain class is annotated with the module-specific type annotation, it is a valid candidate for the particular Spring Data module.
+   Spring Data modules accept either third-party annotations (such as JPA’s @Entity) or provide their own annotations (such as @Document for Spring Data MongoDB and Spring Data Elasticsearch).
 
 > 하나의 Spring Data 모듈을 사용하면 작업이 간단해집니다.
 > 왜냐하면 모든 리포지토리 인터페이스가 하나의 Spring Data 모듈에 의존하기 때문입니다.
@@ -463,8 +437,7 @@ interface AmbiguousUserRepository extends MyBaseRepository<User, Long> { …
 ```
 
 AmbiguousRepository and AmbiguousUserRepository extend only Repository and CrudRepository in their type hierarchy.
-While this is fine when using a unique Spring Data module, multiple modules cannot distinguish to which particular
-Spring Data these repositories should be bound.
+While this is fine when using a unique Spring Data module, multiple modules cannot distinguish to which particular Spring Data these repositories should be bound.
 
 > 다음의 예제들은 일반 인터페이스들을 사용하는 리포지토리를 보여줍니다.
 > 예제 9. 일반 인터페이스들을 사용하는 리포지토리 정의들
@@ -493,8 +466,7 @@ class User { …
 }
 ```
 
-PersonRepository references Person, which is annotated with the JPA @Entity annotation, so this repository clearly
-belongs to Spring Data JPA.
+PersonRepository references Person, which is annotated with the JPA @Entity annotation, so this repository clearly belongs to Spring Data JPA.
 UserRepository references User, which is annotated with Spring Data MongoDB’s @Document annotation.
 
 > 다음 예제는 애노테이션이 붙은 도메인 클래스 리포지토리를 보여줍니다.
@@ -538,10 +510,8 @@ Spring Data is no longer able to tell the repositories apart, which leads to und
 
 <br>
 
-Repository type details and distinguishing domain class annotations are used for strict repository configuration to
-identify repository candidates for a particular Spring Data module.
-Using multiple persistence technology-specific annotations on the same domain type is possible and enables reuse of
-domain types across multiple persistence technologies.
+Repository type details and distinguishing domain class annotations are used for strict repository configuration to identify repository candidates for a particular Spring Data module.
+Using multiple persistence technology-specific annotations on the same domain type is possible and enables reuse of domain types across multiple persistence technologies.
 However, Spring Data can then no longer determine a unique module with which to bind the repository.
 
 > 리포지토리 타입 세부정보와 구별되는 도메인 클래스용 애노테이션은 특정 Spring Data 모듈을 사용하는 리포지토리를 구분하기 위해 사용됩니다.
@@ -551,8 +521,7 @@ However, Spring Data can then no longer determine a unique module with which to 
 <br>
 
 The last way to distinguish repositories is by scoping repository base packages.
-Base packages define the starting points for scanning for repository interface definitions, which implies having
-repository definitions located in the appropriate packages.
+Base packages define the starting points for scanning for repository interface definitions, which implies having repository definitions located in the appropriate packages.
 By default, annotation-driven configuration uses the package of the configuration class.
 The base package in XML-based configuration is mandatory.
 
@@ -611,8 +580,7 @@ For Java configuration, you can use the queryLookupStrategy attribute of the Ena
 Some strategies may not be supported for particular datastores.
 
 - CREATE attempts to construct a store-specific query from the query method name.
-  The general approach is to remove a given set of well known prefixes from the method name and parse the rest of the
-  method.
+  The general approach is to remove a given set of well known prefixes from the method name and parse the rest of the method.
   You can read more about query construction in “Query Creation”.
 - USE_DECLARED_QUERY tries to find a declared query and throws an exception if it cannot find one.
   The query can be defined by an annotation somewhere or declared by other means.
@@ -621,8 +589,7 @@ Some strategies may not be supported for particular datastores.
 - CREATE_IF_NOT_FOUND (the default) combines CREATE and USE_DECLARED_QUERY.
   It looks up a declared query first, and, if no declared query is found, it creates a custom method name-based query.
   This is the default lookup strategy and, thus, is used if you do not configure anything explicitly.
-  It allows quick query definition by method names but also custom-tuning of these queries by introducing declared
-  queries as needed.
+  It allows quick query definition by method names but also custom-tuning of these queries by introducing declared queries as needed.
 
 > 리포지토리 환경에서 쿼리를 해결하기 위해 다음의 전략들을 사용할 수 있습니다.
 > Java 설정의 경우, `EnableJpaRepositories` 애노테이션의 `queryLookupStrategy` 속성을 사용할 수 있습니다.
@@ -646,8 +613,7 @@ Some strategies may not be supported for particular datastores.
 
 > 쿼리 생성
 
-The query builder mechanism built into the Spring Data repository infrastructure is useful for building constraining
-queries over entities of the repository.
+The query builder mechanism built into the Spring Data repository infrastructure is useful for building constraining queries over entities of the repository.
 
 The following example shows how to create a number of queries:
 Example 13. Query creation from method names
@@ -679,9 +645,7 @@ interface PersonRepository extends Repository<Person, Long> {
 Parsing query method names is divided into subject and predicate.
 The first part (find…By, exists…By) defines the subject of the query, the second part forms the predicate.
 The introducing clause (subject) can contain further expressions.
-Any text between find (or other introducing keywords) and By is considered to be descriptive unless using one of the
-result-limiting keywords such as a Distinct to set a distinct flag on the query to be created or Top/First to limit
-query results.
+Any text between find (or other introducing keywords) and By is considered to be descriptive unless using one of the result-limiting keywords such as a Distinct to set a distinct flag on the query to be created or Top/First to limit query results.
 
 > Spring Data 리포지토리 인프라에 내장된 쿼리 생성 메커니즘은 엔티티에 대한 제약 쿼리를 빌드하는 데 유용합니다.
 >
@@ -695,8 +659,7 @@ query results.
 
 <br>
 
-The appendix contains the full list of query method subject keywords and query method predicate keywords including
-sorting and letter-casing modifiers.
+The appendix contains the full list of query method subject keywords and query method predicate keywords including sorting and letter-casing modifiers.
 However, the first By acts as a delimiter to indicate the start of the actual criteria predicate.
 At a very basic level, you can define conditions on entity properties and concatenate them with And and Or.
 
@@ -708,12 +671,9 @@ However, there are some general things to notice:
   You also get support for operators such as Between, LessThan, GreaterThan, and Like for the property expressions.
   The supported operators can vary by datastore, so consult the appropriate part of your reference documentation.
 - The method parser supports setting an IgnoreCase flag for individual properties (for example,
-  findByLastnameIgnoreCase(…)) or for all properties of a type that supports ignoring case (usually String instances —
-  for example, findByLastnameAndFirstnameAllIgnoreCase(…)).
-  Whether ignoring cases is supported may vary by store, so consult the relevant sections in the reference documentation
-  for the store-specific query method.
-- You can apply static ordering by appending an OrderBy clause to the query method that references a property and by
-  providing a sorting direction (Asc or Desc).
+  findByLastnameIgnoreCase(…)) or for all properties of a type that supports ignoring case (usually String instances — for example, findByLastnameAndFirstnameAllIgnoreCase(…)).
+  Whether ignoring cases is supported may vary by store, so consult the relevant sections in the reference documentation for the store-specific query method.
+- You can apply static ordering by appending an OrderBy clause to the query method that references a property and by providing a sorting direction (Asc or Desc).
   To create a query method that supports dynamic sorting, see “Paging, Iterating Large Results, Sorting”.
 
 > 부록에는 정렬과 대소문자를 포함한 모든 쿼리 메서드 키워드들이 있습니다.
@@ -751,14 +711,10 @@ List<Person> findByAddressZipCode(ZipCode zipCode);
 
 Assume a Person has an Address with a ZipCode.
 In that case, the method creates the x.address.zipCode property traversal.
-The resolution algorithm starts by interpreting the entire part (AddressZipCode) as the property and checks the domain
-class for a property with that name (uncapitalized).
+The resolution algorithm starts by interpreting the entire part (AddressZipCode) as the property and checks the domain class for a property with that name (uncapitalized).
 If the algorithm succeeds, it uses that property.
-If not, the algorithm splits up the source at the camel-case parts from the right side into a head and a tail and tries
-to find the corresponding property
-— in our example, AddressZip and Code.
-If the algorithm finds a property with that head, it takes the tail and continues building the tree down from there,
-splitting the tail up in the way just described.
+If not, the algorithm splits up the source at the camel-case parts from the right side into a head and a tail and tries to find the corresponding property — in our example, AddressZip and Code.
+If the algorithm finds a property with that head, it takes the tail and continues building the tree down from there, splitting the tail up in the way just described.
 If the first split does not match, the algorithm moves the split point to the left (Address, ZipCode) and continues.
 
 > 속성 표현식은 앞의 예제와 같이 엔티티와 바로 연결되는 속성들만 참조할 수 있습니다.
@@ -779,8 +735,7 @@ If the first split does not match, the algorithm moves the split point to the le
 
 Although this should work for most cases, it is possible for the algorithm to select the wrong property.
 Suppose the Person class has an addressZip property as well.
-The algorithm would match in the first split round already, choose the wrong property, and fail (as the type of
-addressZip probably has no code property).
+The algorithm would match in the first split round already, choose the wrong property, and fail (as the type of addressZip probably has no code property).
 
 To resolve this ambiguity you can use _ inside your method name to manually define traversal points.
 So our method name would be as follows:
@@ -789,8 +744,7 @@ So our method name would be as follows:
 List<Person> findByAddress_ZipCode(ZipCode zipCode);
 ```
 
-Because we treat the underscore character as a reserved character, we strongly advise following standard Java naming
-conventions (that is, not using underscores in property names but using camel case instead).
+Because we treat the underscore character as a reserved character, we strongly advise following standard Java naming conventions (that is, not using underscores in property names but using camel case instead).
 
 > 이 방식은 대부분의 경우 잘 동작하지만, 잘못된 속성을 선택하게 되는 경우도 있습니다.
 > 만약 `Person` 클래스에 `addressZip` 속성도 있다고 가정해봅시다.
@@ -812,8 +766,7 @@ conventions (that is, not using underscores in property names but using camel ca
 <br>
 
 To handle parameters in your query, define method parameters as already seen in the preceding examples.
-Besides that, the infrastructure recognizes certain specific types like Pageable and Sort, to apply pagination and
-sorting to your queries dynamically.
+Besides that, the infrastructure recognizes certain specific types like Pageable and Sort, to apply pagination and sorting to your queries dynamically.
 The following example demonstrates these features:
 
 Example 14. Using Pageable, Slice, and Sort in query methods
@@ -844,13 +797,11 @@ If you do not want to apply any sorting or pagination, use `Sort.unsorted()` and
 
 <br>
 
-The first method lets you pass an `org.springframework.data.domain.Pageable` instance to the query method to dynamically
-add paging to your statically defined query.
+The first method lets you pass an `org.springframework.data.domain.Pageable` instance to the query method to dynamically add paging to your statically defined query.
 A Page knows about the total number of elements and pages available.
 It does so by the infrastructure triggering a count query to calculate the overall number.
 As this might be expensive (depending on the store used), you can instead return a Slice.
-A Slice knows only about whether a next Slice is available, which might be sufficient when walking through a larger
-result set.
+A Slice knows only about whether a next Slice is available, which might be sufficient when walking through a larger result set.
 
 > 첫 번째 메서드를 사용하면 `Pageable` 객체를 쿼리 메서드에 전달하여 정적으로 정의된 쿼리에 동적인 페이징을 추가할 수 있습니다.
 > `Page` 는 사용 가능한 모든 요소와 페이지 개수를 알고 있습니다.
@@ -863,8 +814,7 @@ result set.
 Sorting options are handled through the Pageable instance, too.
 If you need only sorting, add an org.springframework.data.domain.Sort parameter to your method.
 As you can see, returning a List is also possible.
-In this case, the additional metadata required to build the actual Page instance is not created (which, in turn, means
-that the additional count query that would have been necessary is not issued).
+In this case, the additional metadata required to build the actual Page instance is not created (which, in turn, means that the additional count query that would have been necessary is not issued).
 Rather, it restricts the query to look up only the given range of entities.
 
 **Note**
@@ -884,8 +834,7 @@ By default, this query is derived from the query you actually trigger.
 <br>
 
 **Which Method is Appropriate?**
-The value provided by the Spring Data abstractions is perhaps best shown by the possible query method return types
-outlined in the following table below.
+The value provided by the Spring Data abstractions is perhaps best shown by the possible query method return types outlined in the following table below.
 The table shows which types you can return from a query method
 
 > **어떤 메서드가 적절한가?**
@@ -951,19 +900,19 @@ QSort sort = QSort.by(QPerson.firstname.asc())
 > **페이징과 정렬**
 > 속성 이름을 사용해서 간단한 정렬 표현식을 정의할 수 있습니다.
 > 표현식을 합쳐 여러 기준을 하나의 표현식으로 정의할 수 있습니다.
-> 
+>
 > 예제 15) 정렬 표현식 정의
 > (코드 생략)
 > 더욱 type-safe 하게 정렬 표현식을 정의하기 위해서, 정렬 표현식을 정의할 유형부터 시작하고 메서드 참조를 사용하여 정렬할 속성을 정의합니다.
-> 
+>
 > 예제 16) type-safe API 를 사용하여 정렬 표현식 정의하기
 > (코드 생략)
-> 
+>
 > **참고**
 > `TypedSort.by(...)` 는 CGlib을 사용한 런타임 프록시를 사용하므로, Graal VM Native 툴을 사용할 때 네이티브 이미지 컴파일을 방해할 수 있습니다.
-> 
-> 만약 Querydsl 을 사용한다면, 생성된 메타모델 타입을 사용하여 정렬 표현식을 정의할 수 있습니다. 
-> 
+>
+> 만약 Querydsl 을 사용한다면, 생성된 메타모델 타입을 사용하여 정렬 표현식을 정의할 수 있습니다.
+>
 > 예제 17) Querydsl API를 사용해 정렬표현식 정의
 > (코드 생략)
 
@@ -1001,7 +950,7 @@ List<User> findTop10ByLastname(String lastname, Pageable pageable);
 > 당신은 `top` 이나 `first` 뒤에 숫자값을 추가하여 반환할 결과값의 크기를 지정할 수 있습니다.
 > 만약 숫자가 없다면 하나만 반환합니다.
 > 다음의 예제들은 쿼리 사이즈를 제한하는 방법을 보여줍니다.
-> 
+>
 > 예제 18) `Top`, `First` 키워드를 사용하여 쿼리 결과 크기를 제한하기
 > (코드 생략)
 
@@ -1017,17 +966,17 @@ Limiting the results in combination with dynamic sorting by using a Sort paramet
 
 > 제한 표현식은 `Distinct` 키워드도 지원합니다.
 > 또한 쿼리 결과가 하나인 경우, 결과물은 `Optional` 로 감쌀 수 있습니다.
-> 
+>
 > 만약 페이지네이션과 슬라이싱이 제한된 쿼리에 적용될 경우, (페이지 계산과 같은 동작들은) 제한된 결과 내에서 적용됩니다.
-> 
+>
 > **참고**
-> `Sort` 파라미터를 사용하여 객체 크기를 제한하면, `K` 개의 가장 작은 요소뿐만 아니라, `K`개의 가장 큰 요소들을 가져오는 쿼리 메서드를 정의할 수 있습니다. 
+> `Sort` 파라미터를 사용하여 객체 크기를 제한하면, `K` 개의 가장 작은 요소뿐만 아니라, `K`개의 가장 큰 요소들을 가져오는 쿼리 메서드를 정의할 수 있습니다.
 
 <br>
 
 ### 8.4.6. Repository Methods Returning Collections or Iterables
 
-> `Collections` 또는 `Iterables` 를 반환하는 리포지토리 메서드 
+> `Collections` 또는 `Iterables` 를 반환하는 리포지토리 메서드
 
 <br>
 
@@ -1058,10 +1007,10 @@ Streamable<Person> result = repository.findByFirstnameContaining("av")
 
 ```
 
-> **쿼리 메서드의 반환타입으로 `Streamable` 을 사용하기** 
+> **쿼리 메서드의 반환타입으로 `Streamable` 을 사용하기**
 > 당신은 `Iterable` 이나 다른 컬렉션 타입을 반환하는 대신, `Streambale` 을 반환할 수 있습니다.
 > 이것은 병렬이 아닌 스트림을 사용하는 편리한 메서드들을 제공하고 (`Iterable` 엔 없는), `.filter()` 나 `.map()` 을 사용하여 요소들을 다른 `Streamable` 에 연결할 수 있습니다.
-> 
+>
 > 예제 19) `Streamable` 을 사용하여 쿼리 메서드 결과물을 결합하기
 > (코드 생략)
 
@@ -1107,31 +1056,31 @@ interface ProductRepository implements Repository<Product, Long> {
 ```
 1. A Product entity that exposes API to access the product’s price.
 2. 	A wrapper type for a Streamable<Product> that can be constructed by using Products.of(…) (factory method created with the Lombok annotation).
-    A standard constructor taking the Streamable<Product> will do as well.
+      A standard constructor taking the Streamable<Product> will do as well.
 3. 	The wrapper type exposes an additional API, calculating new values on the Streamable<Product>.
 4. 	Implement the Streamable interface and delegate to the actual result.
 5. 	That wrapper type Products can be used directly as a query method return type.
-    You do not need to return Streamable<Product> and manually wrap it after the query in the repository client.
+      You do not need to return Streamable<Product> and manually wrap it after the query in the repository client.
 
 > **사용자 설정의 `Streamable` 반환 타입**
-> 
+>
 > 컬렉션에 맞는 전용 래퍼 타입을 제공하는 것은 여러 요소를 반환하는 API를 제공할 때 일반적으로 사용되는 패턴입니다.
 > 보통, 이러한 타입들은 콜렉션과 유사한 타입을 반환하는 리포지토리 메서드를 호출하고, 래퍼 타입 인스턴스를 수동으로 생성합니다.
 > `Spring Data`는 다음의 기준들을 만족하는 경우, 래퍼타입을 쿼리 메서드의 반환타입으로 사용해서 추가적인 과정을 피할 수 있습니다.
-> 
+>
 > 1. 반환 유형은 `Streamable` 을 구현합니다.
 > 2. 반환 유형은 `Streamable` 을 인수로 받는 생성자나 `of(...), valueOf(...)` 와 같은 정적 팩토리 메서드에 노출됩니다.
 >
 > 다음은 예제들입니다.
-> 
+>
 > (코드 생략)
 > 1. `Product`는 제품 가격을 알 수 있도록, API를 노출하는 엔티티입니다.
 > 2. `Products.of(...)` 을 통해 생성될 수 있는 `Streambale<Product>` 래퍼 타입입니다. (롬복 애노테이션으로 만들어진 팩토리 메서드)
-> `Streamable<Product>` 를 받는 표준 생성자도 가능합니다.
+     > `Streamable<Product>` 를 받는 표준 생성자도 가능합니다.
 > 3. 래퍼 타입은 `Streamable<Product>` 를 계산하는 추가적인 API 를 제공합니다.
 > 4. `Streamable` 인터페이스를 구현하고 실제 결과를 위임합니다.
 > 5. Products 래퍼 타입은 쿼리 메서드의 반환타입으로 바로 사용될 수 있습니다.
-> 당신은 `Streamable<Product>` 를 반환하거나, 직접 래핑하여 반환할 필요가 없습니다.
+     > 당신은 `Streamable<Product>` 를 반환하거나, 직접 래핑하여 반환할 필요가 없습니다.
 
 <br>
 
@@ -1153,10 +1102,10 @@ That is, a java.util.List is turned into a Vavr List or Seq, a java.util.Set bec
 > `Vavr` 은 자바의 함수형 프로그래밍 개념을 수용하는 라이브러리입니다.
 > 이것은 쿼리 메서드 반환타입을 사용할 수 있는 사용자 지정 컬렉션 세트를 제공합니다. (다음 테이블 참조)
 > (테이블 생략)
-> 
+>
 > 당신은 첫 번째 열의 타입 (또는 그 하위 타입)을 쿼리 메서드의 반환 타입으로 사용할 수 있고, 실제 가져올 땐, 구현 타입인 두번째 열의 타입으로 가져옵니다.
-> 또는, `Traversable` (`Vavr Iterable` 과 동등한) 을 선언한 다음, 실제 반환 값에서 구현 클래스를 파생할 수 있습니다. 
-> 즉, `java.util.List` 는 `Vavr List` 나 `Seq` 으로 바뀌고, `java.util.Set` 은 `Vavr LinkedHashSet` 으로 바뀝니다. 
+> 또는, `Traversable` (`Vavr Iterable` 과 동등한) 을 선언한 다음, 실제 반환 값에서 구현 클래스를 파생할 수 있습니다.
+> 즉, `java.util.List` 는 `Vavr List` 나 `Seq` 으로 바뀌고, `java.util.Set` 은 `Vavr LinkedHashSet` 으로 바뀝니다.
 
 <br>
 
@@ -1196,14 +1145,14 @@ Not all Spring Data modules currently support Stream<T> as a return type.
 
 > 당신은 쿼리 메서드의 반환타입으로 자바 8의 `Stream` 을 사용하여 점진적으로 데이터를 처리할 수 있습니다.
 > 쿼리 결과물을 `Stream` 으로 감싸는 대신에, 다음 예제와 같이 데이터 저장소의 특화된 메서드를 사용하여 streaming 을 수행합니다.
-> 
+>
 > 예제 20) 자바 8 스트림을 사용하여 쿼리 결과를 streaming 하기
 > (코드 생략)
-> 
+>
 > **참고**
 > `Stream` 은 기본 데이터 저장소별 리소스를 감싸고 있을 가능성이 있으므로 사용후에 반드시 닫아야 합니다.
 > `close()` 메서드를 사용하여 수동으로 `Stream` 을 닫아주거나, 자바 7의 `try-with-resources` 블록을 사용할 수 있습니다.
-> 
+>
 > 예제 21) `try-with-resources` 블록내에서 `Stream` 사용하기
 > (코드 생략)
 >
@@ -1214,7 +1163,7 @@ Not all Spring Data modules currently support Stream<T> as a return type.
 
 ### 8.4.8 Null Handling of Repository Methods
 
-> 리포지토리 메서드의 Null 처리 
+> 리포지토리 메서드의 Null 처리
 
 <br>
 
@@ -1232,9 +1181,9 @@ See “Repository query return types” for details.
 
 > Spring Data 2.0 부터, CRUD 리포지토리 메서드는 단건 조회 시, 자바 8의 `Optional` 객체로 값을 반환하여 해당 값이 없을 가능성을 나타냅니다.
 > 그 외에도, Spring Data 는 쿼리 메서드의 반환 타입들로 다음의 래퍼 타입들을 사용할 수 있습니다.
-> 
+>
 > (반환타입 생략)
-> 
+>
 > 또는 쿼리 메서드에서 래퍼 타입을 전혀 사용하지 않도록 선택할 수 있습니다.
 > 쿼리 결과가 없는 경우, null 을 반환합니다.
 > 컬렉션이나 컬렉션 대체 타입, 래퍼 타입, 스트림을 반환하는 리포지토리 메서드는 null 대신 빈 컬렉션을 반환합니다.
@@ -1267,16 +1216,16 @@ package com.acme;
 
 > 스프링 프레임워크의 nullability 주석을 사용하여 리포지토리에 nullability 제약 조건을 걸 수 있습니다.
 > 다음과 같이 쉬운 접근 방식을 제공하며, 런타임 중에 null 을 체크할 수 있습니다.
-> 
-> - @NonNullApi : 패키지 수준에서 선언하여 사용합니다. 
-> 기본 동작은 파라미터와 반환값 모두 null 값을 허용하지 않습니다.
+>
+> - @NonNullApi : 패키지 수준에서 선언하여 사용합니다.
+    > 기본 동작은 파라미터와 반환값 모두 null 값을 허용하지 않습니다.
 > - @NonNull : null 이 아니어야 하는 파라미터나 반환값에 사용합니다. (@NonNullApi 가 적용된 곳엔 사용하지 않아도 됩니다.)
 > - @Nullable : null 이 될 수 있는 파라미터나 반환값에 사용합니다.
-> 
+>
 > 스프링 애노테이션은 JSR 305 애노테이션과 함께 메타 애노테이션으로 사용됩니다. (JSR은 휴면 상태이지만 널리 사용됩니다.)
 > JSR 305 메타 애노테이션은 IDEA, Eclipse, Kotlin 과 같은 업체가 스프링 어노테이션을 하드코딩할 필요 없이 일반적인 방식으로 null-safety 지원을 제공합니다
-> 쿼리 메서드의 nullability 제약조건을 런타임 시점에 활성화하려면, 다음예제와 같이 스프링의 @NonNullApi 를 사용하여 패키지 수준에서 null이 불가하도록 해야합니다. 
-> 
+> 쿼리 메서드의 nullability 제약조건을 런타임 시점에 활성화하려면, 다음예제와 같이 스프링의 @NonNullApi 를 사용하여 패키지 수준에서 null이 불가하도록 해야합니다.
+>
 > 예제 22) package-info.java 의 Non-nullability 선언
 > (코드 생략)
 
@@ -1307,31 +1256,31 @@ interface UserRepository extends Repository<User, Long> {
 }
 ```
 1. The repository resides in a package (or sub-package) for which we have defined non-null behavior.
-2. Throws an EmptyResultDataAccessException when the query does not produce a result. 
-Throws an IllegalArgumentException when the emailAddress handed to the method is null.
-3. Returns null when the query does not produce a result. 
-Also accepts null as the value for emailAddress.
+2. Throws an EmptyResultDataAccessException when the query does not produce a result.
+   Throws an IllegalArgumentException when the emailAddress handed to the method is null.
+3. Returns null when the query does not produce a result.
+   Also accepts null as the value for emailAddress.
 4. Returns Optional.empty() when the query does not produce a result.
-Throws an IllegalArgumentException when the emailAddress handed to the method is null.
+   Throws an IllegalArgumentException when the emailAddress handed to the method is null.
 
 > null 이 아닌 기본값이 적용되면, 리포지토리 쿼리 메서드 호출은 런타임에 null 가능성에 대해 검사합니다.
 > 만약 쿼리 결과물이 정의된 제약조건을 위배하면, 예외가 발생합니다.
 > 이러한 상황은 메서드가 non-nullable 로 정의되어 있는데, null값을 반환할 경우 발생합니다. (리포지토리가 있는 패키지에 정의된 어노테이션의 기본값)
 > null 가능성이 있는 결과물을 옵트인하려면, @Nullable 애노테이션을 개별 메서드에서 선택적으로 사용하십시오.
 > 이 섹션의 시작부분에서 언급한 result wrapper 타입을 사용하면 예상대로 작동합니다: 빈 결과값은 부재를 나타내는 값으로 변환됩니다.
-> 
+>
 > 다음의 예제는 방금 설명한 몇 가지 기술들을 설명합니다.
-> 
+>
 > 예제 23) 다른 nullability 제약 조건 사용
 > (코드 생략)
-> 
+>
 > 1. 리포지토리는 null을 사용할 수 있는 동작을 정의한 패키지에 있습니다.
 > 2. 쿼리의 결과물이 없는 경우, `EmptyResultDataAccessException` 을 발생시킵니다.
-> 만약 메서드에 넘겨진 (파라미터) `emailAddress` 가 null 이면 `IllegalArgumentException` 을 발생시킵니다.
+     > 만약 메서드에 넘겨진 (파라미터) `emailAddress` 가 null 이면 `IllegalArgumentException` 을 발생시킵니다.
 > 3. 쿼리의 결과물이 없는 경우, null 을 반환합니다.
-> 또한 `emailAddress` 가 null 일 수 있습니다.
+     > 또한 `emailAddress` 가 null 일 수 있습니다.
 > 4. 쿼리의 결과물이 없는 경우, `Optional.empty()` 를 반환합니다.
-> 만약 메서드에 넘겨진 `emailAddress` 가 null 일 경우 `IllegalArgumentException` 을 발생시킵니다.
+     > 만약 메서드에 넘겨진 `emailAddress` 가 null 일 경우 `IllegalArgumentException` 을 발생시킵니다.
 
 <br>
 
@@ -1357,20 +1306,20 @@ interface UserRepository : Repository<User, String> {
 }
 ```
 1. The method defines both the parameter and the result as non-nullable (the Kotlin default).
-The Kotlin compiler rejects method invocations that pass null to the method.
-If the query yields an empty result, an EmptyResultDataAccessException is thrown.
+   The Kotlin compiler rejects method invocations that pass null to the method.
+   If the query yields an empty result, an EmptyResultDataAccessException is thrown.
 2. This method accepts null for the firstname parameter and returns null if the query does not produce a result.
 
 > 코틀린은 언어 자체로 nullability 제약 조건이 정의되어 있습니다.
-> 코틀린 코드는 바이트코드로 컴파일되며, 메서드 시그니처로 nullability 제약조건을 표현하지 않고, 컴파일된 메타데이터를 통해 표현합니다. 
+> 코틀린 코드는 바이트코드로 컴파일되며, 메서드 시그니처로 nullability 제약조건을 표현하지 않고, 컴파일된 메타데이터를 통해 표현합니다.
 > kotlin-reflect JAR 를 당신의 프로젝트의 포함시켜 코틀린의 nullability 제약 조건 검사기능을 사용할 수 있습니다.
 > 스프링 데이터 리포지토리는 언어 메커니즘을 사용하여 동일한 런타임에 검사하기 위해 다음과 같이 제약 조건을 정의합니다.
-> 
+>
 > 예제 24) Kotlin 리포지토리에서 nullability 제약 조건 사용
 > (코드 생략)
 > 1. 해당 메서드는 파라미터와 결과 모두 null 이 불가능합니다. (Kotlin 의 기본값)
-> Kotlin 컴파일러는 메서드에 null 을 전달하는 메서드의 호출을 금지합니다.
-> 만약 쿼리 결과가 빈 값인 경우, `EmptyResultDataAccessException` 이 발생합니다.
+     > Kotlin 컴파일러는 메서드에 null 을 전달하는 메서드의 호출을 금지합니다.
+     > 만약 쿼리 결과가 빈 값인 경우, `EmptyResultDataAccessException` 이 발생합니다.
 > 2. 이 메서드는 `firstname` 파라미터가 null 값인 것을 허용하고, 쿼리 결과물이 없는 경우 해당 메서드가 null 을 반환하는 것을 허용합니다.
 
 <br>
@@ -1403,7 +1352,7 @@ CompletableFuture<User> findOneByFirstname(String firstname); (2)
 > 비동기쿼리는 반응형 쿼리와는 다르며 함께 사용될 수 없습니다.
 > 반응형 지원에 대 한 내용은 각 저장소의 문서를 참고하십시오.
 > 다음의 예제들은 여러 비동기 쿼리들을 보여줍니다.
-> 
+>
 > (코드 생략)
 > 1. `java.util.concurrent.Future` 을 반환타입으로 사용
 > 2. 자바 8의 `java.util.concurrent.CompletableFuture` 을 반환 타입으로 사용
@@ -1415,7 +1364,7 @@ CompletableFuture<User> findOneByFirstname(String firstname); (2)
 This section covers how to create instances and bean definitions for the defined repository interfaces
 
 > ## 리포지토리 인스턴스 생성하기
-> 
+>
 > 이 섹션에서는 인스턴스와 리포지토리 인터페이스를 정의하기 위한 bean 정의를 생성하는 방법을 다룹니다.
 
 <br>
@@ -1442,18 +1391,18 @@ class ApplicationConfiguration {
 }
 ```
 **Note**
-The preceding example uses the JPA-specific annotation, which you would change according to the store module you actually use
+The preceding example uses the JPA-specific annotation, which you would change according to the store module you actually use.
 The same applies to the definition of the EntityManagerFactory bean.
 See the sections covering the store-specific configuration.
 
 > 자바 구성 클래스에서 `@EnableJpaRepositories` 애노테이션을 사용하여 리포지토리 활성화 구성을 정의합니다.
-> 스프링 컨테이너의 자바 기반 구성에 대해서는 스프링 참조문서의 JavaConfig 부분을 참조하십시오. 
-> 
+> 스프링 컨테이너의 자바 기반 구성에 대해서는 스프링 참조문서의 JavaConfig 부분을 참조하십시오.
+>
 > Spring Data 리포지토리를 활성화하는 샘플 구성은 다음과 유사합니다.
-> 
+>
 > 예제 25) 애노테이션 기반 리포지토리 구성 파일 예시
 > (코드 생략)
-> 
+>
 > **참고**
 > 앞선 예제는 JPA 에 특화된 애노테이션으로, 당신이 실제로 사용하는 저장소 모듈에 따라 애노테이션은 바뀝니다.
 > `EntityManagerFactory` bean 의 정의에도 동일하게 적용됩니다.
@@ -1496,13 +1445,13 @@ The preceding example excludes all interfaces ending in SomeRepository from bein
 > 이를 위해, 리포지토리 정의 안에 필터 요소를 넣습니다.
 > 의미론적으로 스프링의 컴포넌트 필터에 있는 요소와 정확히 동일합니다.
 > 더욱 자세한 내용은, 스프링 공식 문서를 참고하십시오.
-> 
+>
 > 예를 들어, 특정 인터페이스를 리포지토리 bean 의 인스턴스화에서 제외하려면, 다음 설정들을 사용할 수 있습니다.
-> 
+>
 > 예제 26) 필터 사용
 > (코드 생략)
-> 
-> 앞선 예제에서는 `SomeRepository` 로 끝나는 모든 인터페이스는 인스턴스화에서 제외되고, `SomeOtherRepository` 로 끝나는 모든 인터페이스는 인스턴스화에 포함됩니다. 
+>
+> 앞선 예제에서는 `SomeRepository` 로 끝나는 모든 인터페이스는 인스턴스화에서 제외되고, `SomeOtherRepository` 로 끝나는 모든 인터페이스는 인스턴스화에 포함됩니다.
 
 <br>
 
@@ -1525,7 +1474,7 @@ UserRepository repository = factory.getRepository(UserRepository.class);
 > 리포지토리 인프라를 스프링 컨테이너 밖에서도 사용할 수 있습니다. - 예를 들면, CDI 환경
 > 여전히 클래스 경로에 몇 가지의 스프링 라이브러리를 필요로 하지만, 일반적으로 프로그래밍 방식으로도 리포지토리를 설정할 수 있습니다.
 > Spring Data 모듈은 persistence 기술에 특화된 `RepositoryFactory` 과 같은 리포지토리 지원을 제공합니다.
-> 
+>
 > 예제 27) `repository factory` 의 독립적인 사용
 > (코드 생략)
 
