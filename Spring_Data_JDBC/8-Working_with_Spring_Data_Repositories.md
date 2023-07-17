@@ -579,7 +579,7 @@ class Configuration { …
 
 <br>
 
-## 8.4. Defining Query Methods
+### 8.4. Defining Query Methods
 
 > 쿼리 메서드 정의
 
@@ -969,7 +969,7 @@ QSort sort = QSort.by(QPerson.firstname.asc())
 
 <br>
 
-## 8.4.5. Limiting Query Results
+### 8.4.5. Limiting Query Results
 
 > 쿼리 결과 제한
 
@@ -1025,7 +1025,7 @@ Limiting the results in combination with dynamic sorting by using a Sort paramet
 
 <br>
 
-## 8.4.6. Repository Methods Returning Collections or Iterables
+### 8.4.6. Repository Methods Returning Collections or Iterables
 
 > `Collections` 또는 `Iterables` 를 반환하는 리포지토리 메서드 
 
@@ -1160,7 +1160,7 @@ That is, a java.util.List is turned into a Vavr List or Seq, a java.util.Set bec
 
 <br>
 
-## 8.4.7 Streaming Query Results
+### 8.4.7 Streaming Query Results
 
 > 쿼리 결과 streaming
 
@@ -1212,7 +1212,7 @@ Not all Spring Data modules currently support Stream<T> as a return type.
 
 <br>
 
-## 8.4.8 Null Handling of Repository Methods
+### 8.4.8 Null Handling of Repository Methods
 
 > 리포지토리 메서드의 Null 처리 
 
@@ -1346,7 +1346,187 @@ Kotlin code compiles to bytecode, which does not express nullability constraints
 Make sure to include the kotlin-reflect JAR in your project to enable introspection of Kotlin’s nullability constraints.
 Spring Data repositories use the language mechanism to define those constraints to apply the same runtime checks, as follows:
 
+Example 24. Using nullability constraints on Kotlin repositories
+
+```kotlin
+interface UserRepository : Repository<User, String> {
+
+  fun findByUsername(username: String): User     (1)
+
+  fun findByFirstname(firstname: String?): User? (2)
+}
+```
+1. The method defines both the parameter and the result as non-nullable (the Kotlin default).
+The Kotlin compiler rejects method invocations that pass null to the method.
+If the query yields an empty result, an EmptyResultDataAccessException is thrown.
+2. This method accepts null for the firstname parameter and returns null if the query does not produce a result.
+
 > 코틀린은 언어 자체로 nullability 제약 조건이 정의되어 있습니다.
 > 코틀린 코드는 바이트코드로 컴파일되며, 메서드 시그니처로 nullability 제약조건을 표현하지 않고, 컴파일된 메타데이터를 통해 표현합니다. 
 > kotlin-reflect JAR 를 당신의 프로젝트의 포함시켜 코틀린의 nullability 제약 조건 검사기능을 사용할 수 있습니다.
 > 스프링 데이터 리포지토리는 언어 메커니즘을 사용하여 동일한 런타임에 검사하기 위해 다음과 같이 제약 조건을 정의합니다.
+> 
+> 예제 24) Kotlin 리포지토리에서 nullability 제약 조건 사용
+> (코드 생략)
+> 1. 해당 메서드는 파라미터와 결과 모두 null 이 불가능합니다. (Kotlin 의 기본값)
+> Kotlin 컴파일러는 메서드에 null 을 전달하는 메서드의 호출을 금지합니다.
+> 만약 쿼리 결과가 빈 값인 경우, `EmptyResultDataAccessException` 이 발생합니다.
+> 2. 이 메서드는 `firstname` 파라미터가 null 값인 것을 허용하고, 쿼리 결과물이 없는 경우 해당 메서드가 null 을 반환하는 것을 허용합니다.
+
+<br>
+
+### 8.4.9. Asynchronous Query Results
+
+> 비동기 쿼리 결과
+
+<br>
+
+You can run repository queries asynchronously by using Spring’s asynchronous method running capability.
+This means the method returns immediately upon invocation while the actual query occurs in a task that has been submitted to a Spring TaskExecutor.
+Asynchronous queries differ from reactive queries and should not be mixed.
+See the store-specific documentation for more details on reactive support.
+The following example shows a number of asynchronous queries:
+```java
+@Async
+Future<User> findByFirstname(String firstname);               (1)
+
+@Async
+CompletableFuture<User> findOneByFirstname(String firstname); (2)
+
+```
+1. Use java.util.concurrent.Future as the return type.
+2. Use a Java 8 java.util.concurrent.CompletableFuture as the return type.
+
+
+> 스프링의 비동기 메서드 실행 기능을 사용하여 리포지토리 쿼리를 비동기적으로 실행할 수 있습니다.
+> 메서드는 호출 즉시 결과물을 반환하지만, 실제 쿼리는 스프링 TaskExecutor에 제출된 작업에 의해 발생한다는 의미입니다.
+> 비동기쿼리는 반응형 쿼리와는 다르며 함께 사용될 수 없습니다.
+> 반응형 지원에 대 한 내용은 각 저장소의 문서를 참고하십시오.
+> 다음의 예제들은 여러 비동기 쿼리들을 보여줍니다.
+> 
+> (코드 생략)
+> 1. `java.util.concurrent.Future` 을 반환타입으로 사용
+> 2. 자바 8의 `java.util.concurrent.CompletableFuture` 을 반환 타입으로 사용
+
+<br>
+
+## 8.5. Creating Repository Instances
+
+This section covers how to create instances and bean definitions for the defined repository interfaces
+
+> ## 리포지토리 인스턴스 생성하기
+> 
+> 이 섹션에서는 인스턴스와 리포지토리 인터페이스를 정의하기 위한 bean 정의를 생성하는 방법을 다룹니다.
+
+<br>
+
+### 8.5.1. Java Configuration
+
+> 자바 설정파일
+
+Use the store-specific @EnableJpaRepositories annotation on a Java configuration class to define a configuration for repository activation.
+For an introduction to Java-based configuration of the Spring container, see JavaConfig in the Spring reference documentation.
+
+A sample configuration to enable Spring Data repositories resembles the following:
+
+Example 25. Sample annotation-based repository configuration
+```java
+@Configuration
+@EnableJpaRepositories("com.acme.repositories")
+class ApplicationConfiguration {
+
+  @Bean
+  EntityManagerFactory entityManagerFactory() {
+    // …
+  }
+}
+```
+**Note**
+The preceding example uses the JPA-specific annotation, which you would change according to the store module you actually use
+The same applies to the definition of the EntityManagerFactory bean.
+See the sections covering the store-specific configuration.
+
+> 자바 구성 클래스에서 `@EnableJpaRepositories` 애노테이션을 사용하여 리포지토리 활성화 구성을 정의합니다.
+> 스프링 컨테이너의 자바 기반 구성에 대해서는 스프링 참조문서의 JavaConfig 부분을 참조하십시오. 
+> 
+> Spring Data 리포지토리를 활성화하는 샘플 구성은 다음과 유사합니다.
+> 
+> 예제 25) 애노테이션 기반 리포지토리 구성 파일 예시
+> (코드 생략)
+> 
+> **참고**
+> 앞선 예제는 JPA 에 특화된 애노테이션으로, 당신이 실제로 사용하는 저장소 모듈에 따라 애노테이션은 바뀝니다.
+> `EntityManagerFactory` bean 의 정의에도 동일하게 적용됩니다.
+> 저장소별 구성에 대한 섹션을 참조하십시오.
+
+<br>
+
+### 8.5.2. Using Filters
+
+> 필터 사용
+
+<br>
+
+By default, the infrastructure picks up every interface that extends the persistence technology-specific Repository sub-interface located under the configured base package and creates a bean instance for it.
+However, you might want more fine-grained control over which interfaces have bean instances created for them.
+To do so, use filter elements inside the repository declaration.
+The semantics are exactly equivalent to the elements in Spring’s component filters.
+For details, see the Spring reference documentation for these elements.
+
+For example, to exclude certain interfaces from instantiation as repository beans, you could use the following configuration:
+
+Example 26. Using filters
+```java
+@Configuration
+@EnableJpaRepositories(basePackages = "com.acme.repositories",
+    includeFilters = { @Filter(type = FilterType.REGEX, pattern = ".*SomeRepository") },
+    excludeFilters = { @Filter(type = FilterType.REGEX, pattern = ".*SomeOtherRepository") })
+class ApplicationConfiguration {
+
+  @Bean
+  EntityManagerFactory entityManagerFactory() {
+    // …
+  }
+}
+```
+The preceding example excludes all interfaces ending in SomeRepository from being instantiated and includes those ending with SomeOtherRepository.
+
+> 기본적으로 인프라는 구성된 기본 패키지 아래에 존재하는 persistence 기술에 특화된 리포지토리를 확장하는 모든 하위 인터페이스를 가져와서, 이에 대한 bean 인스턴스를 생성합니다.
+> 하지만, 어떤 인터페이스에 대해 bean 인스턴스가 생성되는지 더 세밀하게 제어하고 싶을 수 있습니다.
+> 이를 위해, 리포지토리 정의 안에 필터 요소를 넣습니다.
+> 의미론적으로 스프링의 컴포넌트 필터에 있는 요소와 정확히 동일합니다.
+> 더욱 자세한 내용은, 스프링 공식 문서를 참고하십시오.
+> 
+> 예를 들어, 특정 인터페이스를 리포지토리 bean 의 인스턴스화에서 제외하려면, 다음 설정들을 사용할 수 있습니다.
+> 
+> 예제 26) 필터 사용
+> (코드 생략)
+> 
+> 앞선 예제에서는 `SomeRepository` 로 끝나는 모든 인터페이스는 인스턴스화에서 제외되고, `SomeOtherRepository` 로 끝나는 모든 인터페이스는 인스턴스화에 포함됩니다. 
+
+<br>
+
+### 8.5.3. Standalone Usage
+
+> 독립적으로 사용
+
+<br>
+
+You can also use the repository infrastructure outside of a Spring container — for example, in CDI environments.
+You still need some Spring libraries in your classpath, but, generally, you can set up repositories programmatically as well.
+The Spring Data modules that provide repository support ship with a persistence technology-specific RepositoryFactory that you can use, as follows:
+
+Example 27. Standalone usage of the repository factory
+```java
+RepositoryFactorySupport factory = … // Instantiate factory here
+UserRepository repository = factory.getRepository(UserRepository.class);
+```
+
+> 리포지토리 인프라를 스프링 컨테이너 밖에서도 사용할 수 있습니다. - 예를 들면, CDI 환경
+> 여전히 클래스 경로에 몇 가지의 스프링 라이브러리를 필요로 하지만, 일반적으로 프로그래밍 방식으로도 리포지토리를 설정할 수 있습니다.
+> Spring Data 모듈은 persistence 기술에 특화된 `RepositoryFactory` 과 같은 리포지토리 지원을 제공합니다.
+> 
+> 예제 27) `repository factory` 의 독립적인 사용
+> (코드 생략)
+
+<br>
