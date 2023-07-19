@@ -1479,3 +1479,219 @@ UserRepository repository = factory.getRepository(UserRepository.class);
 > (코드 생략)
 
 <br>
+
+## 8.6. Custom Implementations for Spring Data Repositories
+
+> Spring Data 리포지토리의 사용자 정의 구현
+
+<br>
+
+Spring Data provides various options to create query methods with little coding.
+But when those options don’t fit your needs you can also provide your own custom implementation for repository methods.
+This section describes how to do that.
+
+> Spring Data 리포지토리는 코딩을 거의하지 않고도 쿼리 메서드를 만드는 다양한 옵션이 있습니다.
+> 하지만 해당 옵션들이 필요하지 않은 경우, 사용자 정의 리포지토리를 만들 수 있습니다.
+> 이 섹션에서 이를 설명합니다.
+
+<br>
+
+### 8.6.1. Customizing Individual Repositories
+
+> 개별 리포지토리 커스터마이징
+
+<br>
+
+To enrich a repository with custom functionality, you must first define a fragment interface and an implementation for the custom functionality, as follows:
+
+Example 28. Interface for custom repository functionality
+```java
+interface CustomizedUserRepository {
+  void someCustomMethod(User user);
+}
+```
+
+Example 29. Implementation of custom repository functionality
+```java
+class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
+
+  public void someCustomMethod(User user) {
+    // Your custom implementation
+  }
+}
+```
+**Note**
+The most important part of the class name that corresponds to the fragment interface is the Impl postfix.
+
+> 리포지토리에 사용자의 커스텀 기능을 확장하기 위해서, 먼저 fragment 인터페이스를 정의하고 개별 기능을 구현합니다.
+> 다음은 예시입니다.
+> 
+> 예제 28) 사용자 리포지토리 기능을 위한 인터페이스
+> (코드 생략)
+>
+> 예제 29) 사용자 리포지토리 기능을 위한 구현
+> (코드 생략)
+> 
+> **참고**
+> 가장 중요한 부분은 인터페이스를 구현한 클래스 이름은 `인터페이스 이름 + Impl` 이어야 합니다.
+
+<br>
+
+The implementation itself does not depend on Spring Data and can be a regular Spring bean.
+Consequently, you can use standard dependency injection behavior to inject references to other beans (such as a JdbcTemplate), take part in aspects, and so on.
+
+Then you can let your repository interface extend the fragment interface, as follows:
+
+Example 30. Changes to your repository interface
+```java
+interface UserRepository extends CrudRepository<User, Long>, CustomizedUserRepository {
+
+  // Declare query methods here
+}
+```
+Extending the fragment interface with your repository interface combines the CRUD and custom functionality and makes it available to clients.
+
+> 구현 클래스는 Spring Data 에 의존하지 않고, 일반적인 스프링 bean 일 수 있습니다.
+> 결과적으로, 당신은 기본적인 의존성 주입을 통해 필요한 다른 bean 들을 주입 받고 (`JdbcTemplate` 같은) 여러가지 작업에 참여할 수 있습니다. 
+> 
+> 그 다음, 당신의 리포지토리 인터페이스가 fragment 인터페이스를 확장하도록 할 수 있습니다.
+> 
+> 예제 30) 리포지토리 인터페이스 변경
+> (코드 생략)
+> 
+> 기존의 리포지토리 인터페이스가 fragment 인터페이스를 확장하여 기본적으로 제공하는 CRUD 와 사용자가 만든 기능을 결합하고 사용할 수 있습니다.
+
+<br>
+
+Spring Data repositories are implemented by using fragments that form a repository composition.
+Fragments are the base repository, functional aspects (such as QueryDsl), and custom interfaces along with their implementations.
+Each time you add an interface to your repository interface, you enhance the composition by adding a fragment.
+The base repository and repository aspect implementations are provided by each Spring Data module.
+
+The following example shows custom interfaces and their implementations:
+
+Example 31. Fragments with their implementations
+```java
+interface HumanRepository {
+  void someHumanMethod(User user);
+}
+
+class HumanRepositoryImpl implements HumanRepository {
+
+  public void someHumanMethod(User user) {
+    // Your custom implementation
+  }
+}
+
+interface ContactRepository {
+
+  void someContactMethod(User user);
+
+  User anotherContactMethod(User user);
+}
+
+class ContactRepositoryImpl implements ContactRepository {
+
+  public void someContactMethod(User user) {
+    // Your custom implementation
+  }
+
+  public User anotherContactMethod(User user) {
+    // Your custom implementation
+  }
+}
+```
+
+The following example shows the interface for a custom repository that extends CrudRepository:
+
+Example 32. Changes to your repository interface
+```java
+interface UserRepository extends CrudRepository<User, Long>, HumanRepository, ContactRepository {
+
+  // Declare query methods here
+}
+```
+
+> Spring Data 리포지토리는 리포지토리의 구성물인 fragments 를 사용하여 구현됩니다.
+> fragments 는 기본 리포지토리이며, 기능적 측면 및 사용자의 구현이 포함된 사용자 인터페이스입니다. 
+> 당신의 리포지토리 인터페이스에 인터페이스를 추가할 때마다, 당신의 리포지토리 구성물에 fragment를 추가하여 확장합니다.
+> 기본 리포지토리와 리포지토리 구현은 Spring Data 모듈이 제공합니다.
+> 
+> 다음의 예제는 사용자 인터페이스와 해당 인터페이스의 구현체를 보여줍니다.
+> 
+> 예제 31) 구현이 포함된 Fragments
+> (코드 생략)
+> 
+> 다음의 예제는 `CrudRepository` 를 확장한 사용자 리포지토리를 보여줍니다.
+> 
+> 예제 32) 리포지토리 인터페이스 변경
+> (코드 생략)
+
+<br>
+
+Repositories may be composed of multiple custom implementations that are imported in the order of their declaration.
+Custom implementations have a higher priority than the base implementation and repository aspects.
+This ordering lets you override base repository and aspect methods and resolves ambiguity if two fragments contribute the same method signature.
+Repository fragments are not limited to use in a single repository interface.
+Multiple repositories may use a fragment interface, letting you reuse customizations across different repositories.
+
+The following example shows a repository fragment and its implementation:
+
+Example 33. Fragments overriding save(…)
+```java
+interface CustomizedSave<T> {
+  <S extends T> S save(S entity);
+}
+
+class CustomizedSaveImpl<T> implements CustomizedSave<T> {
+
+  public <S extends T> S save(S entity) {
+    // Your custom implementation
+  }
+}
+```
+
+The following example shows a repository that uses the preceding repository fragment:
+
+Example 34. Customized repository interfaces
+```java
+interface UserRepository extends CrudRepository<User, Long>, CustomizedSave<User> {
+}
+
+interface PersonRepository extends CrudRepository<Person, Long>, CustomizedSave<Person> {
+}
+```
+
+> 리포지토리는 선언된 순서대로 가져오는 여러개의 사용자 정의 구현으로 구성될 수 있습니다. 
+> 사용자 정의 구현은 기본 구현보다 더 높은 우선순위를 가집니다.
+> 이러한 우선순위는 당신의 기본 리포지토리를 재정의하고, 두 fragments 가 같은 메서드 시그니쳐를 가질때의 애매모호함을 해결합니다.
+> 리포지토리 fragments 는 단일 리포지토리 인터페이스에만 사용되도록 제한되지 않습니다.
+> 여러개의 리포지토리들이 fragment 인터페이스를 사용할 수 있으므로, 여러개의 다른 리포지토리들은 사용자 정의 기능들을 재사용할 수 있습니다.
+> 
+> 다음의 예제는 리포지토리 fragment 와 이를 구현한 것을 보여줍니다.
+> 
+> 예제 33) `save()` 메서드를 재정의하는 Fragments
+> (코드 생략)
+> 
+> 다음의 예제는 리포지토리가 이전에 다른 리포지토리에서 사용된 fragment를 사용하는 것을 보여줍니다.
+> 
+> 예제 34) 사용자정의 리포지토리 인터페이스
+> (코드 생략)
+
+<br>
+
+**Configuration**
+
+> 구성
+
+<br>
+
+The repository infrastructure tries to autodetect custom implementation fragments by scanning for classes below the package in which it found a repository.
+These classes need to follow the naming convention of appending a postfix defaulting to Impl.
+
+
+> 리포지토리 인프라는 리포지토리를 찾은 패키지 아래에서 클래스를 검색하여 사용자 정의 fragments 를 자동으로 감지합니다.
+> 이러한 클래스들은 후위에 `Impl` 을 붙이는 naming 컨벤션을 따라야 합니다 
+> 
+> 
+
