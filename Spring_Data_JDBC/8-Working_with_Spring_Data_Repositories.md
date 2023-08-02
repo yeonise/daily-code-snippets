@@ -1689,9 +1689,155 @@ interface PersonRepository extends CrudRepository<Person, Long>, CustomizedSave<
 The repository infrastructure tries to autodetect custom implementation fragments by scanning for classes below the package in which it found a repository.
 These classes need to follow the naming convention of appending a postfix defaulting to Impl.
 
+The following example shows a repository that uses the default postfix and a repository that sets a custom value for the postfix:
+
+Example 35. Configuration example
+```java
+@EnableJpaRepositories(repositoryImplementationPostfix = "MyPostfix")
+class Configuration { … }
+```
+
+The first configuration in the preceding example tries to look up a class called com.acme.repository.CustomizedUserRepositoryImpl to act as a custom repository implementation.
 
 > 리포지토리 인프라는 리포지토리를 찾은 패키지 아래에서 클래스를 검색하여 사용자 정의 fragments 를 자동으로 감지합니다.
 > 이러한 클래스들은 후위에 `Impl` 을 붙이는 naming 컨벤션을 따라야 합니다 
 > 
+> 다음의 예제들은 기본 postfix를 사용하거나 사용자 설정의 postfix를 사용하는 리포지토리를 보여줍니다.
 > 
+> 예제 35) 설정 예시
+> (코드 생략)
+> 
+> 앞서 다룬 첫 번째 설정방식은 사용자 설정 리포지토리 구현체로서 동작하는, `com.acme.repository.CustomizedUserRepositoryImp` 클래스를 찾으려고 시도합니다.
 
+<br>
+
+**Resolution of Ambiguity**
+
+> **모호성 해결**
+
+<br>
+
+If multiple implementations with matching class names are found in different packages, Spring Data uses the bean names to identify which one to use.
+Given the following two custom implementations for the CustomizedUserRepository shown earlier, the first implementation is used.
+Its bean name is customizedUserRepositoryImpl, which matches that of the fragment interface (CustomizedUserRepository) plus the postfix Impl.
+
+Example 36. Resolution of ambiguous implementations
+```java
+package com.acme.impl.one;
+
+class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
+
+  // Your custom implementation
+}
+
+```
+If you annotate the UserRepository interface with @Component("specialCustom"), the bean name plus Impl then matches the one defined for the repository implementation in com.acme.impl.two, and it is used instead of the first one.
+
+> 만약 클래스 이름과 매칭되는 여러개의 구현체가 서로 다른 패키지에 있는 경우, `Spring Data` 는 bean 이름을 사용하여 무엇을 사용할지 식별합니다.
+> 앞서 나온 `CustomizedUserRepository` 를 구현한 2개의 사용자 정의 구현체가 주어지면, 첫 번째 구현체가 사용됩니다. 
+> bean 이름은 `customizedUserRepositoryImpl` 로, fragment 인터페이스 (`CustomizedUserRepository`) 이름에 `Impl` postfix 를 붙인것과 매칭됩니다.
+> 
+> 예제 36) 모호한 구현의 해결
+> (코드 생략)
+> 만약 `UserRepository` 인터페이스에 `@Component("specialCustom")` 애노테이션을 붙였다면, (`com.acme.impl.one`패키지의) 첫 번째 구현체가 아닌 bean 이름에 `Impl` 을 붙인 `com.acme.impl.two` 패키지의 리포지토리 구현체와 매칭됩니다.
+
+<br>
+
+**Manual Wiring**
+
+> 수동 연결
+
+<br>
+
+If your custom implementation uses annotation-based configuration and autowiring only, the preceding approach shown works well, because it is treated as any other Spring bean.
+If your implementation fragment bean needs special wiring, you can declare the bean and name it according to the conventions described in the preceding section.
+The infrastructure then refers to the manually defined bean definition by name instead of creating one itself.
+The following example shows how to manually wire a custom implementation:
+
+Example 37. Manual wiring of custom implementations
+```java
+class MyClass {
+  MyClass(@Qualifier("userRepositoryImpl") UserRepository userRepository) {
+    …
+  }
+}
+```
+
+> 만약 당신의 사용자 구현체가 애노테이션 기반으로 구성되어 있고 자동 연결만 사용한다면, 다른 스프링 bean 들과 동일하게 처리되므로 앞선 방식들이 잘 동작합니다.
+> 만약 구현체 bean 이 특별한 수동 연결이 필요하면, 당신이 직접 bean 을 이전 섹션에서 다룬 규칙에 맞게 정의하면 됩니다.
+> 인프라는 직접 bean 을 만들지 않고, 수동으로 정의된 bean 을 참조합니다.
+> 다음의 예제는 사용자 정의 구현체를 수동으로 연결하는 방법을 보여줍니다.
+> 
+> 예제 37) 사용자 정의 구현체의 수동 연결
+> (코드 생략)
+
+<br>
+
+### 8.6.2. Customize the Base Repository
+
+> base 리포지토리 커스터마이징
+
+<br>
+
+The approach described in the preceding section requires customization of each repository interfaces when you want to customize the base repository behavior so that all repositories are affected.
+To instead change behavior for all repositories, you can create an implementation that extends the persistence technology-specific repository base class.
+This class then acts as a custom base class for the repository proxies, as shown in the following example:
+
+Example 38. Custom repository base class
+```java
+class MyRepositoryImpl<T, ID>
+  extends SimpleJpaRepository<T, ID> {
+
+  private final EntityManager entityManager;
+
+  MyRepositoryImpl(JpaEntityInformation entityInformation,
+                          EntityManager entityManager) {
+    super(entityInformation, entityManager);
+
+    // Keep the EntityManager around to used from the newly introduced methods.
+    this.entityManager = entityManager;
+  }
+
+  @Transactional
+  public <S extends T> S save(S entity) {
+    // implementation goes here
+  }
+}
+
+```
+
+**Caution**
+The class needs to have a constructor of the super class which the store-specific repository factory implementation uses.
+If the repository base class has multiple constructors, override the one taking an EntityInformation plus a store specific infrastructure object (such as an EntityManager or a template class).
+
+> 앞의 섹션에서 다룬 접근 방식은 모든 리포지토리가 영향을 받도록 base 리포지토리의 동작을 커스터마이징 하려는 경우, 각각의 리포지토리 인터페이스의 커스터마이징이 필요합니다.
+> 모든 리포지토리들의 동작을 바꾸는 대신, 기술 종속적인 base 리포지토리 클래스를 확장하는 구현체를 만들 수 있습니다.
+> 이 클래스는 다음 예제와 같이 리포지토리 프록시에 대한 사용자 정의 base 클래스처럼 동작합니다.
+> 
+> 예제 38) 사용자 정의 리포지토리 base 클래스
+> (코드 생략)
+> 
+> **주의 사항**
+> 클래스는 저장소별 리포지토리 팩토리의 구현체를 생성하기위한 super 생성자를 가져야 합니다.
+> 만약 리포지토리 base 클래스가 여러개의 생성자를 가진다면, `EntityInformation` 과 스토어 종속적인 객체 (`EntityManager` 나 `template class` 같은) 를 포함하는 생성자를 재정의합니다.
+
+<br>
+
+The final step is to make the Spring Data infrastructure aware of the customized repository base class
+In configuration, you can do so by using the repositoryBaseClass, as shown in the following example:
+
+Example 39. Configuring a custom repository base class
+```java
+@Configuration
+@EnableJpaRepositories(repositoryBaseClass = MyRepositoryImpl.class)
+class ApplicationConfiguration { … }
+
+```
+
+> 마지막 단계는 Spring Data 인프라가 사용자 정의 base 리포지토리 클래스를 인식하도록 만드는 것입니다.
+> 설정 파일에서, 다음의 예제와 같이 `repositoryBaseClass` 를 사용할 수 있습니다. 
+> 
+> 예제 39) 사용자 정의 base 리포지토리 클래스 설정하기
+> (코드 생략)
+
+<br>
