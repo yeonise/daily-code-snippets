@@ -1841,3 +1841,117 @@ class ApplicationConfiguration { … }
 > (코드 생략)
 
 <br>
+
+## 8.7. Publishing Events from Aggregate Roots
+
+> 총괄적인 루트에서 이벤트 게시
+
+<br>
+
+Entities managed by repositories are aggregate roots.
+In a Domain-Driven Design application, these aggregate roots usually publish domain events.
+Spring Data provides an annotation called @DomainEvents that you can use on a method of your aggregate root to make that publication as easy as possible, as shown in the following example:
+
+Example 40. Exposing domain events from an aggregate root
+```java
+class AnAggregateRoot {
+
+    @DomainEvents (1)
+    Collection<Object> domainEvents() {
+        // … return events you want to get published here
+    }
+
+    @AfterDomainEventPublication (2)
+    void callbackMethod() {
+       // … potentially clean up domain events list
+    }
+}
+
+```
+1. The method that uses @DomainEvents can return either a single event instance or a collection of events.
+It must not take any arguments.
+2. 	After all events have been published, we have a method annotated with @AfterDomainEventPublication.
+You can use it to potentially clean the list of events to be published (among other uses).
+
+The methods are called every time one of the following a Spring Data repository methods are called:
+```java
+save(…), saveAll(…)
+
+delete(…), deleteAll(…), deleteAllInBatch(…), deleteInBatch(…)
+```
+
+Note, that these methods take the aggregate root instances as arguments.
+This is why deleteById(…) is notably absent, as the implementations might choose to issue a query deleting the instance and thus we would never have access to the aggregate instance in the first place.
+
+> 리포지토리로 관리되는 엔티티들은 총괄적인 루트입니다.
+> 도메인 주도 개발 어플리케이션에서, 이러한 총괄적인 루트들은 도메인 이벤트를 게시합니다.
+> Spring Data는 게시를 최대한 쉽게 하기 위해, 총괄적인 루트 메서드에 사용할 수 있는 `@DomainEvents` 애노테이션을 제공합니다.
+> 
+> 예제 40) 총괄적인 루트에서 도메인 이벤트 노출하기
+> (코드 생략)
+> 1. `@DomainEvents` 를 사용한 메서드는 하나 혹은 여러개의 이벤트 객체들을 반환할 수 있습니다. 
+> 이때 어떠한 매개변수도 없어야 합니다.
+> 2. 모든 이벤트들이 게시된 후에, `@AfterDomainEventPublication` 애노테이션을 메서드에 붙일 수 있습니다.
+> 당신은 게시할 이벤트 리스트를 잠재적으로 정리할 수 있습니다 (다른 용도 중에서도).
+> 
+> 이러한 메서드는 다음의 Spring Data 리포지토리의 메서드들이 호출될 때 마다 항상 호출됩니다.
+> (코드 생략)
+> 
+> 참고, 이러한 메서드들은 총괄적인 루트 객체를 인자로서 받습니다.
+> 구현이 인스턴스를 삭제하는 쿼리를 실행하도록 선택할 수 있고, 따라서 애초에 총괄적인 객체에 접근할 수 없기 때문에 `deleteById(...)` 가 존재하지 않는 것입니다. 
+
+<br>
+
+## 8.8. Spring Data Extensions
+
+> Spring Data 확장
+
+<br>
+
+This section documents a set of Spring Data extensions that enable Spring Data usage in a variety of contexts.
+Currently, most of the integration is targeted towards Spring MVC.
+
+> 현재 섹션에서는 Spring Data 가 다양한 문맥에서 사용될 수 있도록하는 Spring Data 확장들을 설명합니다.
+> 현재, 대부분의 통합은 Spring MVC를 대상으로 합니다.
+
+<br>
+
+### 8.8.1. Querydsl Extension
+
+> Querydsl 확장
+
+<br>
+
+Querydsl is a framework that enables the construction of statically typed SQL-like queries through its fluent API.
+Several Spring Data modules offer integration with Querydsl through QuerydslPredicateExecutor, as the following example shows:
+
+Example 41. QuerydslPredicateExecutor interface
+```java
+public interface QuerydslPredicateExecutor<T> {
+
+  Optional<T> findById(Predicate predicate);  (1)
+
+  Iterable<T> findAll(Predicate predicate);   (2)
+
+  long count(Predicate predicate);            (3)
+
+  boolean exists(Predicate predicate);        (4)
+
+  // … more functionality omitted.
+}
+```
+1. Finds and returns a single entity matching the Predicate.
+2. Finds and returns all entities matching the Predicate.
+3. Returns the number of entities matching the Predicate.
+4. Returns whether an entity that matches the Predicate exists.
+
+
+> Querydsl 은 프레임워크로, 제공하는 API를 활용해 정적 SQL과 유사한 쿼리를 구성할 수 있도록 합니다.
+> 다음 예제에서 볼 수 있듯이, 몇몇의 Spring Data 모듈은 QuerydslPredicateExecutor 를 통해 Querydsl과의 통합을 제공합니다.  
+> 
+> 예제 41) QuerydslPredicateExecutor 인터페이스
+> (코드 생략)
+> 1. `Predicate` 와 일치하는 단일 엔티티를 찾아 반환합니다.
+> 2. `Predicate` 와 일치하는 모든 엔티티들을 찾아 반환합니다.
+> 3. `Predicate` 와 일치하는 엔티티들의 개수를 반환합니다.
+> 4. `Predicate` 와 일치하는 엔티티의 존재 여부를 반환합니다.
