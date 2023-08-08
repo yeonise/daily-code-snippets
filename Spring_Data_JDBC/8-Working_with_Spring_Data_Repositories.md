@@ -1945,13 +1945,193 @@ public interface QuerydslPredicateExecutor<T> {
 3. Returns the number of entities matching the Predicate.
 4. Returns whether an entity that matches the Predicate exists.
 
+To use the Querydsl support, extend QuerydslPredicateExecutor on your repository interface, as the following example shows:
+
+xample 42. Querydsl integration on repositories
+```java
+interface UserRepository extends CrudRepository<User, Long>, QuerydslPredicateExecutor<User> {
+}
+
+```
+The preceding example lets you write type-safe queries by using Querydsl Predicate instances, as the following example shows:
+```java
+Predicate predicate = user.firstname.equalsIgnoreCase("dave")
+	.and(user.lastname.startsWithIgnoreCase("mathews"));
+
+userRepository.findAll(predicate);
+
+```
 
 > Querydsl 은 프레임워크로, 제공하는 API를 활용해 정적 SQL과 유사한 쿼리를 구성할 수 있도록 합니다.
-> 다음 예제에서 볼 수 있듯이, 몇몇의 Spring Data 모듈은 QuerydslPredicateExecutor 를 통해 Querydsl과의 통합을 제공합니다.  
+> 다음 예제에서 볼 수 있듯이, 몇몇의 Spring Data 모듈은 `QuerydslPredicateExecutor` 를 통해 `Querydsl` 과의 통합을 제공합니다.  
 > 
-> 예제 41) QuerydslPredicateExecutor 인터페이스
+> 예제 41) `QuerydslPredicateExecutor` 인터페이스
 > (코드 생략)
 > 1. `Predicate` 와 일치하는 단일 엔티티를 찾아 반환합니다.
 > 2. `Predicate` 와 일치하는 모든 엔티티들을 찾아 반환합니다.
 > 3. `Predicate` 와 일치하는 엔티티들의 개수를 반환합니다.
 > 4. `Predicate` 와 일치하는 엔티티의 존재 여부를 반환합니다.
+> 
+> `Querydsl` 의 지원을 사용하려면, 다음 예제와 같이 리포지토리 인터페이스에서 `QuerydslPredicateExecutor` 를 확장하십시오.  
+> 
+> 예제 42) 리포지토리에서 `Querydsl` 통합
+> (코드 생략)
+> 앞선 예제대로 하면, 다음 예제와 같이 `Querydsl` 의 `Predicate` 객체를 사용하여 type-safe 쿼리를 작성할 수 있습니다.
+> (코드 생략)
+
+<br>
+
+## 8.8.2. Web support
+
+> 웹 지원 
+
+<br>
+
+Spring Data modules that support the repository programming model ship with a variety of web support.
+The web related components require Spring MVC JARs to be on the classpath.
+Some of them even provide integration with Spring HATEOAS.
+In general, the integration support is enabled by using the @EnableSpringDataWebSupport annotation in your JavaConfig configuration class, as the following example shows:
+
+Example 43. Enabling Spring Data web support
+```java
+@Configuration
+@EnableWebMvc
+@EnableSpringDataWebSupport
+class WebConfiguration {}
+```
+```xml
+<bean class="org.springframework.data.web.config.SpringDataWebConfiguration" />
+
+<!-- If you use Spring HATEOAS, register this one *instead* of the former -->
+<bean class="org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration" />
+
+```
+The @EnableSpringDataWebSupport annotation registers a few components. 
+We discuss those later in this section. 
+It also detects Spring HATEOAS on the classpath and registers integration components (if present) for it as well.
+
+> Spring Data 모듈은 리포지토리 모델과 다양한 웹 지원을 제공합니다.
+> 웹 관련 컴포넌트들은 클래스 경로에 Spring MVC JARs 를 요구합니다. 
+> 일부는 Spring HATEOAS 와의 통합기능도 제공합니다.
+> 일반적으로, 통합 지원은 다음 예제에서 볼 수 있듯이 `@EnableSpringDataWebSupport` 애노테이션을 JavaConfig 설정 클래스에 붙여 활성화할 수 있습니다.
+> 
+> 예제 43) Spring Data 웹 지원 활성화
+> (코드 생략)
+> `@EnableSpringDataWebSupport` 애노테이션은 몇가지 컴포넌트들을 등록합니다.
+> 이에 대해서는 이 섹션의 뒷부분에서 설명합니다.
+> 또한 Spring HATEOAS 를 현재 클래스 경로에서 찾고, 통합 컴포넌트들을 (존재 한다면) 등록합니다.
+
+<br>
+
+**Basic Web Support**
+
+> 기본 웹 지원
+
+<br>
+
+Enabling Spring Data web support in XML
+The configuration shown in the previous section registers a few basic components:
+
+- A Using the DomainClassConverter Class to let Spring MVC resolve instances of repository-managed domain classes from request parameters or path variables.
+- HandlerMethodArgumentResolver implementations to let Spring MVC resolve Pageable and Sort instances from request parameters.
+- Jackson Modules to de-/serialize types like Point and Distance, or store specific ones, depending on the Spring Data Module used.
+
+> XML 을 사용하여 Spring Data 웹 지원을 활성화합니다.
+> 이전 섹션에서 보여준 설정파일이 몇가지 기본 컴포넌트들을 등록합니다.
+>
+> - Spring MVC가 요청 파라미터나 경로 변수를 통해 리포지토리 관리 도메인 클래스의 인스턴스들을 확인하도록 하기 위해, `DomainClassConvert` 클래스를 사용합니다.
+> - `HandlerMethodArgumentResolver` 구현을 통해 Spring MVC 가 요청 파라미터를 바탕으로 `Pageable` 이나 `Sort` 인스턴스들을 확인할 수 있도록 합니다 
+> - Jackson 모듈을 사용하여 `Point` 나 `Distance` 같은 타입을 역직렬화/직렬화 하거나, 사용하는 Spring Data 모듈에 따라 특정 타입을 저장할 수 있습니다.
+
+<br>
+
+**Using the DomainClassConverter Class**
+
+> `DomainClassConverter` 클래스 사용하기
+
+<br>
+
+The DomainClassConverter class lets you use domain types in your Spring MVC controller method signatures directly so that you need not manually lookup the instances through the repository, as the following example shows:
+
+Example 44. A Spring MVC controller using domain types in method signatures
+```java
+@Controller
+@RequestMapping("/users")
+class UserController {
+
+  @RequestMapping("/{id}")
+  String showUserForm(@PathVariable("id") User user, Model model) {
+
+    model.addAttribute("user", user);
+    return "userForm";
+  }
+}
+```
+The method receives a User instance directly, and no further lookup is necessary.
+The instance can be resolved by letting Spring MVC convert the path variable into the id type of the domain class first and eventually access the instance through calling findById(…) on the repository instance registered for the domain type.
+
+**Note**
+Currently, the repository has to implement CrudRepository to be eligible to be discovered for conversion.
+
+> `DomainClassConverter` 클래스는 도메인 타입을 Spring MVC 컨트롤러 메서드 시그니쳐에서 바로 사용할 수 있게합니다. 
+> 그래서 당신은 일일히 리포지토리를 통해 객체를 찾아볼 필요가 없습니다.
+> 다음 예제를 참고하십시오.
+> 
+> 예제 44) 메서드 시그니쳐에서 도메인 타입을 사용하는 Spring MVC 컨트롤러 
+> (코드 생략)
+> 이 메서드는 추가 조회없이 `User` 객체를 직접 받습니다.
+> Spring MVC 가 경로 변수를 도메인 클래스의 id 타입으로 먼저 변환하고, `findById(...)` 메서드를 통해 리포지토리에서 해당 객체에 결국 접근하여 객체를 확인할 수 있습니다.
+> 
+> **참고**
+> 현재, 리포지토리는 `CrudRepository` 를 구현해야 해당 변환을 사용할 수 있습니다.
+
+<br>
+
+**HandlerMethodArgumentResolvers for Pageable and Sort**
+
+> `Pageable` 과 `Sort` 를 위한 `HandlerMethodArgumentResolver` 
+
+<br>
+
+The configuration snippet shown in the previous section also registers a PageableHandlerMethodArgumentResolver as well as an instance of SortHandlerMethodArgumentResolver.
+The registration enables Pageable and Sort as valid controller method arguments, as the following example shows:
+
+Example 45. Using Pageable as a controller method argument
+```java
+@Controller
+@RequestMapping("/users")
+class UserController {
+
+  private final UserRepository repository;
+
+  UserController(UserRepository repository) {
+    this.repository = repository;
+  }
+
+  @RequestMapping
+  String showUsers(Model model, Pageable pageable) {
+
+    model.addAttribute("users", repository.findAll(pageable));
+    return "users";
+  }
+}
+
+```
+The preceding method signature causes Spring MVC try to derive a Pageable instance from the request parameters by using the following default configuration:
+
+Table 2. Request parameters evaluated for Pageable instances
+- `page` : Page you want to retrieve. 0-indexed and defaults to 0.
+- `size` : Size of the page you want to retrieve. Defaults to 20.
+- `sort` : 
+
+> 이전 섹션에서 다뤘던 설정 스니펫은 `PageableHandlerMethodArgumentResolver` 와 `SortHandlerMethodArgumentResolver` 를 등록합니다.
+> 등록을 통해 `Pageable` 과 `Sort` 가 다음 예제처럼 컨트롤러의 메서드 파라미터로 사용될 수 있습니다. 
+> 
+> 예제 45) 컨트롤러 메서드 파라미터로 `Pageable` 사용
+> (코드 생략)
+> 앞선 메서드 시그니쳐는 Spring MVC 가 다음의 기본 설정을 사용하여 요청 파라미터로부터 `Pageable` 객체를 만들도록 합니다.
+> 
+> 표 2) `Pageable` 객체를 만들기 위한 요청 파라미터
+> - `page` : 확인하고 싶은 페이지입니다. 0부터 시작하며 기본값은 0입니다.
+> - `size` : 확인하고 싶은 페이지 하나의 크기입니다. 기본값은 20입니다.
+> - `sort`
