@@ -2122,7 +2122,7 @@ The preceding method signature causes Spring MVC try to derive a Pageable instan
 Table 2. Request parameters evaluated for Pageable instances
 - `page` : Page you want to retrieve. 0-indexed and defaults to 0.
 - `size` : Size of the page you want to retrieve. Defaults to 20.
-- `sort` : 
+- `sort` : Properties that should be sorted by in the format property,property(,ASC|DESC)(,IgnoreCase). The default sort direction is case-sensitive ascending. Use multiple sort parameters if you want to switch direction or case sensitivity — for example, ?sort=firstname&sort=lastname,asc&sort=city,ignorecase.
 
 > 이전 섹션에서 다뤘던 설정 스니펫은 `PageableHandlerMethodArgumentResolver` 와 `SortHandlerMethodArgumentResolver` 를 등록합니다.
 > 등록을 통해 `Pageable` 과 `Sort` 가 다음 예제처럼 컨트롤러의 메서드 파라미터로 사용될 수 있습니다. 
@@ -2134,4 +2134,64 @@ Table 2. Request parameters evaluated for Pageable instances
 > 표 2) `Pageable` 객체를 만들기 위한 요청 파라미터
 > - `page` : 확인하고 싶은 페이지입니다. 0부터 시작하며 기본값은 0입니다.
 > - `size` : 확인하고 싶은 페이지 하나의 크기입니다. 기본값은 20입니다.
-> - `sort`
+> - `sort` : 정렬해야 하는 속성의 형식은 `속성`, 또는 `속성(,ASC|DESC)(,IgnoreCase)` 형식입니다. 기본 정렬 옵션은 대소문자를 구별하는 오름차순 입니다. 정렬 방향이나 대소문자 구분을 바꾸고 싶다면 여러개의 `sort` 파라미터를 사용하십시오.
+
+<br>
+
+To customize this behavior, register a bean that implements the PageableHandlerMethodArgumentResolverCustomizer interface or the SortHandlerMethodArgumentResolverCustomizer interface, respectively.
+Its customize() method gets called, letting you change settings, as the following example shows:
+
+```java
+@Bean SortHandlerMethodArgumentResolverCustomizer sortCustomizer() {
+    return s -> s.setPropertyDelimiter("<-->");
+}
+```
+
+If setting the properties of an existing MethodArgumentResolver is not sufficient for your purpose, extend either SpringDataWebConfiguration or the HATEOAS-enabled equivalent, override the pageableResolver() or sortResolver() methods, and import your customized configuration file instead of using the @Enable annotation.
+If you need multiple Pageable or Sort instances to be resolved from the request (for multiple tables, for example), you can use Spring’s @Qualifier annotation to distinguish one from another.
+The request parameters then have to be prefixed with ${qualifier}_. 
+The following example shows the resulting method signature:
+
+```java
+String showUsers(Model model,
+      @Qualifier("thing1") Pageable first,
+      @Qualifier("thing2") Pageable second) { … }
+```
+
+You have to populate thing1_page, thing2_page, and so on.
+
+The default Pageable passed into the method is equivalent to a PageRequest.of(0, 20), but you can customize it by using the @PageableDefault annotation on the Pageable parameter.
+
+> 이러한 작업을 커스터마이징 하려면, `PageableHandlerMethodArgumentResolverCustomizer` 인터페이스나 `SortHandlerMethodArgumentResolverCustomizer` 인터페이스를 구현한 빈을 등록하십시오.
+> 구현체의 `customize()` 메서드가 호출되면, 다음 예제와 같이 설정을 바꿀 수 있습니다.
+> 
+> (코드 생략) 
+> 
+> 만약 속성을 설정할 때, `MethodArgumentResolver` 기능만으로 충분하지 않다면, `SpringDataWebConfiguration` 를 확장하거나 HATEOAS 를 확장하여, `pageableResolver()` 또는 `sortResolver()` 메서드를 오버라이딩하고, `@Enable` 애노테이션 대신 커스터마이징 된 설정 파일을 가져올 수 있습니다.
+> 만약 당신이 요청으로부터 여러개의 `Pageable` 또는 `Sort` 객체를 받게된다면, 스프링의 `@Qualifier` 애노테이션을 사용하여 각각을 구별할 수 있습니다.
+> 요청 파라미터는 `${qualifier}_` 접두사를 가져야 합니다.
+> 다음 예제는 이를 적용한 메서드 시그니처를 보여줍니다.
+> 
+> (코드 생략)
+> 
+> 당신은 `thing1_page`, `thing2_page` 등을 채워야 합니다.
+> 
+> 메서드에 전달되는 기본 `Pageable` 객체는 `PageRequest.of(0, 20)` 와 동일하지만, `Pageable` 파라미터에 `@PageableDefault` 애노테이션을 사용하여 기본 `Pageable` 객체의 설정을 변경할 수 있습니다. 
+
+<br>
+
+**Hypermedia Support for Page and Slice**
+
+> `Page` 와 `Slice` 를 위한 하이퍼미디어 지원
+
+<br>
+
+Spring HATEOAS ships with a representation model class (PagedModel/SlicedModel) that allows enriching the content of a Page or Slice instance with the necessary Page/Slice metadata as well as links to let the clients easily navigate the pages.
+The conversion of a Page to a PagedModel is done by an implementation of the Spring HATEOAS RepresentationModelAssembler interface, called the PagedResourcesAssembler.
+Similarly Slice instances can be converted to a SlicedModel using a SlicedResourcesAssembler.
+The following example shows how to use a PagedResourcesAssembler as a controller method argument, as the SlicedResourcesAssembler works exactly the same:
+
+> Spring HATEOAS 는 표현 모델 클래스 (PageModel / SlicedModel) 를 제공합니다. ->  `Page` 또는 `Slice` 객체를 보강할 수 있는 메타데이터와 페이지를 쉽게 탐색하기 위한 링크들을 포함하는
+> `Page` 객체를 `PagedModel` 객체로 변환하는 작업은 `PagedResourcesAssembler` 라 불리는 Spring HATEOAS `RepresentationModelAssembler` 인터페이스 구현체에 의해 수행됩니다.
+> 유사하게, `Slice` 객체는 `SlicedResourcesAssembler` 를 사용하여 `SliceModel` 객체로 변환할 수 있습니다.
+> 다음 예제는 컨트롤러 메서드의 인자로 `PagedResourcesAssembler` 받아 사용하는 방법을 보여줍니다. 이는 `SlicedResourcesAssembler` 의 동작과정과 똑같습니다.  
