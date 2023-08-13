@@ -60,3 +60,46 @@ replication, and much lower end-to-end latency.
 > 카프카는 파일의 세부 정보를 추상화하고 로그 또는 이벤트 데이터를 메시지 스트림으로 더 깨끗하게 추상화합니다.
 > 이를 통해 지연시간을 줄이고 여러 데이터 소스 및 분산 데이터 소비를 더 쉽게 지원할 수 있습니다.
 > Scribe나 Flume과 같은 로그-중앙 시스템과 비교하여 카프카는 좋은 성능, 복제로 인해 더욱 강력한 내구성 보장 및 훨신 종단간 낮은 지연시간을 제공합니다.
+
+## 스트림 프로세싱(Stream Processing)
+
+Many users of Kafka process data in processing pipelines consisting of multiple stages, where raw input data is consumed
+from Kafka topics and then aggregated, enriched, or otherwise transformed into new topics for further consumption or
+follow-up processing. For example, a processing pipeline for recommending news articles might crawl article content from
+RSS feeds and publish it to an "articles" topic; further processing might normalize or deduplicate this content and
+publish the cleansed article content to a new topic; a final processing stage might attempt to recommend this content to
+users. Such processing pipelines create graphs of real-time data flows based on the individual topics. Starting in
+0.10.0.0, a light-weight but powerful stream processing library called Kafka Streams is available in Apache Kafka to
+perform such data processing as described above. Apart from Kafka Streams, alternative open source stream processing
+tools include Apache Storm and Apache Samza.
+
+> 카프카의 많은 사용자들이 카프카 항목으로부터 소비된 날것의 입력 데이터가 소비되고 집계, 농축, 추가 소비 또는 후속처리 되었을때 여러 단계들로 구성되는 프로세싱 파이프라인에서 데이터를 처리합니다.
+> 예를 들어 뉴스 기사를 추천하기 위한 프로세싱 파이프라인은 RSS 피드에서 기사 내용을 기어 나와 "기사"주제로 발행할 수 있습니다.
+> 추가 처리는 이 내용을 정규화 또는 중복제거하고 정리된 기사 내용을 새 주제에 발행 할 수 있습니다.
+> 마지막 프로세싱 단계는 이 기사 내용을 사용자들에게 추천하는 것을 시도할 수 있습니다.
+> 이러한 프로세싱 파이프라인들은 개인적인 항목을 기반으로 실시간 데이터 흐름의 그래프를 생성합니다.
+> 0.10.0.0부터 Apache Kafka에서 위와 같은 데이터 처리를 수행할 수 있도록 경량이지만 강력한 Kafka Stream이라는 스트림 처리 라이브러리를 사용할 수 있습니다.
+
+## 이벤트 소스(Event Sourcing)
+
+[Event sourcing](http://martinfowler.com/eaaDev/EventSourcing.html) is a style of application design where state changes
+are logged as a time-ordered sequence of records. Kafka's support for very large stored log data makes it an excellent
+backend for an application built in this style.
+
+> 이벤트 소스(Event sourcing)은 상태 변겨들이 시간순으로 로깅되었을때 애플리케이션 설계의 스타일입니다.
+> 카프카는 대용량 저장 로그 데이터를 지원하기 때문에 이러한 스타일로 구축된 애플리케이션에 적합한 백엔드입니다.
+
+## 커밋 로그(Commit Log)
+
+Kafka can serve as a kind of external commit-log for a distributed system. The log helps replicate data between nodes
+and acts as a re-syncing mechanism for failed nodes to restore their data. The log compaction feature in Kafka helps
+support this usage. In this usage Kafka is similar to Apache BookKeeper project.
+
+> 카프카는 분산 시스템을 대상으로 외부 커밋 로그의 종류로서 서빙할 수 있습니다.
+> 로그는 노드간 데이터를 복제하는데 도움이 되며 실패한 노드가 데이터를 복원하는데 재동기화 매커니즘 역할을 합니다.
+> 카프카에 로그 압축 기능은 이 사용량에 도움을 줍니다.
+> 이 사용법에서 카프카는 Apache BookKeeper 프로젝트와 유사합니다.
+
+
+
+
