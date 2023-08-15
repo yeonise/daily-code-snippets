@@ -2191,7 +2191,168 @@ The conversion of a Page to a PagedModel is done by an implementation of the Spr
 Similarly Slice instances can be converted to a SlicedModel using a SlicedResourcesAssembler.
 The following example shows how to use a PagedResourcesAssembler as a controller method argument, as the SlicedResourcesAssembler works exactly the same:
 
+Example 46. Using a PagedResourcesAssembler as controller method argument
+```java
+@Controller
+class PersonController {
+
+  private final PersonRepository repository;
+
+  // Constructor omitted
+
+  @GetMapping("/people")
+  HttpEntity<PagedModel<Person>> people(Pageable pageable,
+    PagedResourcesAssembler assembler) {
+
+    Page<Person> people = repository.findAll(pageable);
+    return ResponseEntity.ok(assembler.toModel(people));
+  }
+}
+```
+
+Enabling the configuration, as shown in the preceding example, lets the PagedResourcesAssembler be used as a controller method argument. 
+Calling toModel(…) on it has the following effects:
+- The content of the Page becomes the content of the PagedModel instance.
+- The PagedModel object gets a PageMetadata instance attached, and it is populated with information from the Page and the underlying Pageable.
+- The PagedModel may get prev and next links attached, depending on the page’s state.
+  The links point to the URI to which the method maps.
+  The pagination parameters added to the method match the setup of the PageableHandlerMethodArgumentResolver to make sure the links can be resolved later.
+
 > Spring HATEOAS 는 표현 모델 클래스 (PageModel / SlicedModel) 를 제공합니다. ->  `Page` 또는 `Slice` 객체를 보강할 수 있는 메타데이터와 페이지를 쉽게 탐색하기 위한 링크들을 포함하는
 > `Page` 객체를 `PagedModel` 객체로 변환하는 작업은 `PagedResourcesAssembler` 라 불리는 Spring HATEOAS `RepresentationModelAssembler` 인터페이스 구현체에 의해 수행됩니다.
 > 유사하게, `Slice` 객체는 `SlicedResourcesAssembler` 를 사용하여 `SliceModel` 객체로 변환할 수 있습니다.
 > 다음 예제는 컨트롤러 메서드의 인자로 `PagedResourcesAssembler` 받아 사용하는 방법을 보여줍니다. 이는 `SlicedResourcesAssembler` 의 동작과정과 똑같습니다.  
+> 
+> 예제 46) `PagedResourcesAssembler` 를 컨트롤러 메서드의 인자로 사용하기
+> (코드 생략)
+> 
+> 앞의 예시와 같이 설정을 활성화하면, 컨트롤러 메서드 인자로 `PagedResourcesAssembler` 를 사용할 수 있습니다. 
+> `toModel(…)` 메서드 호출은 다음과 같이 동작합니다.
+> - `Page` 객체는 `PagedModel` 객체의 content 가 됩니다.
+> - `PagedModel` 객체는 `PageMetadata` 객체를 첨부하고, `Page` 정보와 `Pageable` 정보로 채워집니다.
+> - `PagedModel` 객체는 페이지 상태에 따라 `prev` 와 `next` 링크를 첨부합니다.
+> 링크는 메서드가 매핑된 URI 를 가리킵니다.
+> 메서드에 추가된 페이징 파라미터들은 나중에 링크를 확인할 수 있도록 설정한 `PageableHandlerMethodArgumentResolver` 의 설정과 일치합니다.
+
+<br>
+
+Assume we have 30 Person instances in the database.
+You can now trigger a request (GET http://localhost:8080/people) and see output similar to the following:
+```javascript
+{ "links" : [
+    { "rel" : "next", "href" : "http://localhost:8080/persons?page=1&size=20" }
+  ],
+  "content" : [
+     … // 20 Person instances rendered here
+  ],
+  "pageMetadata" : {
+    "size" : 20,
+    "totalElements" : 30,
+    "totalPages" : 2,
+    "number" : 0
+  }
+}
+```
+
+**Warning**
+The JSON envelope format shown here doesn’t follow any formally specified structure and it’s not guaranteed stable and we might change it at any time.
+It’s highly recommended to enable the rendering as a hypermedia-enabled, official media type, supported by Spring HATEOAS, like HAL.
+Those can be activated by using its @EnableHypermediaSupport annotation.
+Find more information in the Spring HATEOAS reference documentation.
+
+> 우리가 30개의 `Person` 객체를 데이터베이스에 갖고 있다 가정해보겠습니다.
+> http://localhost:8080/people URL로 GET 요청을 보내면 다음과 유사한 JSON 결과물을 확인할 수 있습니다. 
+> (코드 생략)
+> 
+> **주의사항**
+> 첨부된 JSON 형식은 규격화된 구조가 아니며, 문서에서의 해당 형식은 언제든 바뀔 수 있습니다. 
+> 렌더링은 HAL 과 같이 Spring HATEOAS 에서 지원하는 (하이퍼미디어를 지원하는) 공식 미디어 유형으로 활성화하는 것이 좋습니다.
+> 이것들은 `@EnableHypermediaSupport` 애노테이션을 사용하여 활성화할 수 있습니다.
+> 더 많은 정보는 Spring HATEOAS 공식 문서에서 확인하십시오.
+
+<br>
+
+The assembler produced the correct URI and also picked up the default configuration to resolve the parameters into a Pageable for an upcoming request.
+This means that, if you change that configuration, the links automatically adhere to the change.
+By default, the assembler points to the controller method it was invoked in, but you can customize that by passing a custom Link to be used as base to build the pagination links, which overloads the PagedResourcesAssembler.toModel(…) method.
+
+> 어셈블러는 정확한 URI를 생성하고, 기본 설정을 선택하여 파라미터를 `Pageable` 객체에서 찾아 사용합니다.
+> 따라서, 설정을 바꾸게 되면, 링크도 같이 변합니다.
+> 기본적으로는, 어셈블러는 호출된 컨트롤러 메서드를 가리킵니다. 
+> 그러나 페이징 링크를 빌드하는데 기본으로 사용될 사용자 지정 `Link` 를 전달하는 방식으로 커스터마이징 할 수 있으며, 이는 `PagedResourcesAssembler.toModel(…)` 메서드에 적재됩니다.  
+
+<br>
+
+**Spring Data Jackson Modules**
+
+> **Spring Data Jackson 모듈**
+
+<br>
+
+The core module, and some of the store specific ones, ship with a set of Jackson Modules for types, like org.springframework.data.geo.Distance and org.springframework.data.geo.Point, used by the Spring Data domain.
+Those Modules are imported once web support is enabled and com.fasterxml.jackson.databind.ObjectMapper is available.
+During initialization SpringDataJacksonModules, like the SpringDataJacksonConfiguration, get picked up by the infrastructure, so that the declared com.fasterxml.jackson.databind.Modules are made available to the Jackson ObjectMapper.
+
+Data binding mixins for the following domain types are registered by the common infrastructure.
+```
+org.springframework.data.geo.Distance
+org.springframework.data.geo.Point
+org.springframework.data.geo.Box
+org.springframework.data.geo.Circle
+org.springframework.data.geo.Polygon
+```
+
+**Note**
+The individual module may provide additional SpringDataJacksonModules.
+Please refer to the store specific section for more details.
+
+> 핵심 모듈과 일부 스토어별 모듈은 Spring Data 도메인에서 사용하는 `org.springframework.data.geo.Distance` 와 `org.springframework.data.geo.Point` 와 같은 여러개의 Jackson 모듈을 포함합니다.
+> 이러한 모듈들은 웹 지원이 활성화되고 `com.fasterxml.jackson.databind.ObjectMapper` 를 사용할 수 있게 되면 임포트됩니다.
+> `SpringDataJacksonConfiguration` 와 같은 `SpringDataJacksonModules` 모듈들을 초기화 하는 동안, 모듈들은 인프라에 선택되어, 선언된 `com.fasterxml.jackson.databind.Module` 가 Jackson `ObjectMapper` 를 사용할 수 있도록 합니다.
+> 
+> 다음의 도메인 타입에 대한 Data binding 믹스인은 공통 인프라에 등록되어 있습니다. 
+> (코드 생략)
+>
+> **참고**
+> 개별 모듈들은 추가적인 `SpringDataJacksonModule` 들을 제공합 수 있습니다.
+> 더욱 자세한 정보는 스토어별 공식 문서를 참고하십시오.
+
+<br>
+
+**Web Databinding Support**
+
+> 웹 데이터 바인딩 지원
+
+<br>
+
+You can use Spring Data projections (described in Projections) to bind incoming request payloads by using either JSONPath expressions (requires Jayway JsonPath) or XPath expressions (requires XmlBeam), as the following example shows:
+
+Example 47. HTTP payload binding using JSONPath or XPath expressions
+```java
+@ProjectedPayload
+public interface UserPayload {
+
+  @XBRead("//firstname")
+  @JsonPath("$..firstname")
+  String getFirstname();
+
+  @XBRead("/lastname")
+  @JsonPath({ "$.lastname", "$.user.lastname" })
+  String getLastname();
+}
+```
+
+You can use the type shown in the preceding example as a Spring MVC handler method argument or by using ParameterizedTypeReference on one of methods of the RestTemplate.
+The preceding method declarations would try to find firstname anywhere in the given document.
+The lastname XML lookup is performed on the top-level of the incoming document.
+The JSON variant of that tries a top-level lastname first but also tries lastname nested in a user sub-document if the former does not return a value.
+
+> 다음 예제와 같이, Spring Data 프로젝션을 사용하여 요청 페이로드를 바인딩 할 수 있습니다. (JSON 경로 표현식을 사용하거나, XML 경로 표현식을 사용하여)  
+> 
+> 예제 47) JSONPath or XPath expressions 를 사용하여 HTTP 페이로드 바인딩
+> (코드 생략)
+> 
+> 앞선 예제에서 표시된 유형을 Spring MVC 핸들러 메서드를 인자로 사용하거나 `RestTemplate` 의 메서드 중 하나인 `ParameterizedTypeReference` 를 사용할 수 있습니다. 
+> 앞의 메서드 선언은 모든 경로에서 firstname 을 찾으려고 합니다.
+> lastname 을 찾는 XML 조회 동작은 문서의 최상위 레벨에서 수행됩니다.
+> JSON 변형의 경우 최상위 수준의 lastname을 첫 번째로 찾아보고, 결과물이 없으면 하위 문서에 중첩된 lastname 도 찾아봅니다. 
