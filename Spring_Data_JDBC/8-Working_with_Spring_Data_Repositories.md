@@ -2346,6 +2346,15 @@ You can use the type shown in the preceding example as a Spring MVC handler meth
 The preceding method declarations would try to find firstname anywhere in the given document.
 The lastname XML lookup is performed on the top-level of the incoming document.
 The JSON variant of that tries a top-level lastname first but also tries lastname nested in a user sub-document if the former does not return a value.
+That way, changes in the structure of the source document can be mitigated easily without having clients calling the exposed methods (usually a drawback of class-based payload binding).
+
+Nested projections are supported as described in Projections.
+If the method returns a complex, non-interface type, a Jackson ObjectMapper is used to map the final value.
+
+For Spring MVC, the necessary converters are registered automatically as soon as @EnableSpringDataWebSupport is active and the required dependencies are available on the classpath.
+For usage with RestTemplate, register a ProjectingJackson2HttpMessageConverter (JSON) or XmlBeamHttpMessageConverter manually.
+
+For more information, see the web projection example in the canonical Spring Data Examples repository.
 
 > 다음 예제와 같이, Spring Data 프로젝션을 사용하여 요청 페이로드를 바인딩 할 수 있습니다. (JSON 경로 표현식을 사용하거나, XML 경로 표현식을 사용하여)  
 > 
@@ -2356,3 +2365,50 @@ The JSON variant of that tries a top-level lastname first but also tries lastnam
 > 앞의 메서드 선언은 모든 경로에서 firstname 을 찾으려고 합니다.
 > lastname 을 찾는 XML 조회 동작은 문서의 최상위 레벨에서 수행됩니다.
 > JSON 변형의 경우 최상위 수준의 lastname을 첫 번째로 찾아보고, 결과물이 없으면 하위 문서에 중첩된 lastname 도 찾아봅니다. 
+> 이렇게 하면, 클라이언트가 노출된 메서드를 호출하지 않고도 소스 문서의 구조 변경을 완화할 수 있습니다. (일반적으로 클래스 기반 페이로드 바인딩의 단점)
+> 
+> 중첩된 프로젝션은 프로젝션 챕터에 기술된 것 처럼 지원됩니다. 
+> 만약 메서드의 반환값이 복잡하고 인터페이스 타입이 아니라면, Jackson ObjectMapper 를 사용하여 최종값을 매핑합니다.
+> 
+> Spring MVC의 경우, `@EnableSpringDataWebSupport` 가 활성화되고 필요한 의존성들을 사용할 수 있게되면, 필수적인 컨버터들이 자동으로 등록됩니다.
+> `RestTemplate` 과 함께 사용하려면 `ProjectingJackson2HttpMessageConverter` (JSON) 또는 `XmlBeamHttpMessageConverter0` 를 직접 등록해주어야 합니다.
+> 
+> 더 많은 정보를 원한다면, Spring Data Examples repository 문서의 웹 프로젝션 예제를 확인하십시오.
+
+<br>
+
+### Querydsl Web Support
+
+> Querydsl 웹 지원
+
+<br>
+
+For those stores that have QueryDSL integration, you can derive queries from the attributes contained in a Request query string.
+
+Consider the following query string:
+```
+?firstname=Dave&lastname=Matthews
+```
+
+Given the User object from the previous examples, you can resolve a query string to the following value by using the QuerydslPredicateArgumentResolver, as follows:
+```
+QUser.user.firstname.eq("Dave").and(QUser.user.lastname.eq("Matthews"))
+```
+
+**Note**
+The feature is automatically enabled, along with @EnableSpringDataWebSupport, when Querydsl is found on the classpath.
+
+Adding a @QuerydslPredicate to the method signature provides a ready-to-use Predicate, which you can run by using the QuerydslPredicateExecutor.
+
+> QueryDSL 통합 기능이 있는 스토어의 경우, `Request` 의 쿼리 파라미터에 포함된 속성에서 쿼리를 파생할 수 있습니다.
+> 
+> 다음과 같은 쿼리 파라미터가 있다고 가정하겠습니다.
+> (코드 생략)
+> 
+> 이전 예제의 `User` 객체가 주어지면 다음과 같이 `QuerydslPredicateArgumentResolver` 를 사용하여 쿼리 파라미터를 해석할 수 있습니다.
+> (코드 생략)
+> 
+> **참고**
+> 이 기능은 Querydsl 이 클래스 경로에 존재하면 `@EnableSpringDataWebSupport` 와 함께 자동으로 활성화됩니다.
+> 
+> `@QuerydslPredicate` 를 메서드 시그니쳐에 추가하면 바로 사용할 수 있는 `Predicate` 가 제공되며, 이는 `QuerydslPredicateExecutor` 를 사용하여 실행할 수 있습니다.
