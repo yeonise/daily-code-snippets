@@ -2398,7 +2398,11 @@ QUser.user.firstname.eq("Dave").and(QUser.user.lastname.eq("Matthews"))
 **Note**
 The feature is automatically enabled, along with @EnableSpringDataWebSupport, when Querydsl is found on the classpath.
 
-Adding a @QuerydslPredicate to the method signature provides a ready-to-use Predicate, which you can run by using the QuerydslPredicateExecutor.
+Adding a `@QuerydslPredicate` to the method signature provides a ready-to-use Predicate, which you can run by using the QuerydslPredicateExecutor.
+
+**Tip**
+Type information is typically resolved from the method’s return type.
+Since that information does not necessarily match the domain type, it might be a good idea to use the root attribute of QuerydslPredicate.
 
 > QueryDSL 통합 기능이 있는 스토어의 경우, `Request` 의 쿼리 파라미터에 포함된 속성에서 쿼리를 파생할 수 있습니다.
 > 
@@ -2412,3 +2416,80 @@ Adding a @QuerydslPredicate to the method signature provides a ready-to-use Pred
 > 이 기능은 Querydsl 이 클래스 경로에 존재하면 `@EnableSpringDataWebSupport` 와 함께 자동으로 활성화됩니다.
 > 
 > `@QuerydslPredicate` 를 메서드 시그니쳐에 추가하면 바로 사용할 수 있는 `Predicate` 가 제공되며, 이는 `QuerydslPredicateExecutor` 를 사용하여 실행할 수 있습니다.
+> 
+> **팁**
+> 타입 정보는 일반적으로 메서드의 반환 타입에서 확인됩니다.
+> 타입 정보는 반드시 도메인 타입과 일치하는 것은 아니므로, `QuerydslPredicate` 의 `root` 속성을 사용하는 것이 좋을 수 있습니다. 
+
+<br>
+
+The following example shows how to use @QuerydslPredicate in a method signature:
+```java
+@Controller
+class UserController {
+
+  @Autowired UserRepository repository;
+
+  @RequestMapping(value = "/", method = RequestMethod.GET)
+  String index(Model model, @QuerydslPredicate(root = User.class) Predicate predicate,    (1)
+          Pageable pageable, @RequestParam MultiValueMap<String, String> parameters) {
+
+    model.addAttribute("users", repository.findAll(predicate, pageable));
+
+    return "index";
+  }
+}
+
+(1) Resolve query string arguments to matching Predicate for User.
+```
+
+The default binding is as follows:
+- Object on simple properties as `eq`.
+- Object on collection like properties as `contains`.
+- Collection on simple properties as `in`.
+
+You can customize those bindings through the bindings attribute of @QuerydslPredicate or by making use of Java 8 default methods and adding the QuerydslBinderCustomizer method to the repository interface, as follows:
+```java
+interface UserRepository extends CrudRepository<User, String>,
+                                 QuerydslPredicateExecutor<User>,                (1)
+                                 QuerydslBinderCustomizer<QUser> {               (2)
+
+  @Override
+  default void customize(QuerydslBindings bindings, QUser user) {
+
+    bindings.bind(user.username).first((path, value) -> path.contains(value))    (3)
+    bindings.bind(String.class)
+      .first((StringPath path, String value) -> path.containsIgnoreCase(value)); (4)
+    bindings.excluding(user.password);                                           (5)
+  }
+}
+
+(1)   QuerydslPredicateExecutor provides access to specific finder methods for Predicate.
+(2)   QuerydslBinderCustomizer defined on the repository interface is automatically picked up and shortcuts @QuerydslPredicate(bindings=…​).
+(3)   Define the binding for the username property to be a simple contains binding.
+(4)   Define the default binding for String properties to be a case-insensitive contains match.
+(5)   Exclude the password property from Predicate resolution.
+```
+
+**Tip**
+You can register a QuerydslBinderCustomizerDefaults bean holding default Querydsl bindings before applying specific bindings from the repository or @QuerydslPredicate.
+
+> 다음의 예제는 메서드 시그니쳐에서 `@QuerydslPredicate` 를 사용하는 방법을 보여줍니다.
+> (코드 생략)
+> (1) User와 맞는 `Predicate` 를 쿼리 스트링으로 받습니다.
+> 
+> 기본적인 바인딩 방식은 다음과 같습니다.
+> - 간단한 객체는 `eq` 로 
+> - 콜렉션 안의 객체는 `contains` 로
+> - 콜렉션은 `in` 을 사용해 바인딩합니다.
+> 
+> 다음과 같이, `@QuerydslPredicate` 속성을 사용해서 바인딩하거나 자바 8의 `default methods` 를 사용해 `QuerydslBinderCustomizer` 메서드를 리포지토리 인터페이스에 추가하는 방식으로 바인딩을 커스터마이징 할 수 있습니다. 
+> (코드 생략)
+> (1) `QuerydslPredicateExecutor` 는 `Predicate` 와 관련된 특정 파인더 메서드의 엑세스를 제공합니다.
+> (2) 리포지토리 인터페이스에 정의된 `QuerydslBinderCustomizer`가 자동으로 선택되어 `@QuerydslPredicate(bindings=…​).` 를 바로 가도록 합니다.
+> (3) `username` 속성에 대한 바인딩을 `contains` 바인딩으로 정의합니다
+> (4) `String` 속성의 기본 바인딩을 대소문자를 구분하지 않는 `contains` 바인딩으로 정의합니다.
+> (5) `password` 속성의 경우 `Predicate` 변환에서 제외합니다.
+> 
+> **팁**
+> 리포지토리 또는 `@QuerydslPredicate` 에서 특정 바인딩을 적용하기 전에 기본 Querydsl 바인딩을 포함하는 `QuerydslBinderCustomizerDefaults` 빈을 등록할 수 있습니다.
