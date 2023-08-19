@@ -59,6 +59,8 @@
 
 - [Part 1: Overview](Deployment_And_Orchestration/1-Overview.md)
     - YongHwanKim
+- [Part 2: Deploy To Kubermetes](Deployment_And_Orchestration/2-Deploy-To-Kubermetes.md)
+    - YongHwanKim
 
 #### Cloud_Integrations
 
