@@ -553,3 +553,103 @@ In HTTP/1.1, a connection may be used for one or more request/response exchanges
 
 ## 2. Notational Conventions and Generic Grammar
 > 표기 규칙 및 일반 문법 
+
+### 2.1 Augmented BNF
+
+> 2.1 강화된 BNF
+
+<br>
+
+All of the mechanisms specified in this document are described in both prose and an augmented Backus-Naur Form (BNF) similar to that used by RFC 822 [9].
+Implementors will need to be familiar with the notation in order to understand this specification.
+The augmented BNF includes the following constructs:
+
+name = definition
+The name of a rule is simply the name itself (without any enclosing "<" and ">") and is separated from its definition by the equal "=" character.
+White space is only significant in that indentation of continuation lines is used to indicate a rule definition that spans more one line.
+Certain basic rules are in uppercase, such as SP, LWS, HT, CRLF, DIGIT, ALPHA, etc.
+Angle brackets are used within definitions whenever their presence will facilitate discerning the use of rule names.
+
+"literal"
+Quotation marks surround literal text.
+Unless stated otherwise, the text is case-insensitive.
+
+rule1 | rule2
+Elements separated by a bar ("|") are alternatives, e.g., "yes | no" will accept yes or no.
+
+(rule1 rule2)
+Elements enclosed in parentheses are treated as a single element.
+Thus, "(elem (foo | bar) elem)" allows the token sequences "elem foo elem" and "elem bar elem".
+
+*rule
+The character "*" preceding an element indicates repetition.
+The full form is "<n>*<m>element" indicating at least <n> and at most <m> occurrences of element.
+Default values are 0 and infinity so that "*(element)" allows any number, including zero;
+"1*element" requires at least one; and "1*2element" allows one or two.
+
+[rule]
+Square brackets enclose optional elements; "[foo bar]" is equivalent to "*1(foo bar)".
+
+N rule
+Specific repetition: "<n>(element)" is equivalent to "<n>*<n>(element)"; that is, exactly <n> occurrences of (element).
+Thus 2DIGIT is a 2-digit number, and 3ALPHA is a string of three alphabetic characters.
+
+#rule
+A construct "#" is defined, similar to "*", for defining lists of elements.
+The full form is "<n>#<m>element" indicating at least <n> and at most <m> elements, each separated by one or more commas (",") and OPTIONAL linear white space (LWS).
+This makes the usual form of lists very easy; a rule such as ( *LWS element *( *LWS "," *LWS element )) can be shown as 1#element
+Wherever this construct is used, null elements are allowed, but do not contribute to the count of elements present.
+That is, "(element), , (element) " is permitted, but counts as only two elements.
+Therefore, where at least one element is required, at least one non-null element MUST be present.
+Default values are 0 and infinity so that "#element" allows any number, including zero; "1#element" requires at least one; and "1#2element" allows one or two.
+
+; comment
+A semi-colon, set off some distance to the right of rule text, starts a comment that continues to the end of line.
+This is a simple way of including useful notes in parallel with the specifications.
+
+> 이 문서에 명시된 모든 메커니즘은 산문과 RFC 822에서 사용하는 것과 유사한 증강된 BNF 로 설명되어 있습니다.
+> 구현자는 이 스펙을 잘 이해하기 위해선, 표기법을 잘 알고 있어야 합니다.
+> 증강된 BNF 는 다음의 구조로 이루어집니다. 
+> 
+> `name = definiton`
+> 규칙의 이름은 이름 그 자체이며 (< 나 > 없이 표현) 정의와 동일한 '=' 문자로 구분됩니다.
+> 공백은 연속되는 줄의 들여쓰기가 한 줄 이상에 걸쳐있는 규칙 정의를 나타내는 데 사용된다는 점에서만 중요합니다.
+> SP, LWS, HT, CRLF, DIGIT, ALPHA 같은 특정 기본 규칙은 대문자로 되어 있습니다.
+> 대괄호는 정의 내에서 규칙 이름을 쉽게 구분할 수 있는 경우에만 사용됩니다.
+> 
+> `"literal"`
+> 따옴표는 문자를 둘러싸고 있습니다.
+> 달리 명시되지 않는 한, 텍스트는 대소문자를 구분하지 않습니다.
+> 
+> `rule1 | rule2`
+> `|` 로 구분된 요소들은 서로 대체가능한 항목입니다. 예를들어 `"yes | no"` 는 yes 나 no 를 허용합니다.
+> 
+> `(rule1 rule2)`
+> 괄호로 묶인 요소는 단일 요소로 취급됩니다.
+> 따라서 `"(elem (foo | bar) elem)"` 은 `"elem foo elem"` 또는 `"elem bar elem"` 순서의 토큰을 허용합니다.
+> 
+> `*rule`
+> 요소 앞의 `*` 문자는 반복을 나타냅니다.
+> 전체형식은 `"<n>*<m>"`로, 최소 `n` 개에서 최대 `m`개로 이루어져 있는 요소임을 나타냅니다.
+> 기본값은 0과 무한대이므로, `"*(요소)` 는 0을 포함한 모든 숫자를 허용합니다.
+> `1*element` 는 최소 한개가 필요하고, `1*2element` 는 1~2개를 허용합니다.
+> 
+> `[rule]`
+> 대괄호는 선택적인 요소를 묶습니다. `[foo bar]` 는 `*1(foo bar)` 와 동일합니다.
+> 
+> `N rule`
+> 특정 반복: `<n>(element)` 는 `<n>*<n>(element)` 와 동일합니다; 즉, `n` 번 요소가 반복되어야 합니다.
+> 따라서 2DIGIT 은 두자리 숫자이고, 3ALPHA 는 세개의 알파벳 문자로 이루어진 문자열입니다.
+> 
+> `#rule`
+> `#` 은 `*` 과 유사하게 요소 목록들을 정의합니다.
+> 전체 형식은 `<n>#<m>element` 로 최소 n개에서 최대 m개의 요소를 나타내며, 각각은 하나이상의 쉼표와 선택적 선형 공백으로 구분합니다.
+> 이렇게 하면 일반적인 형태의 목록을 쉽게 만들 수 있습니다; `( *LWS element *( *LWS "," *LWS element ))` 와 같은 규칙은 `1#element` 로 표시할 수 있습니다.
+> 이 구조체가 사용되면 널값도 허용하지만, 이는 요소 개수를 증가시키진 않습니다.
+> 즉 `(element), , (element) ` 는 허용되나, 오직 2개의 요소로만 계산됩니다.
+> 그래서, 적어도 하나의 요소가 필요한 경우, null 이 아닌 요소가 하나 이상 반드시 존재해야 합니다.
+> 기본값은 0 ~ 무한대이므로 `#element` 는 0을 포함한 어떤 숫자든 허용합니다; `1#element` 는 최소 한개의 요소를 허용하고; `1#2element` 는 한개 혹은 두개의 요소를 허용합니다.
+> 
+> ` ; comment`
+> 규칙 텍스트 오른쪽에 일정 거리를 두고 세미콜론을 사용하면, 줄 끝에서 이어지는 댓글을 시작합니다. 
+> 이것은 스펙과 함께 유용한 메모를 포함하는 간단한 방법입니다. 
