@@ -607,6 +607,12 @@ Default values are 0 and infinity so that "#element" allows any number, includin
 A semi-colon, set off some distance to the right of rule text, starts a comment that continues to the end of line.
 This is a simple way of including useful notes in parallel with the specifications.
 
+implied *LWS
+The grammar described by this specification is word-based.
+Except where noted otherwise, linear white space (LWS) can be included between any two adjacent words (token or quoted-string), and between adjacent words and separators, without changing the interpretation of a field.
+At least one delimiter (LWS and/or separators) MUST exist between any two tokens (for the definition of "token" below), since they would otherwise be interpreted as a single token.
+
+
 > 이 문서에 명시된 모든 메커니즘은 산문과 RFC 822에서 사용하는 것과 유사한 증강된 BNF 로 설명되어 있습니다.
 > 구현자는 이 스펙을 잘 이해하기 위해선, 표기법을 잘 알고 있어야 합니다.
 > 증강된 BNF 는 다음의 구조로 이루어집니다. 
@@ -653,3 +659,95 @@ This is a simple way of including useful notes in parallel with the specificatio
 > ` ; comment`
 > 규칙 텍스트 오른쪽에 일정 거리를 두고 세미콜론을 사용하면, 줄 끝에서 이어지는 댓글을 시작합니다. 
 > 이것은 스펙과 함께 유용한 메모를 포함하는 간단한 방법입니다. 
+> 
+> `*LWS` 암시
+> 이 스펙에 묘사된 문법은 단어 기반입니다.
+> 특별히 명시된 경우를 제외하고, 인접한 두 단어 (토큰이나 따옴표로 묶인 문자열) 사이나, 인접한 단어와 구분 기호 사이에는 필드의 해석을 변경하지 않고, 선형 공백(LSW)을 포함할 수 있습니다. 
+> 최소한 하나의 구분자 (LWS 나/또는 다른 구분자들) 가 두개의 토큰 사이에 반드시 존재해야 합니다, 왜냐하면 그들은 단일 토큰으로 해석될 수 있기 때문에.
+
+<br>
+
+### 2.2 Basic Rules
+
+> 기본 규칙
+
+<br>
+
+The following rules are used throughout this specification to describe basic parsing constructs. 
+The US-ASCII coded character set is defined by ANSI X3.4-1986 [21].
+
+```
+ OCTET          = <any 8-bit sequence of data>
+       CHAR           = <any US-ASCII character (octets 0 - 127)>
+       UPALPHA        = <any US-ASCII uppercase letter "A".."Z">
+       LOALPHA        = <any US-ASCII lowercase letter "a".."z">
+       ALPHA          = UPALPHA | LOALPHA
+       DIGIT          = <any US-ASCII digit "0".."9">
+       CTL            = <any US-ASCII control character
+                        (octets 0 - 31) and DEL (127)>
+       CR             = <US-ASCII CR, carriage return (13)>
+       LF             = <US-ASCII LF, linefeed (10)>
+       SP             = <US-ASCII SP, space (32)>
+       HT             = <US-ASCII HT, horizontal-tab (9)>
+       <">            = <US-ASCII double-quote mark (34)>
+```
+
+HTTP/1.1 defines the sequence CR LF as the end-of-line marker for all protocol elements except the entity-body (see appendix 19.3 for tolerant applications).
+The end-of-line marker within an entity-body is defined by its associated media type, as described in section 3.7.
+
+```
+CRLF           = CR LF
+```
+
+HTTP/1.1 header field values can be folded onto multiple lines if the continuation line begins with a space or horizontal tab.
+All linear white space, including folding, has the same semantics as SP.
+A recipient MAY replace any linear white space with a single SP before interpreting the field value or forwarding the message downstream.
+
+```
+LWS            = [CRLF] 1*( SP | HT )
+```
+
+The TEXT rule is only used for descriptive field contents and values that are not intended to be interpreted by the message parser.
+Words of *TEXT MAY contain characters from character sets other than ISO-8859-1 [22] only when encoded according to the rules of RFC 2047 [14].
+
+```
+       TEXT           = <any OCTET except CTLs,
+                        but including LWS>
+```
+
+A CRLF is allowed in the definition of TEXT only as part of a header field continuation.
+It is expected that the folding LWS will be replaced with a single SP before interpretation of the TEXT value.
+
+Hexadecimal numeric characters are used in several protocol elements.
+```
+       HEX            = "A" | "B" | "C" | "D" | "E" | "F"
+                      | "a" | "b" | "c" | "d" | "e" | "f" | DIGIT
+```
+
+> 이 스펙에서 기본 파싱 구조를 설명하기 위해, 다음의 규칙들이 사용됩니다.
+> US-ASCII 문자 집합은 ANSI X3.4-1986 에 정의되어 있습니다.
+> 
+> (코드 생략)
+> 
+> HTTP/1.1 은 entity-body 를 제외한 모든 프로토콜 요소의 end-of-line 마커를 CR LF 시퀸스로 정의합니다. (허용가능한 애플리케이션에 대해서는 부록 19.3 을 참조하십시오.)
+> entity-body 의 end-of-line 마커는 섹션 3.7에 설명된대로 연관된 media type 에 의해 정의됩니다.
+> 
+> (코드 생략)
+> 
+> 만약 연속된 줄이 공백이나 가로 탭으로 시작된다면, HTTP/1.1 헤더 필드 값을 여러 줄로 접을 수 있습니다.
+> 접기를 포함한 모든 선형 공백은 SP와 동일한 의미를 갖습니다.
+> 수신자는 필드 값을 해석하거나 메시지를 다운스트림으로 전달하기 전에 모든 선형 공백을 단일 SP로 대체할 수 있습니다.
+> 
+> (코드 생략)
+> 
+> TEXT 규칙은 message 파서가 해석할 의도가 없는 설명적인 필드 콘텐츠나 값에만 사용됩니다.
+> TEXT의 단어는 RFC 2047의 규칙에 따라 인코딩된 경우에만 ISO-8859-1 이외의 문자 집합의 문자를 포함할 수 있습니다.
+> 
+> (코드 생략)
+>
+> CRLF는 연속된 헤더 필드의 일부로만 TEXT 정의에서 허용됩니다.
+> 접혀있는 LWS 는 TEXT 값을 해석하기 전에 단일 SP로 대체될 것으로 예상됩니다.
+> 
+> 16진수 문자는 여러 프로토콜 요소로 사용됩니다.
+>
+> (코드 생략)
