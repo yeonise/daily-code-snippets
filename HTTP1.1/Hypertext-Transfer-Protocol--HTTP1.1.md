@@ -724,6 +724,28 @@ Hexadecimal numeric characters are used in several protocol elements.
                       | "a" | "b" | "c" | "d" | "e" | "f" | DIGIT
 ```
 
+Many HTTP/1.1 header field values consist of words separated by LWS or special characters.
+These special characters MUST be in a quoted string to be used within a parameter value (as defined in section 3.6).
+
+```
+       token          = 1*<any CHAR except CTLs or separators>
+       separators     = "(" | ")" | "<" | ">" | "@"
+                      | "," | ";" | ":" | "\" | <">
+                      | "/" | "[" | "]" | "?" | "="
+                      | "{" | "}" | SP | HT
+```
+
+Comments can be included in some HTTP header fields by surrounding the comment text with parentheses.
+Comments are only allowed in fields containing "comment" as part of their field value definition.
+In all other fields, parentheses are considered part of the field value.
+
+```
+        comment        = "(" *( ctext | quoted-pair | comment ) ")"
+        ctext          = <any TEXT excluding "(" and ")">
+```
+
+A string of text is parsed as a single word if it is quoted using double-quote marks.
+
 > 이 스펙에서 기본 파싱 구조를 설명하기 위해, 다음의 규칙들이 사용됩니다.
 > US-ASCII 문자 집합은 ANSI X3.4-1986 에 정의되어 있습니다.
 > 
@@ -751,3 +773,16 @@ Hexadecimal numeric characters are used in several protocol elements.
 > 16진수 문자는 여러 프로토콜 요소로 사용됩니다.
 >
 > (코드 생략)
+> 
+> 많은 HTTP/1.1 헤더 값은 LWS나 특수 문자로 구분된 단어로 이루어져 있다.
+> 특수 문자들은 파라미터 값 내에서 사용하려면 반드시 따옴표로 묶인 문자열 안에 있어야 합니다. (섹션 3.6에 정의되어 있습니다.)
+> 
+> (코드 생략)
+> 
+> 댓글 텍스트를 괄호로 묶어 일부 HTTP 헤더 필드에 댓글을 포함할 수 있습니다. 
+> 댓글은 필드 값 정의의 일부로 "댓글"이 포함되어 있는 필드에서만 허용됩니다.
+> 다른 모든 필드에서는, 괄호들은 필드 값의 일부로 간주됩니다.
+> 
+> (코드 생략)
+> 
+> 텍스트 문자열이 큰 따옴표로 묶여 있다면, 단일 단어로 파싱됩니다.
