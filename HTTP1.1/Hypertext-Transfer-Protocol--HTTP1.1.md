@@ -746,6 +746,17 @@ In all other fields, parentheses are considered part of the field value.
 
 A string of text is parsed as a single word if it is quoted using double-quote marks.
 
+```
+       quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
+       qdtext         = <any TEXT except <">>
+```
+
+The backslash character ("\") MAY be used as a single-character quoting mechanism only within quoted-string and comment constructs.
+
+```
+        quoted-pair    = "\" CHAR
+```
+
 > 이 스펙에서 기본 파싱 구조를 설명하기 위해, 다음의 규칙들이 사용됩니다.
 > US-ASCII 문자 집합은 ANSI X3.4-1986 에 정의되어 있습니다.
 > 
@@ -786,3 +797,84 @@ A string of text is parsed as a single word if it is quoted using double-quote m
 > (코드 생략)
 > 
 > 텍스트 문자열이 큰 따옴표로 묶여 있다면, 단일 단어로 파싱됩니다.
+> 
+> (코드 생략)
+> 
+> 따옴표 문자열이나 댓글 구조 내에서만 역슬래쉬를 단일 문자 인용 메커니즘으로 사용할 수 있습니다.
+> 
+> (코드 생략)
+
+<br>
+
+## 3. Protocol Parameters
+
+> 프로토콜 매개변수
+
+<br>
+
+### 3.1 HTTP Version
+
+> HTTP 버전
+
+<br>
+
+HTTP uses a "<major>.<minor>" numbering scheme to indicate versions of the protocol.
+The protocol versioning policy is intended to allow the sender to indicate the format of a message and its capacity for understanding further HTTP communication, rather than the features obtained via that communication.
+No change is made to the version number for the addition of message components which do not affect communication behavior or which only add to extensible field values.
+The <minor> number is incremented when the changes made to the protocol add features which do not change the general message parsing algorithm, but which may add to the message semantics and imply additional capabilities of the sender.
+The <major> number is incremented when the format of a message within the protocol is changed.
+See RFC 2145 [36] for a fuller explanation.
+The version of an HTTP message is indicated by an HTTP-Version field in the first line of the message.
+
+```
+        HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
+```
+
+Note that the major and minor numbers MUST be treated as separate integers and that each MAY be incremented higher than a single digit.
+Thus, HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3. 
+Leading zeros MUST be ignored by recipients and MUST NOT be sent.
+
+An application that sends a request or response message that includes HTTP-Version of "HTTP/1.1" MUST be at least conditionally compliant with this specification.
+Applications that are at least conditionally compliant with this specification SHOULD use an HTTP-Version of "HTTP/1.1" in their messages, and MUST do so for any message that is not compatible with HTTP/1.0.
+For more details on when to send specific HTTP-Version values, see RFC 2145 [36].
+
+The HTTP version of an application is the highest HTTP version for which the application is at least conditionally compliant.
+
+Proxy and gateway applications need to be careful when forwarding messages in protocol versions different from that of the application.
+Since the protocol version indicates the protocol capability of the sender, a proxy/gateway MUST NOT send a message with a version indicator which is greater than its actual version.
+If a higher version request is received, the proxy/gateway MUST either downgrade the request version, or respond with an error, or switch to tunnel behavior.
+
+Due to interoperability problems with HTTP/1.0 proxies discovered since the publication of RFC 2068[33], caching proxies MUST, gateways MAY, and tunnels MUST NOT upgrade the request to the highest version they support.
+The proxy/gateway's response to that request MUST be in the same major version as the request.
+
+Note: Converting between versions of HTTP may involve modification of header fields required or forbidden by the versions involved.
+
+
+> HTTP는 "<메이저>.<마이너>" 번호 체계를 사용하여 프로토콜의 버전을 표현합니다.
+> 프로토콜 버전 관리 정책은 발신자가 해당 통신을 통해 얻은 기능보다는, 메시지의 형식과 추가 HTTP 통신을 이해할 수 있는 능력을 표시할 수 있도록 하기 위한 것입니다.
+> 통신 동작에 영향을 주지 않거나, 확장 가능한 필드 값에만 추가되는 메시지 구성요소의 추가는 버전 번호를 변경시키지 않습니다.
+> 프로토콜 변경으로 인해 일반적인 메시지 분석 알고리즘은 바뀌지 않지만, 메시지에 의미가 추가되고 발신자의 추가 기능을 암시할 수 있는 기능이 추가된다면 <minor> 번호가 증가합니다.
+> 프로토콜 변경으로 인해 메시지를 주고받는 형태가 바뀌면 <메이저> 번호가 증가합니다.
+> 더욱 자세한 정보는 RFC 2145를 참고하십시오. 
+> HTTP 메시지의 버전은 메시지 첫 번째 줄의 HTTP-Version 필드에 표시됩니다.
+> 
+> (코드 생략)
+> 
+> 메이저와 마이너 번호는 분리된 정수로 관리되어야하고, 각각은 한자리 수보다 크게 증가할 수 있습니다.
+> 그래서, HTTP/2.4 는 HTTP/2.13 보다 하위 버전이고, HTTP/12.3 보다도 하위 버전입니다.
+> 0으로 시작되는 버전 번호는 수신자가 반드시 무시해야 하고, 절대로 보내선 안됩니다.
+> 
+> HTTP/1.1 버전을 포함하는 요청과 응답 메시지를 보내는 애플리케이션은 최소한 조건부로 이 스펙을 반드시 준수해야 합니다.
+> 이 스펙을 조건부로 준수하는 애플리케이션은 메시지에 HTTP/1.1 버전임을 명시해야 하며, HTTP/1.0 과 호환되지 않는 메시지에는 반드시 HTTP/1.1 버전임을 명시해야 합니다. 
+> 특정 HTTP 버전 값을 언제 전송해야 하는지 자세히 알고 싶다면, RFC 2145를 대한 스펙을 참고하십시오.
+> 
+> 애플리케이션의 HTTP 버전은 애플리케이션이 최소한의 조건을 만족하는 가장 높은 HTTP 버전입니다.
+> 
+> 프록시와 게이트웨이는 애플리케이션과 다른 프로토콜 버전으로 메시지를 포워딩할때 주의해야 합니다.
+> 프로토콜 버전은 발신자의 프로토콜 기능을 나타내므로, 프록시/게이트웨이는 실제 버전보다 상위 버전의 메시지를 보내선 안됩니다.
+> 만약 상위 버전의 요청을 받게되면, 프록시/게이트웨이는 요청 메시지의 프로토콜 버전을 낮추거나, 에러로 응답하거나, 터널 동작으로 전환해야 합니다.
+> 
+> RFC 2068에서 발견된 HTTP/1.0 프록시와의 상호 운용성 문제로 인해, 캐싱 프록시는 반드시 지원하는 최고 버전으로 업그레이드, 게이트 웨이는 가능하면 업그레이드, 터널은 절대로 요청을 업그레이드 해선 안됩니다. 
+> 프록시/게이트웨이의 응답은 반드시 요청과 같은 메이저 버전을 가져야 합니다.
+> 
+> 참고: HTTP 버전 간 변환 시 관련 버전에서 요구하거나 금지하는 헤더 필드의 수정이 필요할 수 있습니다.
