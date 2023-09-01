@@ -878,3 +878,117 @@ Note: Converting between versions of HTTP may involve modification of header fie
 > 프록시/게이트웨이의 응답은 반드시 요청과 같은 메이저 버전을 가져야 합니다.
 > 
 > 참고: HTTP 버전 간 변환 시 관련 버전에서 요구하거나 금지하는 헤더 필드의 수정이 필요할 수 있습니다.
+
+<br>
+
+### 3.2 Uniform Resource Identifiers
+
+> 단일 자원 식별자
+
+<br>
+
+URIs have been known by many names: WWW addresses, Universal Document Identifiers, Universal Resource Identifiers [3], and finally the combination of Uniform Resource Locators (URL) [4] and Names (URN) [20].
+As far as HTTP is concerned, Uniform Resource Identifiers are simply formatted strings which identify--via name, location, or any other characteristic--a resource.
+
+> URI는 다양한 이름으로 알려져 있습니다: WWW 주소, 범용 문서 식별자, 범용 리소스 식별자, 마지막으로 범용 리소스 위치와 이름의 조합
+> HTTP에 관한 한, URI(범용 리소스 식별자) 는 이름, 위치 또는 기타 특성을 통해 리소스를 식별하는 간단한 형식의 문자열입니다.
+
+<br>
+
+#### 3.2.1 General Syntax
+
+> 일반 구문
+
+<br>
+
+URIs in HTTP can be represented in absolute form or relative to some known base URI [11], depending upon the context of their use.
+The two forms are differentiated by the fact that absolute URIs always begin with a scheme name followed by a colon.
+For definitive information on URL syntax and semantics, see "Uniform Resource Identifiers (URI): Generic Syntax and Semantics," RFC 2396 [42] (which replaces RFCs 1738 [4] and RFC 1808 [11]).
+This specification adopts the definitions of "URI-reference", "absoluteURI", "relativeURI", "port", "host","abs_path", "rel_path", and "authority" from that specification.
+
+The HTTP protocol does not place any a priori limit on the length of a URI.
+Servers MUST be able to handle the URI of any resource they serve, and SHOULD be able to handle URIs of unbounded length if they provide GET-based forms that could generate such URIs.
+A server SHOULD return 414 (Request-URI Too Long) status if a URI is longer than the server can handle (see section 10.4.15).
+
+Note: Servers ought to be cautious about depending on URI lengths above 255 bytes, because some older client or proxy implementations might not properly support these lengths.
+
+> HTTP 의 URI 는 사용되는 문맥에 따라서 절대 경로나 base URI의 상대경로로 표현할 수 있습니다.
+> 두 형식은 절대경로 URI 가 항상 스키마 이름으로 시작하고 콜론이 뒤따른다는 점에서 차이가 있습니다.
+> URL 구문과 의미에 대한 자세한 정보는 RFC 2396 의 "Uniform Resource Identifiers (URI): Generic Syntax and Semantics," 를 참고하십시오.
+> 이 스펙은 해당 스펙의 URI-reference, absoluteURI, relativeURI, port, host, abs_path, rel_path, authority 정의들을 사용합니다.
+> 
+> HTTP 프로토콜은 URI 길이에 저한을 두지 않습니다.
+> 서버는 반드시 어떤 리소스의 URI든 처리할 수 있어야하고, 그들이 GET 기반의 폼을 URI를 통해 전달했을때 무제한 길이의 URI를 처리할 수 있는것이 권장됩니다.
+> 만약 서버가 처리할 수 있는 URI 길이를 초과하는 경우, 서버는 414 (요청 URI 가 너무 김) 에러를 반환해야 합니다.
+> 
+> 참고: 일부 구형 클라이언트와 프록시 구현은 255 바이트를 넘어가는 URI 길이를 처리하지 못하므로, 서버는 255바이트 이상의 URI 길이를 사용할 땐 주의해야 합니다.
+
+<br>
+
+#### 3.2.2 http URL
+
+> http URL
+
+<br>
+
+The "http" scheme is used to locate network resources via the HTTP protocol.
+This section defines the scheme-specific syntax and semantics for http URLs.
+
+```
+ http_URL = "http:" "//" host [ ":" port ] [ abs_path [ "?" query ]]
+```
+
+If the port is empty or not given, port 80 is assumed.
+The semantics are that the identified resource is located at the server listening for TCP connections on that port of that host, and the Request-URI for the resource is abs_path (section 5.1.2).
+The use of IP addresses in URLs SHOULD be avoided whenever possible (see RFC 1900 [24]).
+If the abs_path is not present in the URL, it MUST be given as "/" when used as a Request-URI for a resource (section 5.1.2).
+If a proxy receives a host name which is not a fully qualified domain name, it MAY add its domain to the host name it received.
+If a proxy receives a fully qualified domain name, the proxy MUST NOT change the host name.
+
+
+> http 스키마는 HTTP 프로토콜을 통해서 네트워크 리소스를 찾는 데 사용됩니다.
+> 이 챕터에선 http URL에 대한 스키마별 구문과 의미를 정의합니다.
+> 
+> (코드 생략)
+> 
+> 만약 포트가 비어있거나 지정되지 않은 경우, 포트 80을 사용합니다.
+> 의미는 식별된 리소스가 해당 호스트의 해당 포트에서 TCP 연결을 수신하는 서버에 있으며, 리소스에 대한 요청 URI는 abs_path 라는 것입니다.
+> URL에 IP 주소를 사용하는 것은 가능한 피해야 합니다. (RFC 1900 참고) 
+> 만약 abs_path 가 현재 URL에 없는 경우, 요청 URI를 사용할 때는 반드시 "/" 로 지정해야 합니다.
+> 만약 프록시가 도메인 이름으로는 완벽하지 않은 호스트 이름을 수신한다면, 수신한 메시지에 자신의 도메인을 호스트 이름에 추가할 수 있습니다. 
+> 만약 프록시가 완벽한 도메인 이름을 수신한다면, 프록시는 호스트 이름을 변경해서는 안됩니다.
+
+<br>
+
+#### 3.2.3 URI Comparison
+
+> URI 비교
+
+<br>
+
+When comparing two URIs to decide if they match or not, a client SHOULD use a case-sensitive octet-by-octet comparison of the entire URIs, with these exceptions:
+- A port that is empty or not given is equivalent to the default port for that URI-reference;
+- Comparisons of host names MUST be case-insensitive;
+- Comparisons of scheme names MUST be case-insensitive;
+- An empty abs_path is equivalent to an abs_path of "/".
+
+Characters other than those in the "reserved" and "unsafe" sets (see RFC 2396 [42]) are equivalent to their ""%" HEX HEX" encoding.
+
+For example, the following three URIs are equivalent:
+```
+      http://abc.com:80/~smith/home.html
+      http://ABC.com/%7Esmith/home.html
+      http://ABC.com:/%7esmith/home.html
+```
+
+> 만약 두 개의 URI를 비교하여 일치여부를 결정한다면, 클라이언트는 다음과 같은 예외를 제외하고 전체 URI의 대소문자를 구별하는 옥텟 단위 비교를 사용해야 합니다.
+> - 포트가 비어있거나 지정되지 않은 경우 해당 URI 참조의 기본 포트와 동일합니다.
+> - 호스트 이름 비교는 대소문자를 구별하지 않아야 합니다.
+> - 스키마 이름 비교는 대소문자를 구별하지 않아야 합니다.
+> - 비어있는 abs_path 는 "/" abs_path 와 동일합니다.
+> 
+> 예약되거나 안전하지 않은 문자 집합 (RFC 2396) 은 %16진수 인코딩과 동일합니다.
+> 
+> 예를 들어, 다음 3개의 URI는 동일합니다.
+> 
+> (코드 생략)
