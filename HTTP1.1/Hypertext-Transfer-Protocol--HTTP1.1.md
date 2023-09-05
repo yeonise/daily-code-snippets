@@ -992,3 +992,120 @@ For example, the following three URIs are equivalent:
 > 예를 들어, 다음 3개의 URI는 동일합니다.
 > 
 > (코드 생략)
+
+<br>
+
+### 3.3 Date/Time Formats
+
+> 날짜/시간 형식
+
+<br>
+
+#### 3.3.1 Full Date
+
+> 전체 날짜
+
+<br>
+
+HTTP applications have historically allowed three different formats for the representation of date/time stamps:
+
+```
+      Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
+      Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
+      Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
+```
+
+The first format is preferred as an Internet standard and represents a fixed-length subset of that defined by RFC 1123 [8] (an update to RFC 822 [9]).
+The second format is in common use, but is based on the obsolete RFC 850 [12] date format and lacks a four-digit year.
+HTTP/1.1 clients and servers that parse the date value MUST accept all three formats (for compatibility with HTTP/1.0), though they MUST only generate the RFC 1123 format for representing HTTP-date values in header fields.
+See section 19.3 for further information.
+
+Note: Recipients of date values are encouraged to be robust in accepting date values that may have been sent by non-HTTP applications, as is sometimes the case when retrieving or posting messages via proxies/gateways to SMTP or NNTP.
+
+All HTTP date/time stamps MUST be represented in Greenwich Mean Time (GMT), without exception.
+For the purposes of HTTP, GMT is exactly equal to UTC (Coordinated Universal Time).
+This is indicated in the first two formats by the inclusion of "GMT" as the three-letter abbreviation for time zone, and MUST be assumed when reading the asctime format.
+HTTP-date is case sensitive and MUST NOT include additional LWS beyond that specifically included as SP in the grammar.
+
+```
+       HTTP-date    = rfc1123-date | rfc850-date | asctime-date
+       rfc1123-date = wkday "," SP date1 SP time SP "GMT"
+       rfc850-date  = weekday "," SP date2 SP time SP "GMT"
+       asctime-date = wkday SP date3 SP time SP 4DIGIT
+       date1        = 2DIGIT SP month SP 4DIGIT
+                      ; day month year (e.g., 02 Jun 1982)
+       date2        = 2DIGIT "-" month "-" 2DIGIT
+                      ; day-month-year (e.g., 02-Jun-82)
+       date3        = month SP ( 2DIGIT | ( SP 1DIGIT ))
+                      ; month day (e.g., Jun  2)
+       time         = 2DIGIT ":" 2DIGIT ":" 2DIGIT
+                      ; 00:00:00 - 23:59:59
+       wkday        = "Mon" | "Tue" | "Wed"
+                    | "Thu" | "Fri" | "Sat" | "Sun"
+       weekday      = "Monday" | "Tuesday" | "Wednesday"
+                    | "Thursday" | "Friday" | "Saturday" | "Sunday"
+       month        = "Jan" | "Feb" | "Mar" | "Apr"
+                    | "May" | "Jun" | "Jul" | "Aug"
+                    | "Sep" | "Oct" | "Nov" | "Dec"
+```
+
+Note: HTTP requirements for the date/time stamp format apply only to their usage within the protocol stream.
+Clients and servers are not required to use these formats for user presentation, request logging, etc.
+
+> HTTP 애플리케이션은 지금까지 날짜/시간 표현을 위해 세 가지 형식을 허용해 왔습니다.
+> 
+> (코드 생략)
+> 
+> 첫 번째 형식은 인터넷 표준으로 선호되며 RFC 1123의 정의되어 있는 고정 길이 하위 집합을 나타냅니다.
+> 두 번째 형식은 일반적으로 사용되지만, 이제는 사용되지 않는 RFC 850을 기반으로 하는 날짜 형식으로, 4자리 연도가 없습니다.
+> 날짜 형식을 분석하는 HTTP/1.1 클라이언트와 서버는 세가지 형식을 모두 허용하되 (HTTP/1.0 과의 호환성을 위해), 헤더 필드에 값을 표현할때는 RFC 1123 형식으로만 생성해야 합니다.   
+> 자세한 내용은 19.3 섹션을 참고하십시오.
+>
+> 참고: 날짜값의 수신자는 프록시/게이트웨이의 SMTP 나 NNTP 프로토콜로 메시지를 송수신할 수 있으므로, HTTP 가 아닌 애플리케이션이 전송한 날짜값도 허용하는 것이 좋습니다.
+> 
+> 모든 HTTP 날짜/시간 표현은 예외없이 그리니치 표준시로 표시해야 합니다.
+> HTTP의 목적 상, GMT 는 UTC (협정 세계시)와 동일합니다.
+> 처음 두 형식에는 그리니치 천문시의 약자로 GMT가 포함되어 표시되며, `asctime` 형식을 읽을 때도 그리니치 천문시 기준이라 간주해야 합니다.
+> HTTP 날짜는 대소문자를 구별하며, 문법상 특별히 SP가 포함되는 것을 제외하고는 LWS를 절대 추가해선 안됩니다. 
+> 
+> (코드 생략)
+> 
+> 참고: 날짜/시간 형식에 대한 HTTP 요구사항은 프로토콜 스트림내에서 사용되는 경우에만 적용됩니다.
+> 클라이언트와 서버는 사용자 표현이나 요청 로깅과 같은 동작에 이러한 형식을 사용할 필요가 없습니다.
+
+<br>
+
+#### 3.3.2 Delta Seconds
+
+> 시간 변화
+
+<br>
+
+Some HTTP header fields allow a time value to be specified as an integer number of seconds, represented in decimal, after the time that the message was received.
+
+`delta-seconds  = 1*DIGIT`
+
+> 일부 HTTP 헤더 필드는 메시지를 받고 난 이후의 시간 값을 십진수 정수로 표현한 초를 허용합니다.
+
+<br>
+
+### 3.4 Character Sets
+
+> 문자 집합
+
+<br>
+
+HTTP uses the same definition of the term "character set" as that described for MIME:
+The term "character set" is used in this document to refer to a method used with one or more tables to convert a sequence of octets into a sequence of characters.
+Note that unconditional conversion in the other direction is not required, in that not all characters may be available in a given character set and a character set may provide more than one sequence of octets to represent a particular character.
+This definition is intended to allow various kinds of character encoding, from simple single-table mappings such as US-ASCII to complex table switching methods such as those that use ISO-2022's techniques.
+However, the definition associated with a MIME character set name MUST fully specify the mapping to be performed from octets to characters.
+In particular, use of external profiling information to determine the exact mapping is not permitted.
+
+> HTTP 는 MIME에 대해 "문자 집합" 과 동일한 용어 정의를 사용합니다.
+> "문자 집합" 이라는 용어는 하나 이상의 테이블에서 옥텟 시퀸스를 문자 시퀸스로 변환하는 데 사용되는 메서드를 가리키는데 사용됩니다.
+> 주어진 문자 집합에서 모든 문자를 사용할 수 있는 것은 아니며 문자 집합이 특정 문자를 표현하는 옥텟 시퀸스를 2개 이상 제공할 수 있으므로 무조건 다른 방향으로 변환할 필요는 없습니다.
+> 이 정의는 US-ASCII와 같은 간단한 단일 테이블 매핑부터 ISO-2022의 기술을 사용하는 복잡한 테이블 전환 방법까지 사용하여 다양한 종류의 문자 인코딩을 허용하기 위함입니다.
+> 하지만, MIME 문자 집합과 연관된 정의는 옥텟에서 문자로 변환하는 매핑을 완전히 지정해야 합니다.
+> 특히, 정확한 매핑을 결정하기 위해 외부 프로파일링 정보를 사용하는 것은 허용되지 않습니다.
+
