@@ -1102,10 +1102,135 @@ This definition is intended to allow various kinds of character encoding, from s
 However, the definition associated with a MIME character set name MUST fully specify the mapping to be performed from octets to characters.
 In particular, use of external profiling information to determine the exact mapping is not permitted.
 
+Note: This use of the term "character set" is more commonly referred to as a "character encoding."
+However, since HTTP and MIME share the same registry, it is important that the terminology also be shared.
+
+HTTP character sets are identified by case-insensitive tokens.
+The complete set of tokens is defined by the IANA Character Set registry [19].
+
+```
+charset = token
+```
+
+Although HTTP allows an arbitrary token to be used as a charset value, any token that has a predefined value within the IANA Character Set registry [19] MUST represent the character set defined by that registry.
+Applications SHOULD limit their use of character sets to those defined by the IANA registry.
+
+Implementors should be aware of IETF character set requirements [38] [41].
+
 > HTTP 는 MIME에 대해 "문자 집합" 과 동일한 용어 정의를 사용합니다.
 > "문자 집합" 이라는 용어는 하나 이상의 테이블에서 옥텟 시퀸스를 문자 시퀸스로 변환하는 데 사용되는 메서드를 가리키는데 사용됩니다.
 > 주어진 문자 집합에서 모든 문자를 사용할 수 있는 것은 아니며 문자 집합이 특정 문자를 표현하는 옥텟 시퀸스를 2개 이상 제공할 수 있으므로 무조건 다른 방향으로 변환할 필요는 없습니다.
 > 이 정의는 US-ASCII와 같은 간단한 단일 테이블 매핑부터 ISO-2022의 기술을 사용하는 복잡한 테이블 전환 방법까지 사용하여 다양한 종류의 문자 인코딩을 허용하기 위함입니다.
 > 하지만, MIME 문자 집합과 연관된 정의는 옥텟에서 문자로 변환하는 매핑을 완전히 지정해야 합니다.
 > 특히, 정확한 매핑을 결정하기 위해 외부 프로파일링 정보를 사용하는 것은 허용되지 않습니다.
+>
+> 참고: "문자 집합" 이란 용어의 사용은 "문자열 인코딩" 이란 용어로 더욱 흔하게 사용됩니다.
+> 하지만 HTTP와 MIME이 같은 레지스트리를 공유하므로, 용어 역시 공유하는것이 중요합니다.
+> 
+> HTTP 문자 집합은 대소문자를 구별하지 않는 토큰에 의해 식별됩니다.
+> 전체 토큰 집합은 IANA 문자 집합 레지스트리에 정의되어 있습니다.
+> 
+> (코드 생략)
+> 
+> HTTP에서는 임의의 토큰을 문자 집합 값으로 사용할 수 있지만, IANA 문자 집합 레지스트리에 사전 정의된 값을 가진 토큰은 반드시 레지스트리에 정의된 문자 집합을 나타내야 합니다.
+> 애플리케이션은 문자 집합의 사용을 IANA 레지스트리에 등록된 문자 집합으로 제한해야 합니다.
+> 
+> 구현자는 IETF 문자 집합 요구사항을 알고 있어야 합니다.
 
+<br>
+
+#### 3.4.1 Missing Charset
+
+> 누락된 문자 집합
+
+<br>
+
+Some HTTP/1.0 software has interpreted a Content-Type header without charset parameter incorrectly to mean "recipient should guess."
+Senders wishing to defeat this behavior MAY include a charset parameter even when the charset is ISO-8859-1 and SHOULD do so when it is known that it will not confuse the recipient.
+
+Unfortunately, some older HTTP/1.0 clients did not deal properly with an explicit charset parameter.
+HTTP/1.1 recipients MUST respect the charset label provided by the sender; and those user agents that have a provision to "guess" a charset MUST use the charset from the content-type field if they support that charset, rather than the recipient's preference, when initially displaying a document.
+See section 3.7.1.
+
+> 일부 HTTP/1.0 소프트웨어는 문자 집합 파라미터가 없는 `Content-Type` 헤더를 "수신자가 알잘딱깔센 추측해야 한다." 는 의미로 잘못 해석했습니다.
+> 이러한 동작을 방지하려는 발신자는 문자 집합이 ISO-8859-1 이더라도 문자 집합 파라미터를 포함할 수 있으며, 수신자에게 혼란을 주지 않음이 확실시되어야만 포함할 수 있습니다.
+> 
+> 그러나 비극적이게도, 일부 오래된 HTTP/1.0 클라이언트들은 명시되어 있는 문자 집합 파라미터를 적절히 처리하지 못했습니다.
+> HTTP/1.1 수신자는 반드시 전송자가 제공한 문자 집합 라벨을 존중해야 하고, 문자 집합을 추측하는 클라이언트들은 `content-type` 필드의 문자 집합을 지원할 수 있다면 반드시 사용해야 합니다. 
+> 섹션 3.7.1 을 참고하십시오.
+
+<br>
+
+### 3.5 Content Codings
+
+> 콘텐츠 코딩
+
+<br>
+
+Content coding values indicate an encoding transformation that has been or can be applied to an entity.
+Content codings are primarily used to allow a document to be compressed or otherwise usefully transformed without losing the identity of its underlying media type and without loss of information.
+Frequently, the entity is stored in coded form, transmitted directly, and only decoded by the recipient.
+
+```
+content-coding   = token
+```
+
+All content-coding values are case-insensitive.
+HTTP/1.1 uses content-coding values in the Accept-Encoding (section 14.3) and Content-Encoding (section 14.11) header fields.
+Although the value describes the content-coding, what is more important is that it indicates what decoding mechanism will be required to remove the encoding.
+
+The Internet Assigned Numbers Authority (IANA) acts as a registry for content-coding value tokens.
+Initially, the registry contains the following tokens:
+
+`gzip`
+An encoding format produced by the file compression program "gzip" (GNU zip) as described in RFC 1952 [25].
+This format is a Lempel-Ziv coding (LZ77) with a 32 bit CRC.
+
+`compress`
+The encoding format produced by the common UNIX file compression program "compress".
+This format is an adaptive Lempel-Ziv-Welch coding (LZW).
+
+Use of program names for the identification of encoding formats is not desirable and is discouraged for future encodings.
+Their use here is representative of historical practice, not good design.
+For compatibility with previous implementations of HTTP, applications SHOULD consider "x-gzip" and "x-compress" to be equivalent to "gzip" and "compress" respectively.
+
+`deflate`
+The "zlib" format defined in RFC 1950 [31] in combination with the "deflate" compression mechanism described in RFC 1951 [29].
+
+`identity`
+The default (identity) encoding;
+the use of no transformation whatsoever.
+This content-coding is used only in the Accept-Encoding header, and SHOULD NOT be used in the Content-Encoding header.
+
+> 콘텐츠 코딩 값은 엔티티에 적용되었거나 적용할 수 있는 인코딩 변환을 나타냅니다. 
+> 콘텐츠 코딩은 주로 근본적인 미디어 타입의 정체성을 잃지 않고, 정보 손실 없이 문서를 압축하거나 변환하는데 사용됩니다.
+> 엔티티는 종종 코드 형태로 저장되어 직접 전송되고, 수신자만 이를 해독할 수 있습니다.
+> 
+> (코드 생략)
+> 
+> 모든 콘텐츠 코딩 값은 대소문자를 구별하지 않습니다.
+> HTTP/1.1 은 Accept-Encoding 과 Content-Encoding 헤더 필드값의 콘텐츠 코딩값을 사용합니다.
+> 이 값은 콘텐츠 코딩을 설명하지만, 더욱 중요한 것은 이것이 해독 메커니즘을 알려준다는 것입니다.
+> 
+> 인터넷 번호 할당 기관인 (IANA) 는 콘텐츠 코딩 값 토큰을 위한 레지스트리 역할을 합니다.
+> 처음엔, 레지스트리는 다음 토큰들을 포함합니다.
+> 
+> `gzip`
+> `gzip` 파일 압축 프로그램에 의해 만들어지는 인코딩 형식입니다.
+> 이 형식은 32 bit CRC를 사용하는 Lempel-Ziv 코딩 형식입니다.
+> 
+> `compress`
+> 일반적인 UNIX 파일 압축 프로그램인 "compress" 에 의해 만들어지는 인코딩 형식입니다.
+> 이 형식은 적응형 Lempel-Ziv-Welch 코딩 형식입니다.
+> 
+> 인코딩 형식을 식별하기위해 프로그램 명을 쓰는 것은 바람직하지 않고, 향후 인코딩에 사용하지 않는 것이 좋습니다.
+> 그것들의 사용은 좋은 디자인이 아닌 역사적 관행을 대표합니다.
+> 이전 HTTP 구현체와의 호환성을 위해, 애플리케이션은 "x-gzip" 이나 "x-compress" 을 각각 "gzip" 이나 "compress" 와 동등한 것으로 간주해야 합니다.
+> 
+> `deflate`
+> `zlib` 형식과 `deflate` 압축 메커니즘이 결합된 형식입니다.
+> 
+> `identity`
+> 기본 인코딩입니다. 
+> 변환을 전혀 사용하지 않습니다.
+> 이 콘텐츠 코딩은 `Accept-Encoding` 헤더에서만 사용되고, `Content-Encoding` 헤더에는 사용할 수 없습니다.
