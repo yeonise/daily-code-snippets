@@ -1202,6 +1202,9 @@ The default (identity) encoding;
 the use of no transformation whatsoever.
 This content-coding is used only in the Accept-Encoding header, and SHOULD NOT be used in the Content-Encoding header.
 
+New content-coding value tokens SHOULD be registered;
+to allow interoperability between clients and servers, specifications of the content coding algorithms needed to implement a new value SHOULD be publicly available and adequate for independent implementation, and conform to the purpose of content coding defined in this section.
+
 > 콘텐츠 코딩 값은 엔티티에 적용되었거나 적용할 수 있는 인코딩 변환을 나타냅니다. 
 > 콘텐츠 코딩은 주로 근본적인 미디어 타입의 정체성을 잃지 않고, 정보 손실 없이 문서를 압축하거나 변환하는데 사용됩니다.
 > 엔티티는 종종 코드 형태로 저장되어 직접 전송되고, 수신자만 이를 해독할 수 있습니다.
@@ -1234,3 +1237,83 @@ This content-coding is used only in the Accept-Encoding header, and SHOULD NOT b
 > 기본 인코딩입니다. 
 > 변환을 전혀 사용하지 않습니다.
 > 이 콘텐츠 코딩은 `Accept-Encoding` 헤더에서만 사용되고, `Content-Encoding` 헤더에는 사용할 수 없습니다.
+> 
+> 새로운 콘텐츠 코딩 값 토큰은 반드시 등록되어야 합니다.
+> 클라이언트와 서버 간의 상호 운용성을 허용하려면 새로운 값을 구현하는 데 필요한 콘텐츠 코딩 알고리즘의 사양이 공개적으로 사용 가능하고 독립적으로 구현하기에 적합해야 하며 이 섹션에 정의된 콘텐츠 코딩의 목적에 부합해야 합니다.
+
+<br>
+
+### 3.6 Transfer Codings
+
+> 전송 코딩
+
+<br>
+
+Transfer-coding values are used to indicate an encoding transformation that has been, can be, or may need to be applied to an entity-body in order to ensure "safe transport" through the network.
+This differs from a content coding in that the transfer-coding is a property of the message, not of the original entity.
+
+```java
+       transfer-coding         = "chunked" | transfer-extension
+       transfer-extension      = token *( ";" parameter )
+```
+
+Parameters are in  the form of attribute/value pairs.
+
+```java
+      parameter               = attribute "=" value
+       attribute               = token
+       value                   = token | quoted-string
+```
+
+All transfer-coding values are case-insensitive.
+HTTP/1.1 uses transfer-coding values in the TE header field (section 14.39) and in the Transfer-Encoding header field (section 14.41).
+
+Whenever a transfer-coding is applied to a message-body, the set of transfer-codings MUST include "chunked", unless the message is terminated by closing the connection.
+When the "chunked" transfer-coding is used, it MUST be the last transfer-coding applied to the message-body.
+The "chunked" transfer-coding MUST NOT be applied more than once to a message-body.
+These rules allow the recipient to determine the transfer-length of the message (section 4.4).
+
+Transfer-codings are analogous to the Content-Transfer-Encoding values of MIME [7], which were designed to enable safe transport of binary data over a 7-bit transport service.
+However, safe transport has a different focus for an 8bit-clean transfer protocol.
+In HTTP, the only unsafe characteristic of message-bodies is the difficulty in determining the exact body length (section 7.2.2), or the desire to encrypt data over a shared transport.
+
+The Internet Assigned Numbers Authority (IANA) acts as a registry for transfer-coding value tokens.
+Initially, the registry contains the following tokens: "chunked" (section 3.6.1), "identity" (section 3.6.2), "gzip" (section 3.5), "compress" (section 3.5), and "deflate" (section 3.5).
+
+New transfer-coding value tokens SHOULD be registered in the same way as new content-coding value tokens (section 3.5).
+
+A server which receives an entity-body with a transfer-coding it does not understand SHOULD return 501 (Unimplemented), and close the connection.
+A server MUST NOT send transfer-codings to an HTTP/1.0 client.
+
+> `Transfer-coding` 값은 네트워크를 통한 '안전한 전송'을 보장하기 위해 엔티티 바디에 적용되었거나, 적용될 수 있거나, 적용해야 할 수 있는 인코딩 변환을 나타내는 데 사용됩니다.
+> 이는 전송 코딩이 원본 엔티티가 아닌 메시지의 속성이라는 점에서 콘텐츠 코딩과 다릅니다.
+> 
+> (코드 생략)
+> 
+> 파라미터는 속성/값의 형태로 쌍을 이룹니다.
+> 
+> (코드 생략)
+> 
+> 모든 전송 코딩 값은 대소문자를 구별하지 않습니다.
+> HTTP/1.1 은 TE 헤더 필드 와 `Transfer-Encoding` 헤더에 전송 코딩 값을 담아 사용합니다.
+> 
+> 전송 코딩이 메시지 바디에 적용되었다면, 커넥션 종료에 의해 메시지가 종료되지 않는 한 전송 코딩 집합들은 반드시 "chunked" 를 포함해야 합니다. 
+> 만약 "chunked" 전송 코딩값이 사용되었다면, 메시지 본문에 적용된 마지막 전송 코딩이어야 합니다.
+> "chunked" 전송 코딩은 메시지 바디에서 한 번 이상 적용되어서는 안됩니다.
+> 이러한 규칙들을 통해 수신자가 메시지의 전송 길이를 결정할 수 있습니다.
+>
+> 전송 코딩은 7비트 전송 서비스를 통해 이진 데이터를 안전하게 전송할 수 있도록 설계된 MIME의 `Content-Transfer-Encoding` 값과 유사합니다.
+> 하지만, 안전한 전송은 8bit-clean 전송 프로토콜과는 다른 초점을 갖고 있습니다.
+> HTTP 에서, 메시지 본문에서 유일하게 위험한 특성은 정확한 본문 길이를 결정하기 어렵다는 것과 공유 전송을 통해 데이터를 암호화하기 어렵다는 것입니다.
+> 
+> IANA 는 전송 코딩 값 토큰의 레지스트리 역할을 합니다.
+> 처음엔 레지스트리에 "chunked", "identity", "gzip", "compress", "deflate" 토큰들이 등록되어 있었습니다.
+> 
+> 새로운 전송 코딩 값 토큰은 새로운 콘텐츠 코딩 값 토큰과 같은 방식으로 등록해야 합니다.
+> 
+> 이해할 수 없는 전송 코딩을 포함한 엔티티 본문을 받은 서버는 501 에러 (구현되지 않음)를 반환하고, 커넥션을 종료해야 합니다.
+> 서버는 HTTP/1.0 클라이언트에게 전송 코딩을 보내서는 안됩니다.
+
+<br>
+
+
