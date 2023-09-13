@@ -1316,4 +1316,128 @@ A server MUST NOT send transfer-codings to an HTTP/1.0 client.
 
 <br>
 
+#### 3.6.1 Chunked Transfer Coding
 
+> 청크 전송 코딩
+
+<br>
+
+The chunked encoding modifies the body of a message in order to transfer it as a series of chunks, each with its own size indicator, followed by an OPTIONAL trailer containing entity-header fields.
+This allows dynamically produced content to be transferred along with the information necessary for the recipient to verify that it has received the full message.
+
+```java
+       Chunked-Body   = *chunk
+                        last-chunk
+                        trailer
+                        CRLF
+
+       chunk          = chunk-size [ chunk-extension ] CRLF
+                        chunk-data CRLF
+       chunk-size     = 1*HEX
+       last-chunk     = 1*("0") [ chunk-extension ] CRLF
+
+       chunk-extension= *( ";" chunk-ext-name [ "=" chunk-ext-val ] )
+       chunk-ext-name = token
+       chunk-ext-val  = token | quoted-string
+       chunk-data     = chunk-size(OCTET)
+       trailer        = *(entity-header CRLF)
+```
+
+The chunk-size field is a string of hex digits indicating the size of the chunk.
+The chunked encoding is ended by any chunk whose size is zero, followed by the trailer, which is terminated by an empty line.
+
+The trailer allows the sender to include additional HTTP header fields at the end of the message.
+The Trailer header field can be used to indicate which header fields are included in a trailer (see section 14.40).
+
+A server using chunked transfer-coding in a response MUST NOT use the trailer for any header fields unless at least one of the following is true:
+
+a) the request included a TE header field that indicates "trailers" is acceptable in the transfer-coding of the  response, as described in section 14.39; or,
+
+b) the server is the origin server for the response, the trailer fields consist entirely of optional metadata, and the recipient could use the message (in a manner acceptable to the origin server) without receiving this metadata.
+In other words, the origin server is willing to accept the possibility that the trailer fields might be silently discarded along the path to the client.
+
+This requirement prevents an interoperability failure when the message is being received by an HTTP/1.1 (or later) proxy and forwarded to an HTTP/1.0 recipient.
+It avoids a situation where compliance with the protocol would have necessitated a possibly infinite buffer on the proxy.
+
+An example process for decoding a Chunked-Body is presented in appendix 19.4.6.
+
+All HTTP/1.1 applications MUST be able to receive and decode the "chunked" transfer-coding, and MUST ignore chunk-extension extensions they do not understand.
+
+> 청크 인코딩은 메시지 본문을 수정하여 각각의 고유한 크기 표시 지표가 있는 일련의 청크로 전송한 다음, 엔티티 헤더 필드를 포함하는 선택적 트레일러로 전송합니다.
+> 이를 통해 동적으로 생성된 콘텐츠를 수신자가 전체 메시지를 수신했는지 확인하는데 필요한 정보와 함께 전송할 수 있습니다.
+> 
+> (코드 생략)
+> 
+> chunk-size 필드는 청크의 크기를 나타내는 16진수 문자열입니다.
+> 청크 인코딩은 크기가 0인 청크로 끝나고, 그 뒤에 빈줄로 끝나는 트레일러로 끝납니다.
+> 
+> 트레일러를 사용하면 전송자가 메시지의 끝에 추가적인 HTTP 헤더 필드를 포함할 수 있습니다.
+> 트레일러 헤더 필드는 트레일러에 포함된 헤더 필드를 표시하는 데 사용할 수 있습니다. (섹션 14.40을 참고하십시오.)
+> 
+> 응답으로 청크 전송 코딩을 사용하는 서버는 다음 중 한가지라도 해당사항이 없다면 헤더 필드에 트레일러를 사용해서는 안됩니다.
+> 
+> a) 섹션 14.39에 설명된 대로, 응답의 전송 코딩에 "trailers" 가 허용됨을 나타내는 TE 헤더 필드가 포함된 경우
+> 
+> b) 서버가 응답의 origin 서버이고, 트레일러 필드가 선택적인 메타데이터로만 구성되며, 수신자가 이러한 메타데이터를 받지 않고도 메시지를 사용할 수 있는 경우 (origin 서버가 허용하는 방식)
+> 즉, origin 서버는 트레일러 필드가 클라이언트로 가다가 자동으로 삭제될 가능성을 허용합니다.
+> 
+> 이러한 요구사항들은 HTTP/1.1 (혹은 이상의) 프록시가 메시지를 받아 HTTP/1.0 수신자로 전달할 때 상호 운용의 실패를 막습니다. 
+> 이를 통해, 프로토콜을 준수하기 위해 프록시에 무한대의 버퍼가 필요한 상황을 피할 수 있습니다.
+> 
+> "Chunked-Body" 를 해독하는 예제 프로세스는 부록 19.4.6 에 있습니다. 
+> 
+> 모든 HTTP/1.1 애플리케이션들은 반드시 "chunked" 전송 코딩을 수신하고 해독할 수 있어야하고, 이해할 수 없는 "chunk-extension" 확장들은 무시해야 합니다.
+
+<br>
+
+### 3.7 Media Types
+
+> 미디어 타입
+
+<br>
+
+HTTP uses Internet Media Types [17] in the Content-Type (section 14.17) and Accept (section 14.1) header fields in order to provide open and extensible data typing and type negotiation.
+
+```java
+       media-type     = type "/" subtype *( ";" parameter )
+       type           = token
+       subtype        = token
+```
+
+Parameters MAY follow the type/subtype in the form of attribute/value pairs (as defined in section 3.6).
+
+The type, subtype, and parameter attribute names are case-insensitive.
+Parameter values might or might not be case-sensitive, depending on the semantics of the parameter name.
+Linear white space (LWS) MUST NOT be used between the type and subtype, nor between an attribute and its value.
+The presence or absence of a parameter might be significant to the processing of a media-type, depending on its definition within the media type registry.
+
+Note that some older HTTP applications do not recognize media type parameters.
+When sending data to older HTTP applications, implementations SHOULD only use media type parameters when they are required by that type/subtype definition.
+
+Media-type values are registered with the Internet Assigned Number Authority (IANA [19]).
+The media type registration process is outlined in RFC 1590 [17].
+Use of non-registered media types is discouraged.
+
+> 개방적이고 확장가능한 데이터 유형과 유형 협상을 제공하기 위해서 `Content-Type` 과 `Accept` 헤더 필드에서 HTTP는 인터넷 미디어 타입을 사용합니다.  
+> 
+> (코드 생략)
+> 
+> 파라미터는 속성/값 쌍의 형태로 type/subtype 을 따를 수 있습니다. (섹션 3.6에 정의된대로)
+> 
+> 타입, 하위 타입, 그리고 파라미터 속성의 이름들은 대소문자를 구분하지 않습니다.
+> 파라미터 값들은 파라미터 이름의 의미에 따라 대소문자를 구분할 수도, 구분하지 않을 수도 있습니다.
+> 타입과 하위 타입 사이, 속성과 해당 값 사이에 선형 공백 (LWS)을 사용해선 안됩니다.  
+> 파라미터의 존재 여부는 미디어 타입 레지스트리에 정의된 정의에 따라 미디어 타입을 처리하는데 중요할 수 있습니다. 
+> 
+> 일부 오래된 HTTP 애플리케이션은 미디어 타입 파라미터를 인식하지 못한다는 점에 유의하십시오.
+> 구형 HTTP 애플리케이션에 데이터를 보낼때, 구현은 해당 타입/서브타입 정의에서 요구하는 경우에만 미디어 타입 파라미터를 사용해야 합니다. 
+> 
+> 미디어 타입 값들은 IANA 에 등록됩니다.
+> 미디어 타입 등록 프로세스는 RFC 1590에서 설명합니다.
+> 등록되지 않은 미디어 타입 사용은 권장하지 않습니다.
+
+<br>
+
+#### 3.7.1 Canonicalization and Text Defaults
+
+> 정규화 및 텍스트 기본값
