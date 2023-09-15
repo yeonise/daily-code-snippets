@@ -1441,3 +1441,61 @@ Use of non-registered media types is discouraged.
 #### 3.7.1 Canonicalization and Text Defaults
 
 > 정규화 및 텍스트 기본값
+
+Internet media types are registered with a canonical form.
+An entity-body transferred via HTTP messages MUST be represented in the appropriate canonical form prior to its transmission except for "text" types, as defined in the next paragraph.
+
+When in canonical form, media subtypes of the "text" type use CRLF as the text line break.
+HTTP relaxes this requirement and allows the transport of text media with plain CR or LF alone representing a line break when it is done consistently for an entire entity-body.
+HTTP applications MUST accept CRLF, bare CR, and bare LF as being representative of a line break in text media received via HTTP.
+In addition, if the text is represented in a character set that does not use octets 13 and 10 for CR and LF respectively, as is the case for some multi-byte character sets, HTTP allows the use of whatever octet sequences are defined by that character set to represent the equivalent of CR and LF for line breaks.
+This flexibility regarding line breaks applies only to text media in the entity-body;
+a bare CR or LF MUST NOT be substituted for CRLF within any of the HTTP control structures (such as header fields and multipart boundaries).
+
+If an entity-body is encoded with a content-coding, the underlying data MUST be in a form defined above prior to being encoded.
+
+The "charset" parameter is used with some media types to define the character set (section 3.4) of the data.
+When no explicit charset parameter is provided by the sender, media subtypes of the "text" type are defined to have a default charset value of "ISO-8859-1" when received via HTTP.
+Data in character sets other than "ISO-8859-1" or its subsets MUST be labeled with an appropriate charset value.
+See section 3.4.1 for compatibility problems.
+
+> 인터넷 미디어 타입은 표준 양식으로 등록됩니다.
+> HTTP 메시지를 통해 전달되는 엔티티 본문은 다음 단락에 정의된 대로 `text` 타입을 제외하고는, 전송 전에 적절한 표준 형식으로 표현되어야 합니다. 
+> 
+> 표준형식인 경우, `text` 의 하위 미디어 타입은 줄 바꿈으로 CRLF를 사용합니다.
+> HTTP는 이 요구사항을 완화하여, 전체 엔티티 본문이 일관적이라면 CR 혹은 LF 만 있는 줄 바꿈 표현 방식을 사용한 텍스트 미디어를 전송할 수 있도록 허용합니다. 
+> HTTP 애플리케이션은 HTTP를 통해 수신된 텍스트 미디어에서 CRLF, CR이나 LF가 줄 바꿈을 표현하는 경우만을 허용합니다.
+> 또한 일부 멀티바이트 문자 집합처럼 옥텟 13과 10이 CR, LF로 사용되지 않는 경우, HTTP는 줄 바꿈에 해당하는 CR 과 LF를 표현하는 어떤 옥텟 시퀸스던지 상관없이 사용할 수 있도록 허용합니다.
+> 이러한 줄바꿈에 대한 유연성은 오직 엔티티 본문에 사용된 텍스트 미디어에만 적용됩니다.
+> 헤더 필드나 멀티파트 경계와 같은 HTTP 제어 구조 내에서는 단독의 CR 혹은 LF를 CRLF로 대체해서는 안됩니다.
+> 
+> 만약 엔티티 본문이 콘텐츠 코딩으로 인코딩된 경우, 기본 데이터는 인코딩되기 전에 위에 정의된 형식이어야 합니다.
+> 
+> `charset` 파라미터는 일 부 미디어 타입과 함께 데이터의 문자 집합 (섹션 3.4) 을 정의하는 데 사용됩니다.
+> 발신자가 명시적으로 문자 집합 파라미터를 제공하지 않은 경우, `text` 타입의 미디어 하위 타입은 HTTP 메시지의 기본 문자 집합인 ISO-8859-1을 사용합니다.
+> ISO-8859-1 또는 그 하위 집합이 아닌 문자 집합을 사용하는 데이터는 반드시 적절한 문자 집합 값을 라벨링해야 합니다.
+> 호환성 문제는 섹션 3.4.1 을 참조하십시오.
+
+<br>
+
+#### 3.7.2 Multipart Types
+
+> 멀티파트 타입
+
+MIME provides for a number of "multipart" types -- encapsulations of one or more entities within a single message-body.
+All multipart types share a common syntax, as defined in section 5.1.1 of RFC 2046[40], and MUST include a boundary parameter as part of the media type value.
+The message body is itself a protocol element and MUST therefore use only CRLF to represent line breaks between body-parts.
+Unlike in RFC 2046, the epilogue of any multipart message MUST be empty;
+HTTP applications MUST NOT transmit the epilogue (even if the original multipart contains an epilogue).
+These restrictions exist in order to preserve the self-delimiting nature of a multipart message-body, wherein the "end" of the message-body is indicated by the ending multipart boundary.
+
+In general, HTTP treats a multipart message-body no differently than any other media type: strictly as payload.
+
+> MIME 은 다양한 `multipart` 타입들을 제공합니다 -- 하나의 메시지 본문 내에 하나 이상의 엔티티를 캡슐화합니다.
+> 모든 멀티파트 타입들은 RFC 2046의 섹션 5.1.1 에 정의된대로 공통 구문을 공유하며, 반드시 경계 파라미터를 미디어 타입의 일부로서 포함해야 합니다.  
+> 메시지 본문은 그 자체로 프로토콜 요소이므로 본문 부분 사이의 줄 바꿈을 표현할 땐 반드시 CRLF만 사용해야 합니다.
+> RFC 2046과는 다르게, 멀티파트 메시지의 마지막은 반드시 비어있어야 합니다.
+> HTTP 애플리케이션은 절대 에필로그를 전송해서는 안됩니다. (원래 멀티파트 메시지가 에필로그를 가지고 있다 하더라도)
+> 이러한 제한은 멀티파트 메시지 본문의 자체 구분 특성을 유지하기 위해 존재하며, 메시지 본문의 끝은 다중 파트 경계의 끝으로 표시됩니다.
+> 
+> 일반적으로, HTTP 는 멀티파트 메시지 본문을 다른 미디어 타입과 동일하게 취급합니다. (동일한 페이로드로서)
