@@ -1490,6 +1490,14 @@ HTTP applications MUST NOT transmit the epilogue (even if the original multipart
 These restrictions exist in order to preserve the self-delimiting nature of a multipart message-body, wherein the "end" of the message-body is indicated by the ending multipart boundary.
 
 In general, HTTP treats a multipart message-body no differently than any other media type: strictly as payload.
+The one exception is the "multipart/byteranges" type (appendix 19.2) when it appears in a 206 (Partial Content) response, which will be interpreted by some HTTP caching mechanisms as described in sections 13.5.4 and 14.16.
+In all other cases, an HTTP user agent SHOULD follow the same or similar behavior as a MIME user agent would upon receipt of a multipart type.
+The MIME header fields within each body-part of a multipart message-body do not have any significance to HTTP beyond that defined by their MIME semantics.
+
+In general, an HTTP user agent SHOULD follow the same or similar behavior as a MIME user agent would upon receipt of a multipart type.
+If an application receives an unrecognized multipart subtype, the application MUST treat it as being equivalent to "multipart/mixed".
+
+Note: The "multipart/form-data" type has been specifically defined for carrying form data suitable for processing via the POST request method, as described in RFC 1867 [15].
 
 > MIME 은 다양한 `multipart` 타입들을 제공합니다 -- 하나의 메시지 본문 내에 하나 이상의 엔티티를 캡슐화합니다.
 > 모든 멀티파트 타입들은 RFC 2046의 섹션 5.1.1 에 정의된대로 공통 구문을 공유하며, 반드시 경계 파라미터를 미디어 타입의 일부로서 포함해야 합니다.  
@@ -1499,3 +1507,138 @@ In general, HTTP treats a multipart message-body no differently than any other m
 > 이러한 제한은 멀티파트 메시지 본문의 자체 구분 특성을 유지하기 위해 존재하며, 메시지 본문의 끝은 다중 파트 경계의 끝으로 표시됩니다.
 > 
 > 일반적으로, HTTP 는 멀티파트 메시지 본문을 다른 미디어 타입과 동일하게 취급합니다. (동일한 페이로드로서)
+> 한가지 예외는 206 (부분 콘텐츠) 응답에 나타나는 `multipart/byteranges` 타입으로 (부록 19.2) 13.5.4와 14.16에 설명된 대로 일부 HTTP 캐싱 메커니즘에 의해 해석됩니다. 
+> 그 외의 모든 경우, HTTP 유저 에이전트는 멀티파트 타입을 수신할 때 MIME 에이전트와 같거나 유사한 동작을 따라야 합니다.
+> 멀티파트 메시지 본문의 각각의 본문 부분안에 MIME 헤더 필드는 MIME 의미론에 정의된 것 외에는 HTTP 에게 어떤 의미도 갖지 않습니다.
+> 
+> 일반적으로, HTTP 유저 에이전트는 멀티파트 타입을 수신할 때 MIME 유저 에이전트와 유사하거나 동일한 동작을 따라야 합니다.
+> 만약 애플리케이션이 인식할 수 없는 멀티파트 하위 타입을 수신한다면, 애플리케이션은 반드시 `multipart/mixed` 로 처리해야 합니다.
+> 
+> 참고: `multipart/form-data` 타입은 RFC 1867에 설명된 대로 POST 요청 메서드를 통해 처리하기에 적합한 폼 데이터를 전달하기 위해 특별히 정의되었습니다.
+
+<br>
+
+### 3.8 Product Tokens
+
+> 제품 토큰
+
+<br>
+
+Product tokens are used to allow communicating applications to identify themselves by software name and version.
+Most fields using product tokens also allow sub-products which form a significant part of the application to be listed, separated by white space.
+By convention, the products are listed in order of their significance for identifying the application.
+
+```java
+       product         = token ["/" product-version]
+       product-version = token
+```
+
+Examples:
+```java
+       User-Agent: CERN-LineMode/2.15 libwww/2.17b3
+       Server: Apache/0.8.4
+```
+
+Product tokens SHOULD be short and to the point.
+They MUST NOT be used for advertising or other non-essential information.
+Although any token character MAY appear in a product-version, this token SHOULD only be used for a version identifier
+(i.e., successive versions of the same product SHOULD only differ in the product-version portion of the product value).
+
+> 제품 토큰은 통신하는 애플리케이션들이 소프트웨어 이름과 버전을 사용해 식별할 수 있도록 하는 데 사용됩니다.
+> 제품 토큰을 사용하는 대부분의 필드에서는 애플리케이션의 중요한 부분을 구성하는 하위 제품을 공백으로 구분하여 나열할 수 있습니다. 
+> 관습적으로, 제품들은 애플리케이션을 식별하는 데 중요한 순서대로 나열됩니다.
+> 
+> (코드 생략)
+> 
+> 예시:
+> (코드 생략)
+> 
+> 제품 토큰은 짧고 간결해야 합니다.
+> 제품 토큰은 광고나 필요하지 않은 정보에 사용해서는 안됩니다.
+> 비록 어떤 토큰 문자열은 제품 버전에 사용될 수 있지만, 이 토큰은 버전 식별자로만 사용되어야 합니다. 
+> (즉, 동일한 제품의 후속 버전은 제품 버전 부분만 달라야 합니다.)
+
+<br>
+
+### 3.9 Quality Values
+
+> 품질 가치
+
+<br>
+
+HTTP content negotiation (section 12) uses short "floating point" numbers to indicate the relative importance ("weight") of various negotiable parameters.
+A weight is normalized to a real number in the range 0 through 1, where 0 is the minimum and 1 the maximum value.
+If a parameter has a quality value of 0, then content with this parameter is `not acceptable' for the client.
+HTTP/1.1 applications MUST NOT generate more than three digits after the decimal point.
+User configuration of these values SHOULD also be limited in this fashion.
+
+```java
+       qvalue         = ( "0" [ "." 0*3DIGIT ] )
+                      | ( "1" [ "." 0*3("0") ] )
+```
+
+"Quality values" is a misnomer, since these values merely represent relative degradation in desired quality.
+
+> HTTP 콘텐츠 협상은 협상의 중요도를 나타내는 파라미터(가중치)로 짧은 부동 소수점을 사용합니다.
+> 가중치는 0 ~ 1 의 실수로 정규화되어있으며, 0이 최소값이고 1이 최대값입니다.
+> 만약 파라미터의 값이 0이라면, 이 파라미터의 콘텐츠는 클라이언트가 수용할 수 없습니다.
+> HTTP/1.1 애플리케이션은 소수점 이하 3자리수가 넘는 가중치를 만들 수 없습니다.
+> 이러한 값의 사용자 설정은 이러한 방식에서 제한됩니다.
+> 
+> (코드 생략)
+> 
+> `Quality values`은 원하는 품질의 상대적인 저하를 나타내는 값일 뿐이므로 잘못된 이름입니다.
+
+<br>
+
+### 3.10 Language Tags
+
+> 언어 태그 
+
+<br>
+
+A language tag identifies a natural language spoken, written, or otherwise conveyed by human beings for communication of information to other human beings.
+Computer languages are explicitly excluded.
+HTTP uses language tags within the Accept-Language and Content-Language fields.
+
+The syntax and registry of HTTP language tags is the same as that defined by RFC 1766 [1].
+In summary, a language tag is composed of 1 or more parts:
+A primary language tag and a possibly empty series of subtags:
+
+```java
+        language-tag  = primary-tag *( "-" subtag )
+        primary-tag   = 1*8ALPHA
+        subtag        = 1*8ALPHA
+```
+
+White space is not allowed within the tag and all tags are case-insensitive.
+The name space of language tags is administered by the IANA.
+Example tags include:
+
+```java
+       en, en-US, en-cockney, i-cherokee, x-pig-latin
+```
+
+where any two-letter primary-tag is an ISO-639 language abbreviation and any two-letter initial subtag is an ISO-3166 country code.
+(The last three tags above are not registered tags;
+all but the last are examples of tags which could be registered in future.)
+
+> 언어 태그는 인간이 다른 인간에게 정보를 전달하기 위해 말하거나, 쓰거나, 다른 방식으로 전달하는 자연 언어를 식별합니다.
+> 컴퓨터 언어는 명시적으로 제외됩니다.
+> HTTP는 Accept-Language 와 Content-Language 필드 내애서 언어 태그를 사용합니다.
+> 
+> HTTP 언어 태그의 구문과 레지스트리는 RFC 1766에 정의된 것과 동일합니다.
+> 요약하면, 언어 태그는 1개 이상의 부분으로 구성됩니다.:
+> 기본 언어 태그와 비어 있을 수 있는 일련의 하위 태그입니다.
+> 
+> (코드 생략)
+> 
+> 태그 내에서 선형 공백은 허용되지 않고 모든 태그들은 대소문자를 구별하지 않습니다.
+> 언어 태그의 네임 스페이스는 IANA에서 관리합니다.
+> 태그의 예는 다음과 같습니다.:
+> 
+> (코드 생략)
+> 
+> 두 글자 필수 태그는 ISO-639 언어 축약어이고, 두 글자로 된 하위 태그는 ISO-3166 국가 코드입니다.
+> (예제에서 뒤에 있는 3개의 태그들은 등록되지 않은 태그들입니다.;
+> 마지막을 제외한 모든 태그는 향후 등록할 수 있는 태그의 예시입니다.)
