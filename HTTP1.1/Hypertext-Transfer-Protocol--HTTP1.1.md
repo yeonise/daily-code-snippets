@@ -1642,3 +1642,81 @@ all but the last are examples of tags which could be registered in future.)
 > 두 글자 필수 태그는 ISO-639 언어 축약어이고, 두 글자로 된 하위 태그는 ISO-3166 국가 코드입니다.
 > (예제에서 뒤에 있는 3개의 태그들은 등록되지 않은 태그들입니다.;
 > 마지막을 제외한 모든 태그는 향후 등록할 수 있는 태그의 예시입니다.)
+
+<br>
+
+### 3.11 Entity Tags
+
+> 엔티티 태그
+
+<br>
+
+Entity tags are used for comparing two or more entities from the same requested resource.
+HTTP/1.1 uses entity tags in the ETag (section 14.19), If-Match (section 14.24), If-None-Match (section 14.26), and If-Range (section 14.27) header fields.
+The definition of how they are used and compared as cache validators is in section 13.3.3.
+An entity tag consists of an opaque quoted string, possibly prefixed by a weakness indicator.
+
+```java
+      entity-tag = [ weak ] opaque-tag
+      weak       = "W/"
+      opaque-tag = quoted-string
+```
+
+A "strong entity tag" MAY be shared by two entities of a resource only if they are equivalent by octet equality.
+
+A "weak entity tag," indicated by the "W/" prefix, MAY be shared by two entities of a resource only if the entities are equivalent and could be substituted for each other with no significant change in semantics.
+A weak entity tag can only be used for weak comparison.
+
+An entity tag MUST be unique across all versions of all entities associated with a particular resource.
+A given entity tag value MAY be used for entities obtained by requests on different URIs.
+The use of the same entity tag value in conjunction with entities obtained by requests on different URIs does not imply the equivalence of those entities.
+
+
+> 엔티티 태그는 동일한 요청 리소에서 두 개 이상의 엔티티들을 비교할 때 사용됩니다.
+> HTTP/1.1 은 섹션 14.19의 ETag, 섹션 14.24의 If-Match, 섹션 14.26의 If-None-Match, 섹션 14.27의 If-Range 헤더 필드들을 엔티티 태그로서 사용합니다.
+> 캐시 유효성 검증기로서 사용되고 비교되는지는 섹션 13.3.3 에서 설명합니다.
+> 엔티티 태그는 불투명한 따옴표로 묶인 문자열로 구성되어 있으며, 약한 태그가 접두사로 붙을 수 있습니다.
+> 
+> (코드 생략)
+> 
+> 강한 엔티티 태그는 두 엔티티가 옥텟 동등성에 의해 동등한 경우에만 공유할 수 있습니다.
+> 
+> 약한 엔티티 태그는 "W/" 접두사로 시작되며, 두 엔티티가 동등하고 의미적으로 큰 변경없이 서로를 대체할 수 있는 경우에만 공유할 수 있습니다.
+> 약한 엔티티 태그는 약한 비교에만 사용할 수 있습니다.
+> 
+> 엔티티 태그는 특정 리소스와 연관된 모든 엔티티의 모든 버전에서 유일해야 합니다. 
+> 주어진 엔티티 태그 값은 다른 URI 요청에서 획득한 엔티티에 사용될 수 있습니다. 
+> 서로 다른 URI 요청에서 얻은 엔티티들이 동일한 엔티티 태그 값을 사용하더라도, 그 엔티티들의 동등성을 의미하진 않습니다. 
+
+<br>
+
+### 3.12 Range Units
+
+> 범위 단위 
+
+<br>
+
+HTTP/1.1 allows a client to request that only part (a range of) the response entity be included within the response.
+HTTP/1.1 uses range units in the Range (section 14.35) and Content-Range (section 14.16) header fields.
+An entity can be broken down into subranges according to various structural units.
+
+```java
+      range-unit       = bytes-unit | other-range-unit
+      bytes-unit       = "bytes"
+      other-range-unit = token
+```
+
+The only range unit defined by HTTP/1.1 is "bytes".
+HTTP/1.1 implementations MAY ignore ranges specified using other units.
+HTTP/1.1 has been designed to allow implementations of applications that do not depend on knowledge of ranges.
+
+
+> HTTP/1.1 클라이언트는 응답 엔티티의 일부(범위)만 응답에 포함하도록 요청할 수 있습니다.
+> HTTP/1.1 부록 14.35의 Range 헤더 필드와 부록 14.16의 Content-Range 헤더 필드를 사용하여 범위 단위를 사용합니다.
+> 엔티티는 다양한 구조 단위에 따라 하위 범위로 세분화할 수 있습니다.
+> 
+> (코드 생략)
+> 
+> HTTP/1.1 에 정의된 유일한 범위 단위는 "bytes" 입니다.
+> HTTP/1.1 구현체는 명세된 다른 범위 단위는 무시할 수도 있습니다.
+> HTTP/1.1 은 범위에 대한 지식에 의존하지 않는 애플리케이션을 구현할 수 있도록 설계되었습니다.
