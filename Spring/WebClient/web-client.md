@@ -1,7 +1,10 @@
 ```
 스프링 부트 핵심 가이드, 장정우 저 (p.365~)
 
-최신 버전에서는 RestTemplate이 지원 중단되어 WebClient를 사용할 것을 권고하고 있습니다. Spring WebFlux는 HTTP 요청을 수행하는 클라이언트로 WebClient를 제공합니다. WebClient는 Reactor 기반으로 동작하는 API입니다. Reactor 기반이므로 스레드와 동시성 문제를 벗어나 비동기 형식으로 사용할 수 있습니다.
+최신 버전에서는 RestTemplate이 지원 중단되어 WebClient를 사용할 것을 권고하고 있습니다.
+Spring WebFlux는 HTTP 요청을 수행하는 클라이언트로 WebClient를 제공합니다.
+WebClient는 Reactor 기반으로 동작하는 API입니다.
+Reactor 기반이므로 스레드와 동시성 문제를 벗어나 비동기 형식으로 사용할 수 있습니다.
 
 - Non-Blocking I/O를 지원합니다.
 - Reactive Streams의 Back Pressure를 지원합니다.
