@@ -30,8 +30,9 @@
 
 <br/>
 
-### WebClient
+### Web Client
 
+- [WebClient](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/WebClient/web-client.md) - Seoyeon
 - [Configuration](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/WebClient/configuration.md) - Seoyeon
 - [retreive()](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/WebClient/retrieve.md) - Seoyeon
 - [Exchange](https://github.com/yeonise/daily-code-snippets/blob/main/Spring/WebClient/exchange.md) - Seoyeon
