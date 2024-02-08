@@ -360,7 +360,82 @@ image.
 > 이미지를 빌드할 때 도커는 Dockerfile에 있는 명령어들을 순서대로 실행합니다. 각 명령을 검사할 때 도커는 새 중복 이미지를 만드는 대신 캐시에서 기존 이미지를 찾습니다.
 
 
+The basic rules of build cache invalidation are as follows:
+> 빌드 캐시 무효화의 기본적인 규칙은 다음과 같습니다.
 
+- Starting with a parent image that's already in the cache, the next instruction is compared against all child images derived from that base image to see if one of them was built using the exact same instruction. If not, the cache is invalidated.
+    
+- In most cases, simply comparing the instruction in the Dockerfile with one of the child images is sufficient. However, certain instructions require more examination and explanation.
+    
+- For the `ADD` and `COPY` instructions, the modification time and size file metadata is used to determine whether cache is valid. During cache lookup, cache is invalidated if the file metadata has changed for any of the files involved.
+    
+- Aside from the `ADD` and `COPY` commands, cache checking doesn't look at the files in the container to determine a cache match. For example, when processing a `RUN apt-get -y update` command the files updated in the container aren't examined to determine if a cache hit exists. In that case just the command string itself is used to find a match.
 
+> - 캐시에 이미 존재하는 부모 이미지를 시작으로 다음 명령어는 기본 이미지에서 파생된 모든 자식 이미지들과 비교하여 자식 이미지들중 하나가 정확히 동일한 명령어를 사용하여 빌드되었는지 확인합니다.
+> - 대부분의 경우에 자식 이미지들이 가진 Dockerfile에서 명령어를 간단하게 비교하는 것이 효율적입니다. 그러나 특정한 명령어들은 더 많은 검사와 설명이 요구됩니다.
+> - `ADD` 및 `COPY` 명령어의 경우 수정시간과 크기 파일 메타데이터가 캐시에 유효한지 판단하는데 사용됩니다.
+> - `ADD` 및 `COPY` 명령어 외에 캐시 일치 여부를 확인하기 위한 캐시 확인은 컨테이너의 파일들을 보지 않습니다. 예를 들어 `RUN apt-get -y update` 명령어를 처리할때 컨테이너 안의 파일들은 캐시가 존재하지는지 검사하지 않습니다. 이 경우에 명령어 문자열 자체만 일치하는 항목을 찾는데 사용됩니다.
 
+Once the cache is invalidated, all subsequent Dockerfile commands generate new images and the cache isn't used.
+
+> 일단 캐시가 유효하지 않다면, 모든 Dockerfile 명령어들은 새로운 이미지를 생산합니다. 그리고 캐시는 사용되지 않습니다.
+
+If your build contains several layers and you want to ensure the build cache is reusable, order the instructions from less frequently changed to more frequently changed where possible.
+
+> 만약 여러분들의 빌드가 여러개의 레이어를 포함하고 빌드 캐시를 재사용하기를 원한다면 명령어들은 가능한 한 자주 변경하지 않는 것부터 자주 변경하는 순으로 놓으세요.
+
+For more information about the Docker build cache and how to optimize your builds, see [cache management](https://docs.docker.com/build/cache/).
+
+> 더 자세한 도커 빌드 캐시에 대한 정보와 빌드를 최적화하는 방법을 보고 싶다면 캐시 관리 링크를 참고하세요.
+
+### Pin base image versions
+Image tags are mutable, meaning a publisher can update a tag to point to a new image. This is a useful because it lets publishers update tags to point to newer versions of an image. And as an image consumer, it means you automatically get the new version when you re-build your image.
+
+> 이미지 태그들은 변경이 가능하므로 게시자가 새 이미지를 가리키도록 태그를 업데이트할 수 있습니다. 게시자가 새로운 버전의 이미지를 가리키도록 태그를 업데이트할 수 있기 때문에 유용합니다. 이미지 소비자로써 이미지를 다시 재빌드할때 자동적으로 새로운 버전을 얻을 수 있음을 의미합니다.
+
+For example, if you specify `FROM alpine:3.19` in your Dockerfile, `3.19` resolves to the latest patch version for `3.19`.
+
+> 예를들어 만약 여러분들의 Dockerfile에 `FROM alpine:3.19`를 명세하였다면, `3.19`는 `3.19`에 대한 최신 패치 버전으로 해결됩니다.
+
+```
+# syntax=docker/dockerfile:1
+FROM alpine:3.19
+```
+
+At one point in time, the `3.19` tag might point to version 3.19.1 of the image. If you rebuild the image 3 months later, the same tag might point to a different version, such as 3.19.4. This publishing workflow is best practice, and most publishers use this tagging strategy, but it isn't enforced.
+
+> 이 시점에서 `3.19` 태그는 이미지의 3.19.1 버전을 가리킬 수 있습니다. 만약 여러분들이 3달 후에 이미지를 재빌드한다면, 같은 태그는 3.19.4와 같은 다른 버전을 가리킬 수 있습니다. 이 퍼블리싱 워크플로우는 권고하고 대부분의 게시자들이 이 태깅 전략을 사용합니다. 그러나 이 전략은 강제는 아닙니다.
+
+The downside with this is that you're not guaranteed to get the same for every build. This could result in breaking changes, and it means you also don't have an audit trail of the exact image versions that you're using.
+
+> 이 전략의 단점은 모든 빌드에 대해서 동일한 것을 보장하지 않다는 점입니다. 이로 인해 변경 사항이 발생할 수 있으며, 사용중인 정확한 이미지 버전에 대한 감사 기록도 없습니다.
+
+To fully secure your supply chain integrity, you can pin the image version to a specific digest. By pinning your images to a digest, you're guaranteed to always use the same image version, even if a publisher replaces the tag with a new image. For example, the following Dockerfile pins the Alpine image to the same tag as earlier, `3.19`, but this time with a digest reference as well.
+
+> 여러분들의 chain intergrity를 완벽하게 보호하기 위해서 이미지 버전을 특정한 다이제스트에 고정할 수 있습니다. 이미지들을 어떤 하나의 다이제스트에 고정함으로써 게시자가 새로운 이미지와 같이 태그를 교체해도 여러분들은 언제나 같은 이미지 버전을 사용하는 것을 보장받을 수 있습니다. 예를 들어 다음 Dockerfile은 Alpine 이미지를 이전과 동일한 태그인 `3.19`로 고정하지만 동일한 다이제스트를 참조합니다.
+
+```
+# syntax=docker/dockerfile:1
+FROM alpine:3.19@sha256:13b7e62e8df80264dbb747995705a986aa530415763a6c58f84a3ca8af9a5bcd
+```
+
+With this Dockerfile, even if the publisher updates the `3.19` tag, your builds would still use the pinned image version: `13b7e62e8df80264dbb747995705a986aa530415763a6c58f84a3ca8af9a5bcd`.
+
+> 게시자가 `3.19`태그를 업데이트하여도 여러분들의 빌드는 여전히 고정된 이미지 버전으로 사용합니다.
+
+While this helps you avoid unexpected changes, it's also more tedious to have to look up and include the image digest for base image versions manually each time you want to update it. And you're opting out of automated security fixes, which is likely something you want to get.
+
+> 이 전략은 여러분들이 예상치 못한 변경들을 피하는데 도움이 되는 반면, 여러분들이 업데이트를 원할 때마다 매 시간 직접 베이스 이미지 버전들에 대한 이미지 다이제스트를 포함한 것들을 살펴봐야하는 것은 지루합니다. 그리고 여러분들은 자동화된 보안 수정을 선택하지 않을 수 도 있습니다. 이는 여러분들이 원하는 것일 수도 있습니다.
+
+Docker Scout has a built-in [**Outdated base images** policy](https://docs.docker.com/scout/policy/#outdated-base-images) that checks for whether the base image version you're using is in fact the latest version. This policy also checks if pinned digests in your Dockerfile correspond to the correct version. If a publisher updates an image that you've pinned, the policy evaluation returns a non-compliant status, indicating that you should update your image.
+
+> Docker Scout은 여러분들이 사용하고 있는 베이스 이미지 버전이 최신 버전인지 아닌지 검사하는 구식의 베이스 이미지 정책들을 내장하고 있습니다. 이 정책은 또한 Dockerfile에 고정된 다이제스트들이 올바른 버전과 일치하는지 확인합니다. 만약 게시자가 여러분들이 고정한 이미지를 업데이트하였다면 정책 평가는 여러분들의 이미지를 업데이트 하는것을 알리는 non-comliant 상태를 반환합니다.
+
+Docker Scout also supports an automated remediation workflow for keeping your base images up-to-date. When a new image digest is available, Docker Scout can automatically raise a pull request on your repository to update your Dockerfiles to use the latest version. This is better than using a tag that changes the version automatically, because you're in control and you have an audit trail of when and how the change occurred.
+
+> Docker Scout은 또한 여러분들의 베이스 이미지들을 최신 상태로 유지하기 위한 자동화된 교정 워크플로우를 지원합니다. 새로운 이미지 다이제스트가 사용가능하게 되면 Docker Scout은 여러분들의 Dockerfile들을 최신 버전을 사용할 수 있도록 업데이트하기 위해서 자동적으로 여러분들의 리포지토리에 pull request를 발생시킵니다. 이것은 자동적으로 버전을 변경하는 태그를 사용하는 것보다 나을수 있습니다. 왜냐하면 여러분들은 제어하고 있고 변경이 언제 어떻게 이루어졌는지에 대한 감사 기록이 있기 때문입니다.
+
+For more information about automatically updating your base images with Docker Scout, see [Remediation](https://docs.docker.com/scout/policy/remediation/#automatic-base-image-updates)
+
+> Docker Scout을 가지고 베이스 이미지 자동 업데이트에 대한 더욱 자세한 정보는 Remediation을 참고해주세요
 
