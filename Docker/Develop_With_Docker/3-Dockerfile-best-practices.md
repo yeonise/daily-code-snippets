@@ -1,9 +1,28 @@
-# Best practices for writing Dockerfiles
+## 목차
+- [Dockerfile들을 작성하기 위한 모범 사례의 개요](#dockerfile들을-작성하기-위한-모범-사례의-개요overview-of-best-practices-for-writing-dockerfiles)
+	- [Dockerfile은 무엇인가?](#dockerfile은-무엇인가what-is-a-dockerfile)
+- [일반적인 가이드라인과 권장사항들](#일반적인-가이드라인과-권장사항들general-guidelines-and-recommendations)
+	- [멀티 스테이지 빌드 사용하기](#멀티-스테이지-빌드-사용하기use-multi-stage-builds)
+	- [.dockerignore를 가지고 제외하기](#dockerignore를-가지고-제외하기exclude-with-dockerignore)
+	- [필수적이지 않은 패키지들을 설치하지 마세요](#필수적이지-않은-패키지들을-설치하지-마세요dont-install-unnecessary-packages)
+	- [애플리케이션을 디커플링하라](#애플리케이션을-디커플링하라decouple-applications)
+	- [멀티-라인 매개변수들을 정렬하라](#멀티-라인-매개변수들을-정렬하라sort-multi-line-arguments)
+	- [빌드 캐시 링크 활용](#빌드-캐시-링크-활용leverage-build-cache-link)
+	- [베이스 이미지 버전들을 고정하라](#베이스-이미지-버전들을-고정하라pin-base-image-versions)
+- [Dockerfile 명령어들에 대한 모범 사례](#dockerfile-명령어들에-대한-모범-사례best-practices-for-dockerfile-instructions)
+	- [FROM](#from)
+	- [LABEL](#label)
+	- [RUN](#run)
+	- [CMD](#cmd)
+	- [EXPOSE](#expose)
+	- [ENV](#env)
 
-This topic covers recommended best practices and methods for building efficient images.
+## Dockerfile들을 작성하기 위한 모범 사례의 개요(Overview of best practices for writing Dockerfiles)
+This topic covers recommended best practices and methods for building efficient images. It provides [general guidelines for your Dockerfiles](https://docs.docker.com/develop/develop-images/guidelines/) and more [specific best practices for each Dockerfile instruction](https://docs.docker.com/develop/develop-images/instructions/).
 
-> 이 주제는 효율적인 이미지들을 빌드하기 위한 권장하는 모범 사례와 방법들을 다룹니다.
+> 이 주제는 효율적인 이미지들을 빌드하기 위한 방법과 권장사항을 다룹니다. 이 권장사항은 여러분들의 Dockerfile들에 대해서 일반적인 가이드라인을 제공하고 각각의 Dockerfile 명령어에 대해서 더 특정한 권장사항을 제공합니다.
 
+### Dockerfile은 무엇인가?(What is a Dockerfile?)
 Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all
 commands, in order, needed to build a given image. A Dockerfile adheres to a specific format and set of instructions
 which you can find at [Dockerfile reference](https://docs.docker.com/engine/reference/builder/).
@@ -54,184 +73,6 @@ see [About storage drivers](https://docs.docker.com/storage/storagedriver/).
 > 이미지 레이어 및 도커에서 이미지를 빌드하고 저장하는 방법에 대한 자세한 내용은 저장소 드라이버 정보를 참조해주세요.
 
 ## 일반적인 가이드라인과 권장사항들(General guidelines and recommendations)
-
-### 사용후 삭제할 컨테이너 생성하기(Create ephemeral containers)
-
-The image defined by your Dockerfile should generate containers that are as ephemeral as possible. Ephemeral means that
-the container can be stopped and destroyed, then rebuilt and replaced with an absolute minimum set up and configuration.
-
-> Dockerfile에서 정의한 이미지는 가능한 한 일시적인 컨테이너를 생성해야 합니다.
-> 일시적이란 컨테이너를 중지하고 파기한 다음에 다시 작성하여 절대적으로 최소 설정 및 구성으로 교체할 수 있습니다.
-
-Refer to [Processesopen_in_new](https://12factor.net/processes) under The Twelve-factor App methodology to get a feel
-for the motivations of running containers in such a stateless fashion.
-
-> 이러한 무상태 저장 방식으로 컨테이너를 실행하는 동기에 대해서 알아보려면 Twelve-factor App 방론 아래 Processopen_in_new를 참고해주세요
-
-### 빌드 컨텍스트 이해하기(Understand build context)
-
-See [Build context](https://docs.docker.com/build/building/context/) for more information.
-
-> 더 많은 정보를 보기 위해서 빌드 컨텍스트를 참고해주세요
-
-### 표준 입력을 통해서 Dockerfile을 파이프하기(Pipe Dockerfile through stdin)
-
-Docker has the ability to build images by piping a Dockerfile through stdin with a local or remote build context. Piping
-a Dockerfile through stdin can be useful to perform one-off builds without writing a Dockerfile to disk, or in
-situations where the Dockerfile is generated, and should not persist afterwards.
-
-> 원격 빌드 컨텍스트나 로컬에서 표준 입력을 통해 Dockerfile을 파이프함으로써 이미지들을 빌드하기 위한 능력을 도커는 가지고 있습니다.
-> Dockerfile을 표준입력을 통해서 파이프 하는 것은 Dockerfile을 디스크에 저장하지 않고 또는 Dockerfile이 생성되는 상황에서 일회성 빌드를 수행하는데 유용할 수 있으며, 이후에도 지속되지
-> 않아야 합니다.
-
-
-Note
-
-The examples in the following sections use here documentsopen_in_new for convenience, but any method to provide the
-Dockerfile on stdin can be used.
-
-> 참고
->
-> 다음 섹션들의 예제들은 편의상 여기 documentsopen_in_new를 사용하지만 표준 입력에서 Dockerfile을 제공하는 모든 방을 사용할 수 있습니다.
-
-For example, the following commands are equivalent:
-
-> 예를 들어 다음 명령어들도 동일한 것들입니다.
-
-```
-echo -e 'FROM busybox\nRUN echo "hello world"' | docker build -
-```
-
-```
-docker build -<<EOF
-FROM busybox
-RUN echo "hello world"
-EOF
-```
-
-You can substitute the examples with your preferred approach, or the approach that best fits your use case.
-
-> 여러분들은 예제들을 여러분들이 선호하는 방법으로 대체할 수 있거나 여러분들의 사용하는 것에 맞게 맞출 수 있습니다.'
-
-### 빌드 컨텍스트를 전송하는 것 없이 표준 입력으로부터 Dockerfile을 사용하여 이미지를 빌드하기(Build an image using a Dockerfile from stdin, without sending build context)
-
-Use this syntax to build an image using a Dockerfile from stdin, without sending additional files as build context. The
-hyphen (-) takes the position of the PATH, and instructs Docker to read the build context, which only contains a
-Dockerfile, from stdin instead of a directory:
-
-> 빌드 컨텍스트로서 추가적인 파일들을 전송없이 표준 입력으로부터 DOckerfile을 사용하여 이미지를 빌드하기 위해서 이 문법을 사용하세요.
-> 하이폰(-)은 PATH의 위치를 의미하며, 디렉토리 대신 표준 입력에서 Dockerfile만 포함된 빌드 컨텍스트를 읽도록 Docker에게 지시합니다.
-
-```shell
-docker build [OPTIONS] -
-```
-
-The following example builds an image using a Dockerfile that is passed through stdin. No files are sent as build
-context to the daemon.
-
-> 다음 예제는 표준 입력을 통해 전달된 Dockerfile을 사용하여 이미지를 빌드합니다.
-> 파일들은 데몬에게 빌드 컨텍스트로서 전송되지 않습니다.
-
-```
-docker build -t myimage:latest -<<EOF
-FROM busybox
-RUN echo "hello world"
-EOF
-```
-
-Omitting the build context can be useful in situations where your Dockerfile doesn't require files to be copied into the
-image, and improves the build speed, as no files are sent to the daemon.
-
-> 빌드 컨텍스트를 생략하는 것은 여러분들의 Dockerfile이 이미지로 파일들을 복사하는 것을 요구하지 않는 상황에서 유용할 수 있습니다.
-> 그리고 파일들이 데몬으로 전송되지 않기 때문에 빌드 속도도 개선할 수 있습니다.
-
-If you want to improve the build speed by excluding some files from the build context, refer to exclude with
-[.dockerignore](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#exclude-with-dockerignore).
-
-> 만약 여러분들이 빌드 컨텍스트에서 몇몇 파일들을 제외함으로써 빌드 속도를 빠르게 하기를 원하다면 .dockerignore를 가지고 제외하는 것을 참고해보세요.
-
-Note
-
-If you attempt to build an image using a Dockerfile from stdin, without sending a build context, then the build will
-fail if you use COPY or ADD. The following example illustrates this:
-
-> 참고
-> 만약 여러분들이 표준 입력에서 Dockerfile을 사용하여 이미지를 빌드하기 위해 시도한다면 만약 여러분들이 COPY 또는 ADD를 사용한다면 실패할 것입니다.
-> 다음 예제는 그러한 상황에 대한 예제입니다.
-
-```
-# create a directory to work in
-mkdir example
-cd example
-
-# create an example file
-touch somefile.txt
-
-docker build -t myimage:latest -<<EOF
-FROM busybox
-COPY somefile.txt ./
-RUN cat /somefile.txt
-EOF
-
-# observe that the build fails
-...
-Step 2/3 : COPY somefile.txt ./
-COPY failed: stat /var/lib/docker/tmp/docker-builder249218248/somefile.txt: no such file or directory
-```
-
-### 표준 입력에서 Dockerfile을 사용하여 원격 빌드 컨텍스트에서 빌드하세요.(Build from a remote build context, using a Dockerfile from stdin)
-
-Use this syntax to build an image using files from a remote Git repository, using a Dockerfile from stdin. The syntax
-uses the `-f` (or `--file`) option to specify the Dockerfile to use, using a hyphen (`-`) as filename to instruct Docker
-to read the Dockerfile from stdin:
-
-> 표준 입력에서 Dockerfile을 사용하여 원격 깃 저장소에서 파일들을 사용하여 이미지를 빌드하기 위해서 이 문법을 사용하세요.
-> 문법은 `-f`(또는 `--file`) 옵션을 사용하여 사용할 도커 파일을 지정하고, 파일 이름으로 하이폰을 사용하여 도커가 표준 입력에서 도커 파일을 읽도록 지시합니다.
-
-```
-docker build [OPTIONS] -f- PATH
-```
-
-This syntax can be useful in situations where you want to build an image from a repository that doesn't contain a
-Dockerfile, or if you want to build with a custom Dockerfile, without maintaining your own fork of the repository.
-
-> 이 문법은 여러분들이 Dockerfile을 포함하지 않는 저장소에서 이미지를 빌드하기를 원하는 상황에서 유용할 수 있습니다.
-> 또는 만약에 여러분들이 가지고 있는 저장소의 포크로 관리하는 것 없이 커스텀한 Dockerfile을 가지고 빌드하기를 원할때 유용합니다.
-
-The example below builds an image using a Dockerfile from stdin, and adds the hello.c file from the
-hello-worldopen_in_new repository on GitHub.
-
-> 표준 입력에서 Dockerfile을 사용하여 이미지를 빌드하는 예제입니다. 그리고 hello.c 파일을 깃허브에 hello-worldopen_in_new 저장소에 추가합니다.
-
-```
-docker build -t myimage:latest -f- https://github.com/docker-library/hello-world.git <<EOF
-FROM busybox
-COPY hello.c ./
-EOF
-```
-
-Note
-
-When building an image using a remote Git repository as the build context, Docker performs a git clone of the repository
-on the local machine, and sends those files as the build context to the daemon. This feature requires you to install Git
-on the host where you run the docker build command.
-
-> 참고
->
-> 빌드 컨텍스트로서 원격 깃 저장소를 사용하여 이미지를 빌드할때 도커는 저장소의 git clone를 로컬 머신에서 수행합니다.
-> 그리고 데몬에 빌드 컨텍스트로서 이러한 파일들을 전송합니다.
-> 이 기능은 도커 빌드 명령어 수행시에 여러분들의 호스트 머신에 깃 설치를 요구합니다.
-
-### .dockerignore를 가지고 제외하기(Exclude with .dockerignore)
-
-To exclude files not relevant to the build, without restructuring your source repository, use a .dockerignore file. This
-file supports exclusion patterns similar to .gitignore files. For information on creating one,
-see [.dockerignore file](https://docs.docker.com/engine/reference/builder/#dockerignore-file).
-
-> 여러분들의 소스 저장소를 재구성 없이 빌드와 관련 없는 파일들을 제외하기 위해서는 .dockerignore 파일을 사용하세요.
-> .dockerignore 파일은 .gitignore 파일과 비슷하게 제외 패턴을 지원합니다.
-> 더 자세한 정보는 .dockerignore file을 참고해주세요
-
 ### 멀티 스테이지 빌드 사용하기(Use multi-stage builds)
 
 [Multi-stage builds](https://docs.docker.com/build/building/multi-stage/) allow you to drastically reduce the size of
@@ -292,7 +133,31 @@ ENTRYPOINT ["/bin/project"]
 CMD ["--help"]
 ```
 
-## 필수적이지 않은 패키지들을 설치하지 마세요(Don't install unnecessary packages)
+### .dockerignore를 가지고 제외하기(Exclude with .dockerignore)
+
+To exclude files not relevant to the build, without restructuring your source repository, use a .dockerignore file. This
+file supports exclusion patterns similar to .gitignore files. For information on creating one,
+see [.dockerignore file](https://docs.docker.com/engine/reference/builder/#dockerignore-file).
+
+> 여러분들의 소스 저장소를 재구성 없이 빌드와 관련 없는 파일들을 제외하기 위해서는 .dockerignore 파일을 사용하세요.
+> .dockerignore 파일은 .gitignore 파일과 비슷하게 제외 패턴을 지원합니다.
+> 더 자세한 정보는 .dockerignore file을 참고해주세요
+
+
+### 사용후 삭제할 컨테이너 생성하기(Create ephemeral containers)
+
+The image defined by your Dockerfile should generate containers that are as ephemeral as possible. Ephemeral means that
+the container can be stopped and destroyed, then rebuilt and replaced with an absolute minimum set up and configuration.
+
+> Dockerfile에서 정의한 이미지는 가능한 한 일시적인 컨테이너를 생성해야 합니다.
+> 일시적이란 컨테이너를 중지하고 파기한 다음에 다시 작성하여 절대적으로 최소 설정 및 구성으로 교체할 수 있습니다.
+
+Refer to [Processesopen_in_new](https://12factor.net/processes) under The Twelve-factor App methodology to get a feel
+for the motivations of running containers in such a stateless fashion.
+
+> 이러한 무상태 저장 방식으로 컨테이너를 실행하는 동기에 대해서 알아보려면 Twelve-factor App 방론 아래 Processopen_in_new를 참고해주세요
+
+### 필수적이지 않은 패키지들을 설치하지 마세요(Don't install unnecessary packages)
 
 Avoid installing extra or unnecessary packages just because they might be nice to have. For example, you don’t need to
 include a text editor in a database image.
@@ -305,7 +170,8 @@ reduced file sizes, and reduced build times.
 
 > 불필요한 패키지 설치를 하지 않을 때 이미지는 복잡성과 의존성이 줄어들 것입니다. 또한 파일 크기가 줄어들고 빌드 시간도 단축될 것입니다.
 
-### 디커플링 애플리케이션(Decouple applications)
+
+### 애플리케이션을 디커플링하라(Decouple applications)
 
 Each container should have only one concern. Decoupling applications into multiple containers makes it easier to scale
 horizontally and reuse containers. For instance, a web application stack might consist of three separate containers,
@@ -329,13 +195,11 @@ use Docker container networks to ensure that these containers can communicate.
 > 최선의 판단으로 컨테이너들을 가능한 한 클린하고 모듈식으로 유지하도록 하세요.
 > 컨테이너가 서로 종속된 경우 도커 컨테이너 네트워크를 사용하여 이러한 컨테이너가 통신할 수 있는지 확인할 수 있습니다.
 
-## Minimize the number of layers
+### 멀티-라인 매개변수들을 정렬하라(Sort multi-line arguments)
 
-In older versions of Docker, it was important that you minimized the number of layers in your images to ensure they were
-performant. The following features were added to reduce this limitation:
+Whenever possible, sort multi-line arguments alphanumerically to make maintenance easier. This helps to avoid duplication of packages and make the list much easier to update. This also makes PRs a lot easier to read and review. Adding a space before a backslash (`\`) helps as well.
 
-> 도커의 예전 버전에서 도커는 이미의 레이어 수를 최소화하여 레이어 수를 확인하는 것이 성능에 중요했습니다.
-> 다음 기능은 이러한 한계를 줄이기 위해 추가된 기능들입니다.
+> 가능하면 멀티-라인 매개변수는 유지보수하기 쉽게 하기 위해서 알파벳순으로 정렬하라. 알파벳 순으로 정렬하는 것은 패키지의 중복을 피하고 업데이트를 쉽게 만들어준다. 또한 리뷰 및 읽기에서 PR을 쉽게 만든다. 백슬래시(`\`) 전에 공백을 추가하는 것도 도움이 됩니다.
 
 Here’s an example from the buildpack-deps image:
 
@@ -350,6 +214,7 @@ RUN apt-get update && apt-get install -y \
   subversion \
   && rm -rf /var/lib/apt/lists/*
 ```
+
 
 ### 빌드 캐시 링크 활용(Leverage build cache link)
 
@@ -388,7 +253,7 @@ For more information about the Docker build cache and how to optimize your build
 
 > 더 자세한 도커 빌드 캐시에 대한 정보와 빌드를 최적화하는 방법을 보고 싶다면 캐시 관리 링크를 참고하세요.
 
-### Pin base image versions
+### 베이스 이미지 버전들을 고정하라(Pin base image versions)
 Image tags are mutable, meaning a publisher can update a tag to point to a new image. This is a useful because it lets publishers update tags to point to newer versions of an image. And as an image consumer, it means you automatically get the new version when you re-build your image.
 
 > 이미지 태그들은 변경이 가능하므로 게시자가 새 이미지를 가리키도록 태그를 업데이트할 수 있습니다. 게시자가 새로운 버전의 이미지를 가리키도록 태그를 업데이트할 수 있기 때문에 유용합니다. 이미지 소비자로써 이미지를 다시 재빌드할때 자동적으로 새로운 버전을 얻을 수 있음을 의미합니다.
@@ -438,4 +303,276 @@ Docker Scout also supports an automated remediation workflow for keeping your ba
 For more information about automatically updating your base images with Docker Scout, see [Remediation](https://docs.docker.com/scout/policy/remediation/#automatic-base-image-updates)
 
 > Docker Scout을 가지고 베이스 이미지 자동 업데이트에 대한 더욱 자세한 정보는 Remediation을 참고해주세요
+
+## Dockerfile 명령어들에 대한 모범 사례(Best practices for Dockerfile instructions)
+
+These recommendations are designed to help you create an efficient and maintainable Dockerfile.
+
+> 이 권장사항들은 여러분들에게 효율적이고 유지보수가능한 Dockerfile을 생성하는데 도움이 되도록 설계되었습니다.
+
+### FROM
+Whenever possible, use current official images as the basis for your images. Docker recommends the [Alpine image](https://hub.docker.com/_/alpine/) as it is tightly controlled and small in size (currently under 6 MB), while still being a full Linux distribution.
+
+> 가능하면 여러분들의 베이스 이미지는 공식 이미지를 사용하세요. 도커는 완벽한 리눅스 배포판에도 불구하고 엄격하게 제어되고 크기가 작기 때문에 (현재 6MB 미만)을 권장합니다.
+
+For more information about the `FROM` instruction, see [Dockerfile reference for the FROM instruction](https://docs.docker.com/engine/reference/builder/#from).
+
+> `FROM` 명령어에 대한 자세한 정보는 FROM 명령어에 대한 Dockerfile reference를 참고해주세요.
+
+### LABEL
+You can add labels to your image to help organize images by project, record licensing information, to aid in automation, or for other reasons. For each label, add a line beginning with `LABEL` with one or more key-value pairs. The following examples show the different acceptable formats. Explanatory comments are included inline.
+
+> 여러분들은 라이센스 정보를 기록하거나 자동화를 피하거나 다른 이유로 프로젝트의 이미지를 조직화하는데 도움이 되기 위해서 이미지에 레이블을 추가할 수 있습니다. 각각의 레이블에 대하여 한개 이상의 key-value 쌍을 가진 LABEL을 가지고 한줄 시작하는 것을 추가해보세요. 다음 예제는 서로 다른 수용할 수 있는 형식들을 보여줍니다. 설명들이 인라인으로 포함되어 있습니다.
+
+Strings with spaces must be quoted or the spaces must be escaped. Inner quote characters (`"`), must also be escaped. For example:
+
+> 공백들을 가진 문자열 값들은 쌍따옴표로 감싸거나 이스케이프(`\`) 문자로 대체되어야 합니다. 내부 문자열에 쌍따옴표(") 문자 또한 앞에 이스케이프 문자가 있어야 합니다. 예를 들어 다음과 같습니다.
+
+```dockerfile
+# Set one or more individual labels
+LABEL com.example.version="0.0.1-beta"
+LABEL vendor1="ACME Incorporated"
+LABEL vendor2=ZENITH\ Incorporated
+LABEL com.example.release-date="2015-02-12"
+LABEL com.example.version.is-production=""
+```
+
+An image can have more than one label. Prior to Docker 1.10, it was recommended to combine all labels into a single `LABEL` instruction, to prevent extra layers from being created. This is no longer necessary, but combining labels is still supported. For example:
+
+> 한 이미지는 한개이상의 레이블을 가질 수 있습니다. Docker 1.10 전에는 추가적인 레이어들이 생성되는 것을 방지하기 위해서 모든 레이블들을 단일 `LABEL` 명령어로 결합하는 것이 권장되었습니다. 예를 들어 다음과 같이 하나의 LABEL 명령어를 사용하고 그 뒤에 공백으로 구분하여 하나의 라인으로 구성하였습니다.
+
+```dockerfile
+# Set multiple labels on one line
+LABEL com.example.version="0.0.1-beta" com.example.release-date="2015-02-12"
+```
+
+The above example can also be written as:
+
+> 위 예제는 또한 다음과 같이 작성할 수 있습니다.
+
+```dockerfile
+# Set multiple labels at once, using line-continuation characters to break long lines
+LABEL vendor=ACME\ Incorporated \
+      com.example.is-beta= \
+      com.example.is-production="" \
+      com.example.version="0.0.1-beta" \
+      com.example.release-date="2015-02-12"
+```
+
+See [Understanding object labels](https://docs.docker.com/config/labels-custom-metadata/) for guidelines about acceptable label keys and values. For information about querying labels, refer to the items related to filtering in [Managing labels on objects](https://docs.docker.com/config/labels-custom-metadata/#manage-labels-on-objects). See also [LABEL](https://docs.docker.com/engine/reference/builder/#label) in the Dockerfile reference.
+
+> 허용할 수 있는 레이블 Key값들과 Value값들에 대하여 가이드라인들에 대하여 객체 레이블 이해를 참고해주세요. 레이블 조회에 대한 자세한 내용은 객체의 레이블 관리의 필터링 관련 항목들을 참고해주세요. Dockerfile 참조의 LABEL도 참고해주세요.
+
+### RUN
+Split long or complex `RUN` statements on multiple lines separated with backslashes to make your Dockerfile more readable, understandable, and maintainable.
+
+> 백슬래시(`\`)로 구분된 여러 줄에 길고 복잡한 `RUN` 문을 분할하여 Dockerfile을 더 읽기 쉽고 이해하기 쉬우며 유지 관리할 수 있습니다.
+
+For more information about `RUN`, see [Dockerfile reference for the RUN instruction](https://docs.docker.com/engine/reference/builder/#run).
+
+> `RUN`에 대한 더 자세한 정보는 RUN 명령어에 대한 Dockerfile 참조해주세요
+
+#### apt-get
+Probably the most common use case for `RUN` is an application of `apt-get`. Because it installs packages, the `RUN apt-get` command has several counter-intuitive behaviors to look out for.
+
+> 대부분의 공통적인  사용 사례에서 `RUN`은 `apt-get` 의 애플리케이션일 것입니다. 왜냐하면 apt-get은 패키지들을 설치하기 때문에 RUN apt-get 명령어는 여러개의 반 직관적인 동작을 주의해야 합니다.
+
+Always combine `RUN apt-get update` with `apt-get install` in the same `RUN` statement. For example:
+
+> 언제나 `RUN apt-get update` 와 `apt-get install`은 같은 RUN 명령어에 결합되어 있습니다. 예를 들어 다음과 같습니다.
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    package-bar \
+    package-baz \
+    package-foo  \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+Using `apt-get update` alone in a `RUN` statement causes caching issues and subsequent `apt-get install` instructions to fail. For example, this issue will occur in the following Dockerfile:
+
+> `apt-get update`를 RUN 명령어에서 혼자 사용하는 것은 이슈들을 캐싱하는 것과 부차적인 `apt-get install` 명령어들을 실패할 수 있습니다. 예를 들어, 이 이슈느는 다음 Dockerfile에서 발생합니다.
+
+```dockerfile
+# syntax=docker/dockerfile:1
+
+FROM ubuntu:22.04
+RUN apt-get update
+RUN apt-get install -y curl nginx
+```
+
+Docker sees the initial and modified instructions as identical and reuses the cache from previous steps. As a result the `apt-get update` isn't executed because the build uses the cached version. Because the `apt-get update` isn't run, your build can potentially get an outdated version of the `curl` and `nginx` packages.
+
+> Docker는 초기의 명령과 수정된 명령을 동일한 것으로 보고 이전 단계의 캐시를 재사용합니다. 결과적으로 빌드가 캐시가 된 버전을 사용하기 때문에 apt-get update가 실행되지 않습니다. apt-get update가 실행되지 않기 때문에 빌드가 nginx 패키지의 오래된 버전을 가져올 수 있습니다.
+
+Using `RUN apt-get update && apt-get install -y` ensures your Dockerfile installs the latest package versions with no further coding or manual intervention. This technique is known as cache busting. You can also achieve cache busting by specifying a package version. This is known as version pinning. For example:
+
+> `RUN apt-get update && apt-get install -y`를 사용하는 것은 여러분들의 Dockerfile이 더이상의 코딩이나 수동 개입없이 최신 패키지 버전을 설치할 수 있습니다.
+> 이 기술은 캐시 버스팅으로 알려져 있습니다. 여러분들은 또한 패키지 버전을 명세함으로써 캐시 버스팅을 기록할 수 있습니다. 이것은 버전 고정으로 알려져 있습니다. 예를 들어 다음과 같습니다.
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    package-bar \
+    package-baz \
+    package-foo=1.3.*
+```
+
+Version pinning forces the build to retrieve a particular version regardless of what’s in the cache. This technique can also reduce failures due to unanticipated changes in required packages.
+
+> 버전 고정은 캐시에 있는 것과 관계없이 빌드가 특정 버전을 검색하도록 강제합니다. 이 기술은 또한 요구되는 패키지들의 예상치 못한 변경으로 인한 실패를 줄일 수 있습니다.
+
+Below is a well-formed `RUN` instruction that demonstrates all the `apt-get` recommendations.
+
+> 아래는 모든 `apt-get` 권장사항들을 보여주는 잘 만든 `RUN` 명령어입니다.
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    aufs-tools \
+    automake \
+    build-essential \
+    curl \
+    dpkg-sig \
+    libcap-dev \
+    libsqlite3-dev \
+    mercurial \
+    reprepro \
+    ruby1.9.1 \
+    ruby1.9.1-dev \
+    s3cmd=1.1.* \
+ && rm -rf /var/lib/apt/lists/*
+```
+
+The `s3cmd` argument specifies a version `1.1.*`. If the image previously used an older version, specifying the new one causes a cache bust of `apt-get update` and ensures the installation of the new version. Listing packages on each line can also prevent mistakes in package duplication.
+
+> `s3cmd` 매개변수는 version `1.1.*` 으로 명세되어 있습니다. 만약 이미지가 이전에 예전 버전으로 사용되었던 적이 있고, 새 버전을 지정하면 `apt-get update`의 캐시 버스트가 발생하고 설치가 보장됩니다.
+
+In addition, when you clean up the apt cache by removing `/var/lib/apt/lists` it reduces the image size, since the apt cache isn't stored in a layer. Since the `RUN` statement starts with `apt-get update`, the package cache is always refreshed prior to `apt-get install`.
+
+> 게다가 여러분들이 `/var/lib/apt/lists`를 제거함으로써 apt cache를 제거할 때 이미지 사이즈는 줄어들 것입니다. apt cache는 레이어에 저장되지 않기 때문입니다. RUN 명령어는 apt-get update로 시작하기 때문에 패키지 캐시는 언제나 apt-get install 전에 실행되어 갱신됩니다.
+
+Official Debian and Ubuntu images [automatically run `apt-get clean`](https://github.com/moby/moby/blob/03e2923e42446dbb830c654d0eec323a0b4ef02a/contrib/mkimage/debootstrap#L82-L105), so explicit invocation is not required.
+
+> 공식적인 Debian과 Ubuntu 이미지들은 자동적으로 run apt-get clean을 실행합니다. 그래서 따라서 명시적인 호출이 필요하지 않습니다.
+
+### Using pipes
+Some `RUN` commands depend on the ability to pipe the output of one command into another, using the pipe character (`|`), as in the following example:
+
+> 몇몇 `RUN` 명령어들은 다음 예제와 같이 파이프 문자(`|`)를 사용하여 한 명령어의 출력을 다른 명령어의 입력으로 파이프하는 기능에 따라 달라집니다.
+
+```
+RUN wget -O - https://some.site | wc -l > /number
+```
+
+Docker executes these commands using the `/bin/sh -c` interpreter, which only evaluates the exit code of the last operation in the pipe to determine success. In the example above, this build step succeeds and produces a new image so long as the `wc -l` command succeeds, even if the `wget` command fails.
+
+> Docker는 `/bin/sh -c` 인터프리터를 사용하여 이 명령어들을 실행하며, 이 인터프리터는 파이프의 마지막 작업 종료 코드만 평가하여 성공 여부를 결정합니다. 이 빌드 단계는 `wc -l` 명령이 성공하는 한 `wget` 명령이 실패하더라도 새 이미지를 성공합니다.
+
+If you want the command to fail due to an error at any stage in the pipe, prepend `set -o pipefail &&` to ensure that an unexpected error prevents the build from inadvertently succeeding. For example:
+
+> 만약 여러분들이 파이프에서 어떤 단게에서 에러가 발생 때문에 명령어가 실패하기를 원한다면 `set -o pipefail &&`를 접두사로 추가합니다. 이것은 예상치 못한 에러 방지합니다.
+
+```
+RUN set -o pipefail && wget -O - https://some.site | wc -l > /number
+```
+
+>**Note**
+>
+>Not all shells support the `-o pipefail` option.
+>
+>In cases such as the `dash` shell on Debian-based images, consider using the _exec_ form of `RUN` to explicitly choose a shell that does support the `pipefail` option. For example:
+>
+RUN ["/bin/bash", "-c", "set -o pipefail && wget -O - https://some.site | wc -l > /number"]
+
+> 노트
+> 
+> 모든 쉘들이 `-o pipefail` 옵션을 지원하지는 않습니다.
+> 
+> Debian 기반의 이미지인 `bash` 쉘같은 경우에는 `pipefail` 옵션을 지원하는 쉘을 명시적으로 선택하기 위해서 `RUN` 의 exec 폼을 사용하는 것을 고려하세요. 예를 들어 다음과 같습니다.
+> 
+> RUN ["/bin/bash", "-c", "set -o pipefail && wget -O - https://some.site | wc -l > /number"]
+
+### CMD
+The `CMD` instruction should be used to run the software contained in your image, along with any arguments. `CMD` should almost always be used in the form of `CMD ["executable", "param1", "param2"]`. Thus, if the image is for a service, such as Apache and Rails, you would run something like `CMD ["apache2","-DFOREGROUND"]`. Indeed, this form of the instruction is recommended for any service-based image.
+
+> `CMD` 명령어는 이미지안에 포함된 소프트웨어를 몇몇 매개변수와 함께 전달해 실행시키기 위해서 사용되어야 합니다. `CMD`는 대개 `CMD ["executable", "param1", "param2"]`와 같은 형식으로 언제나 사용됩니다. 그러므로 만약 이미지가 Apache와 Rails와 같은 서비스용이라면, `CMD ["apache2", '-DFOREGROUND"]`와 같은 형식으로 실행하세요. 실제로 이러한 CMD 명령어의 형식은 모든 서비스 기반 이미지에 권장됩니다.
+
+In most other cases, `CMD` should be given an interactive shell, such as bash, python and perl. For example, `CMD ["perl", "-de0"]`, `CMD ["python"]`, or `CMD ["php", "-a"]`. Using this form means that when you execute something like `docker run -it python`, you’ll get dropped into a usable shell, ready to go. `CMD` should rarely be used in the manner of `CMD ["param", "param"]` in conjunction with [`ENTRYPOINT`](https://docs.docker.com/engine/reference/builder/#entrypoint), unless you and your expected users are already quite familiar with how `ENTRYPOINT` works.
+
+> 대부분의 경우에 `CMD` 명령어에는 bash, python, perl과 같은 상호작용하는 쉘이 주어져야 합니다. 예를 들어 `CMD ["perl", "-de0"], CMD ["python"], CMD["php", "-a"]`와 같습니다. 이러한 형식을 사용하는 것은 여러분들이 `docker run -it python`을 실행하는 것과 같은 의미입니다. 이 명령어를 실행하면 여러분들을 명령어 쉘로 이동시킬 수 것입니다. `CMD`는 ENTRYPOINT와 함께 `CMD ["param", "param"]`의 방식으로 사용되는 경우가 거의 없습니다. 여러분과 여러분들의 예상되는 사용자들이 이미 ENTRYPOINT가 어떻게 작동하는지 익숙하지 않는 한 말이죠.
+
+For more information about `CMD`, see [Dockerfile reference for the CMD instruction](https://docs.docker.com/engine/reference/builder/#cmd).
+
+> `CMD`에 대한 자세한 설명은 CMD 명령어에 대한 Dockerfile 참조를 확인해주세요.
+
+### EXPOSE
+The `EXPOSE` instruction indicates the ports on which a container listens for connections. Consequently, you should use the common, traditional port for your application. For example, an image containing the Apache web server would use `EXPOSE 80`, while an image containing MongoDB would use `EXPOSE 27017` and so on.
+
+> `EXPOST` 명령어는 컨테이너 연결 포트를 나타냅니다. 따라서 애플리케이션에 대한 공통적이고 전통적인 포트를 사용해야 합니다. 예를 들어 Apache web server를 포함하고 있는 이미지는 `EXPOST 80`을 사용합니다. 반면에 MongoDB를 포함하고 있는 이미지는 `EXPOST 27017`을 사용합니다.
+
+For external access, your users can execute `docker run` with a flag indicating how to map the specified port to the port of their choice. For container linking, Docker provides environment variables for the path from the recipient container back to the source (for example, `MYSQL_PORT_3306_TCP`).
+
+> 외부에서 접근을 하기 위해서 여러분들의 사용자들은 `docker run` 명령어를 그들이 선택한 특정한 포트 대 포트를 매핑하는 방법을 나타내는 플래그와 함께 실행합니다. 컨테이너를 링크하기 위해서는 Docker는 수신 컨테이너에서 소스로 돌아가는 경로에 대한 환경 변수를 제공합니다. (예를 들어 `MYSQL_PORT_3306_TCP`)
+
+### ENV
+To make new software easier to run, you can use `ENV` to update the `PATH` environment variable for the software your container installs. For example, `ENV PATH=/usr/local/nginx/bin:$PATH` ensures that `CMD ["nginx"]` just works.
+
+> 새로운 소프트웨어를 쉽게 실행시키기 위해서 여러분들은 컨테이너에 설치된 소프트웨어에 대한 `PATH` 환경 변수를 업데이트하기 위해서 `ENV`를 사용할 수 있습니다. 예를 들어 `ENV` `PATH=/user/local/nginx/bin:$PATH`는 `CMD ["nginx"`]와 같이 동작하도록 합니다.
+
+The `ENV` instruction is also useful for providing the required environment variables specific to services you want to containerize, such as Postgres’s `PGDATA`.
+
+> `ENV` 명령어는 또한 Postgre's의 `PGDATA`와 같은 여러분들이 커스터마이징하기를 원하는 서비스에 요구되는 환경 변수들의 스펙을 제공하는데 유용합니다. 
+
+Lastly, `ENV` can also be used to set commonly used version numbers so that version bumps are easier to maintain, as seen in the following example:
+
+> 마지막으로 `ENV`는 유지보수를 쉽게하기 위한 버전 덤프할 수 있도록 공통적으로 사용되는 버전 번호들을 설정하기 위해서 사용될 수 있습니다. 다음 예제와 같습니다.
+
+```dockerfile
+ENV PG_MAJOR=9.3
+ENV PG_VERSION=9.3.4
+RUN curl -SL https://example.com/postgres-$PG_VERSION.tar.xz | tar -xJC /usr/src/postgres && …
+ENV PATH=/usr/local/postgres-$PG_MAJOR/bin:$PATH
+```
+
+Similar to having constant variables in a program, as opposed to hard-coding values, this approach lets you change a single `ENV` instruction to automatically bump the version of the software in your container.
+
+ > 하드 코딩 값들이 아닌 프로그램의 일정한 변수가 있는것과 마찬가지로 이 방법을 사용하면 단일 `ENV` 명령을 변경하여 소프트웨어 버전을 자동으로 연결할 수 있습니다.
+ 
+ Each `ENV` line creates a new intermediate layer, just like `RUN` commands. This means that even if you unset the environment variable in a future layer, it still persists in this layer and its value can be dumped. You can test this by creating a Dockerfile like the following, and then building it.
+
+> 각각의 `ENV` 라인은 `RUN` 명령어와 같은 새로운 중간 레이어를 생성합니다. 이것은 여러분들이 미래의 레이어에 환경 변수를 설정하지 않음에도 불구하고 이 레이어에 영속할 것이고 값들이 덤플될수 있습니다. 여러분들은 다음과 같이 Dockerfile을 생성함으로써 테스트할 수 있고 빌드할 수 있습니다.
+
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM alpine
+ENV ADMIN_USER="mark"
+RUN echo $ADMIN_USER > ./mark
+RUN unset ADMIN_USER
+```
+
+```console
+$ docker run --rm test sh -c 'echo $ADMIN_USER'
+
+mark
+```
+
+To prevent this, and really unset the environment variable, use a `RUN` command with shell commands, to set, use, and unset the variable all in a single layer. You can separate your commands with `;` or `&&`. If you use the second method, and one of the commands fails, the `docker build` also fails. This is usually a good idea. Using `\` as a line continuation character for Linux Dockerfiles improves readability. You could also put all of the commands into a shell script and have the `RUN` command just run that shell script.
+
+> 이것을 예방하고 환경 변수를 정말로 설정 해제하려면 shell 명령어와 함께 `RUN` 명령어를 사용하여 변수를 단일 레이어에서 모두 설정, 사용 및 설정 해제합니다. 여러분들은 `;`이나 `&&` 명령어들을 사용하여 분리할 수 있습니다. 만약 여러분들이 두번째 방법을 사용한다면 명령어들 중 하나가 실패하면 `docker build` 또한 실패할 것입니다. 일반적으로 리눅스 DOckerfile 파일의 줄 연속 문자로 `\`을 사용하면 가독성이 향상됩니다. 쉘 스크립트에 모든 명령어들을 넣고 `RUN` 명령어를 실행하면 됩니다.
+
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM alpine
+RUN export ADMIN_USER="mark" \
+    && echo $ADMIN_USER > ./mark \
+    && unset ADMIN_USER
+CMD sh
+```
+
+```shell
+$ docker run --rm test sh -c 'echo $ADMIN_USER'
+```
+
+For more information about `ENV`, see [Dockerfile reference for the ENV instruction](https://docs.docker.com/engine/reference/builder/#env).
+
+> `ENV` 에 대한 더 많은 정보는 ENV 명령어에 대한 Dockerfile 참조를 확인해주세요
 

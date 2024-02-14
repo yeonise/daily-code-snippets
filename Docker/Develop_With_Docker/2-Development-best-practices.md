@@ -1,4 +1,4 @@
-# Docker development best practices
+# 도커 개발 모범 사례들(Docker development best practices)
 
 The following development patterns have proven to be helpful for people building applications with Docker. If you have
 discovered something we should add, let us know.
@@ -20,15 +20,8 @@ There are a few rules of thumb to keep image size small:
 > - 적절한 베이스 이미지를 가지고 시작합니다. 예를 들어 JDK가 필요한 경우 이미지 처음부터 작성하는 대신 eclipse-temurin과 같은 OpenJD가 포함된 도커 공식 이미지를 기반으로 이미지를 작성하는
     것을 고려해보세요.
 
-- Use multistage builds. For instance, you can use the maven image to build your Java application, then reset to the
-  tomcat image and copy the Java artifacts into the correct location to deploy your app, all in the same Dockerfile.
-  This means that your final image doesn’t include all of the libraries and dependencies pulled in by the build, but
-  only the artifacts and the environment needed to run them.
-    - If you need to use a version of Docker that does not include multistage builds, try to reduce the number of layers
-      in your image by minimizing the number of separate RUN commands in your Dockerfile. You can do this by
-      consolidating multiple commands into a single RUN line and using your shell’s mechanisms to combine them together.
-      Consider the following two fragments. The first creates two layers in the image, while the second only creates
-      one.
+- Use multistage builds. For instance, you can use the maven image to build your Java application, then reset to the tomcat image and copy the Java artifacts into the correct location to deploy your app, all in the same Dockerfile. This means that your final image doesn’t include all of the libraries and dependencies pulled in by the build, but only the artifacts and the environment needed to run them.
+- If you need to use a version of Docker that does not include multistage builds, try to reduce the number of layers in your image by minimizing the number of separate RUN commands in your Dockerfile. You can do this by consolidating multiple commands into a single RUN line and using your shell’s mechanisms to combine them together. Consider the following two fragments. The first creates two layers in the image, while the second only creates one.
 
 ```shell
 RUN apt-get -y update
@@ -65,7 +58,7 @@ RUN apt-get -y update && apt-get install -y python
   environments. Do not rely on the automatically-created `latest` tag.
 
 > - 공통점이 많은 이미지가 여러 개 있는 경우 공유 구성요소를 사용하여 기본 이미지를 만들고 이를 기반으로 고유 이미지를 만드는 것을 고려해보세요. 도커는 오직 공통 레이어를 한번만 로드되면 캐시됩니다. 이는
-    파생 이미지가 도커 호스트의 메모리를 더 효율적으로 사용하고 더 빨리 로한다는 것을 의미합니다.
+    파생 이미지가 도커 호스트의 메모리를 더 효율적으로 사용하고 더 빨리 로드한다는 것을 의미합니다.
 > - 프로덕션 이미지를 유지하되 디버깅을 허용하려면 프로덕션 이미지를 디버그 이미지의 기본 이미지로 사용하는 것을 고려해보세요. 추가적인 테스팅 또는 디버깅 도구는 프로덕션 이미지의 최상단에 추가될 수 있습니다.
 > - 이미지를 빌드할때 항상 버전 정보, 목적(예: 제품 또는 테스트), 안정성 또는 애플리케이션을 다른 환경에 배포할때 유용한 기타 정보를 코드화하는 유용한 태그를 사용하여 이미지에 태그를 작성합니다. 자동으로
     생성된 최신 태그를 신뢰하지 마세요.
@@ -124,7 +117,7 @@ take advantage of these service-only features.
 > - 맥 또는 윈도우에서 도커 데스크톱을 사용한다
 > - 시간 동기화에 대해서 걱정 없다
 
-### Production
+### 생산성(Production)
 
 - Use volumes to store container data.
 - Use Docker Engine, if possible with userns mapping for greater isolation of Docker processes from host processes.
@@ -136,9 +129,3 @@ take advantage of these service-only features.
 > - 가능한 경우 사용자 매핑과 함께 도커 엔진을 사용하여 도커 프로세스를 호스트 프로세스에서 더 많이 분리할 수 있습니다.
 > - 언제나 도커 호스트에서 NTP(Network Time Procotol) 클라이언트를 실행하고 각각의 컨테이너 프로세스 내에서 수행하고 같은 NTP 서버에 그들 모두를 동기화합니다.
 > - 만약 여러분들이 스웜 서비스를 사용한다면 각각의 도커 노드가 해당 클럭을 컨테이너와 동일한 시간 소스에 동기화해야 합니다.
-
-
-
-
-
-

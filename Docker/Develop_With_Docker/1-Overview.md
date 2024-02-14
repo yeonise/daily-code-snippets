@@ -28,7 +28,7 @@ most common patterns for getting the most benefits from Docker.
 - [General application development best practices](https://docs.docker.com/develop/dev-best-practices/)
 
 > - Dockerfile을 사용하여 이미지를 빌드하기 위한 방법을 배우기
-> - 멀티 스테이지 빌드를 사용하여 이미의 기울기를 유지
+> - 멀티 스테이지 빌드를 사용하여 이미지를 얇게 유지하기
 > - 볼륨과 바인드 마운트를 사용하여 애플리케이션 데이터를 관리하기
 > - 쿠버네티스를 가지고 앱을 확장하기
 > - 스웜 서비스로서 앱을 확장하기
