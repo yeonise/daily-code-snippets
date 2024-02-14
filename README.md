@@ -49,7 +49,7 @@
 - [AssertJ README.md](https://github.com/yeonise/daily-code-snippets/blob/main/AssertJ/AssertJ.md)
 - [MySQL README.md](https://github.com/yeonise/daily-code-snippets/blob/main/MySQL/MySQL.md)
 - [Lombok README.md](https://github.com/yeonise/daily-code-snippets/blob/main/Lombok/Lombok.md)
-- [Docker README.md](https://github.com/yeonise/daily-code-snippets/blob/main/Docker/Docker.md)
+- [Docker README.md](Docker/README.md)
 - [Kafka README.md](https://github.com/yeonise/daily-code-snippets/blob/main/kafka/Kafka.md)
 
 ## Participants
