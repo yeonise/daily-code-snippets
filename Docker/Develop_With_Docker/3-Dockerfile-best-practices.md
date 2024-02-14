@@ -1,9 +1,10 @@
-# Overview of best practices for writing Dockerfiles
+# Dockerfile들을 작성하기 위한 모범 사례의 개요(Overview of best practices for writing Dockerfiles)
+
 This topic covers recommended best practices and methods for building efficient images. It provides [general guidelines for your Dockerfiles](https://docs.docker.com/develop/develop-images/guidelines/) and more [specific best practices for each Dockerfile instruction](https://docs.docker.com/develop/develop-images/instructions/).
 
 > 이 주제는 효율적인 이미지들을 빌드하기 위한 방법과 권장사항을 다룹니다. 이 권장사항은 여러분들의 Dockerfile들에 대해서 일반적인 가이드라인을 제공하고 각각의 Dockerfile 명령어에 대해서 더 특정한 권장사항을 제공합니다.
 
-## What is a Dockerfile?
+## Dockerfile은 무엇인가?(What is a Dockerfile?)
 Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all
 commands, in order, needed to build a given image. A Dockerfile adheres to a specific format and set of instructions
 which you can find at [Dockerfile reference](https://docs.docker.com/engine/reference/builder/).
@@ -285,7 +286,7 @@ For more information about automatically updating your base images with Docker S
 
 > Docker Scout을 가지고 베이스 이미지 자동 업데이트에 대한 더욱 자세한 정보는 Remediation을 참고해주세요
 
-## Best practices for Dockerfile instructions
+## Dockerfile 명령어들에 대한 모범 사례(Best practices for Dockerfile instructions)
 
 These recommendations are designed to help you create an efficient and maintainable Dockerfile.
 
@@ -354,4 +355,206 @@ For more information about `RUN`, see [Dockerfile reference for the RUN instru
 > `RUN`에 대한 더 자세한 정보는 RUN 명령어에 대한 Dockerfile 참조해주세요
 
 #### apt-get
+Probably the most common use case for `RUN` is an application of `apt-get`. Because it installs packages, the `RUN apt-get` command has several counter-intuitive behaviors to look out for.
+
+> 대부분의 공통적인  사용 사례에서 `RUN`은 `apt-get` 의 애플리케이션일 것입니다. 왜냐하면 apt-get은 패키지들을 설치하기 때문에 RUN apt-get 명령어는 여러개의 반 직관적인 동작을 주의해야 합니다.
+
+Always combine `RUN apt-get update` with `apt-get install` in the same `RUN` statement. For example:
+
+> 언제나 `RUN apt-get update` 와 `apt-get install`은 같은 RUN 명령어에 결합되어 있습니다. 예를 들어 다음과 같습니다.
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    package-bar \
+    package-baz \
+    package-foo  \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+Using `apt-get update` alone in a `RUN` statement causes caching issues and subsequent `apt-get install` instructions to fail. For example, this issue will occur in the following Dockerfile:
+
+> `apt-get update`를 RUN 명령어에서 혼자 사용하는 것은 이슈들을 캐싱하는 것과 부차적인 `apt-get install` 명령어들을 실패할 수 있습니다. 예를 들어, 이 이슈느는 다음 Dockerfile에서 발생합니다.
+
+```dockerfile
+# syntax=docker/dockerfile:1
+
+FROM ubuntu:22.04
+RUN apt-get update
+RUN apt-get install -y curl nginx
+```
+
+Docker sees the initial and modified instructions as identical and reuses the cache from previous steps. As a result the `apt-get update` isn't executed because the build uses the cached version. Because the `apt-get update` isn't run, your build can potentially get an outdated version of the `curl` and `nginx` packages.
+
+> Docker는 초기의 명령과 수정된 명령을 동일한 것으로 보고 이전 단계의 캐시를 재사용합니다. 결과적으로 빌드가 캐시가 된 버전을 사용하기 때문에 apt-get update가 실행되지 않습니다. apt-get update가 실행되지 않기 때문에 빌드가 nginx 패키지의 오래된 버전을 가져올 수 있습니다.
+
+Using `RUN apt-get update && apt-get install -y` ensures your Dockerfile installs the latest package versions with no further coding or manual intervention. This technique is known as cache busting. You can also achieve cache busting by specifying a package version. This is known as version pinning. For example:
+
+> `RUN apt-get update && apt-get install -y`를 사용하는 것은 여러분들의 Dockerfile이 더이상의 코딩이나 수동 개입없이 최신 패키지 버전을 설치할 수 있습니다.
+> 이 기술은 캐시 버스팅으로 알려져 있습니다. 여러분들은 또한 패키지 버전을 명세함으로써 캐시 버스팅을 기록할 수 있습니다. 이것은 버전 고정으로 알려져 있습니다. 예를 들어 다음과 같습니다.
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    package-bar \
+    package-baz \
+    package-foo=1.3.*
+```
+
+Version pinning forces the build to retrieve a particular version regardless of what’s in the cache. This technique can also reduce failures due to unanticipated changes in required packages.
+
+> 버전 고정은 캐시에 있는 것과 관계없이 빌드가 특정 버전을 검색하도록 강제합니다. 이 기술은 또한 요구되는 패키지들의 예상치 못한 변경으로 인한 실패를 줄일 수 있습니다.
+
+Below is a well-formed `RUN` instruction that demonstrates all the `apt-get` recommendations.
+
+> 아래는 모든 `apt-get` 권장사항들을 보여주는 잘 만든 `RUN` 명령어입니다.
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    aufs-tools \
+    automake \
+    build-essential \
+    curl \
+    dpkg-sig \
+    libcap-dev \
+    libsqlite3-dev \
+    mercurial \
+    reprepro \
+    ruby1.9.1 \
+    ruby1.9.1-dev \
+    s3cmd=1.1.* \
+ && rm -rf /var/lib/apt/lists/*
+```
+
+The `s3cmd` argument specifies a version `1.1.*`. If the image previously used an older version, specifying the new one causes a cache bust of `apt-get update` and ensures the installation of the new version. Listing packages on each line can also prevent mistakes in package duplication.
+
+> `s3cmd` 매개변수는 version `1.1.*` 으로 명세되어 있습니다. 만약 이미지가 이전에 예전 버전으로 사용되었던 적이 있고, 새 버전을 지정하면 `apt-get update`의 캐시 버스트가 발생하고 설치가 보장됩니다.
+
+In addition, when you clean up the apt cache by removing `/var/lib/apt/lists` it reduces the image size, since the apt cache isn't stored in a layer. Since the `RUN` statement starts with `apt-get update`, the package cache is always refreshed prior to `apt-get install`.
+
+> 게다가 여러분들이 `/var/lib/apt/lists`를 제거함으로써 apt cache를 제거할 때 이미지 사이즈는 줄어들 것입니다. apt cache는 레이어에 저장되지 않기 때문입니다. RUN 명령어는 apt-get update로 시작하기 때문에 패키지 캐시는 언제나 apt-get install 전에 실행되어 갱신됩니다.
+
+Official Debian and Ubuntu images [automatically run `apt-get clean`](https://github.com/moby/moby/blob/03e2923e42446dbb830c654d0eec323a0b4ef02a/contrib/mkimage/debootstrap#L82-L105), so explicit invocation is not required.
+
+> 공식적인 Debian과 Ubuntu 이미지들은 자동적으로 run apt-get clean을 실행합니다. 그래서 따라서 명시적인 호출이 필요하지 않습니다.
+
+### Using pipes
+Some `RUN` commands depend on the ability to pipe the output of one command into another, using the pipe character (`|`), as in the following example:
+
+> 몇몇 `RUN` 명령어들은 다음 예제와 같이 파이프 문자(`|`)를 사용하여 한 명령어의 출력을 다른 명령어의 입력으로 파이프하는 기능에 따라 달라집니다.
+
+```
+RUN wget -O - https://some.site | wc -l > /number
+```
+
+Docker executes these commands using the `/bin/sh -c` interpreter, which only evaluates the exit code of the last operation in the pipe to determine success. In the example above, this build step succeeds and produces a new image so long as the `wc -l` command succeeds, even if the `wget` command fails.
+
+> Docker는 `/bin/sh -c` 인터프리터를 사용하여 이 명령어들을 실행하며, 이 인터프리터는 파이프의 마지막 작업 종료 코드만 평가하여 성공 여부를 결정합니다. 이 빌드 단계는 `wc -l` 명령이 성공하는 한 `wget` 명령이 실패하더라도 새 이미지를 성공합니다.
+
+If you want the command to fail due to an error at any stage in the pipe, prepend `set -o pipefail &&` to ensure that an unexpected error prevents the build from inadvertently succeeding. For example:
+
+> 만약 여러분들이 파이프에서 어떤 단게에서 에러가 발생 때문에 명령어가 실패하기를 원한다면 `set -o pipefail &&`를 접두사로 추가합니다. 이것은 예상치 못한 에러 방지합니다.
+
+```
+RUN set -o pipefail && wget -O - https://some.site | wc -l > /number
+```
+
+>**Note**
+>
+>Not all shells support the `-o pipefail` option.
+>
+>In cases such as the `dash` shell on Debian-based images, consider using the _exec_ form of `RUN` to explicitly choose a shell that does support the `pipefail` option. For example:
+>
+RUN ["/bin/bash", "-c", "set -o pipefail && wget -O - https://some.site | wc -l > /number"]
+
+> 노트
+> 
+> 모든 쉘들이 `-o pipefail` 옵션을 지원하지는 않습니다.
+> 
+> Debian 기반의 이미지인 `bash` 쉘같은 경우에는 `pipefail` 옵션을 지원하는 쉘을 명시적으로 선택하기 위해서 `RUN` 의 exec 폼을 사용하는 것을 고려하세요. 예를 들어 다음과 같습니다.
+> 
+> RUN ["/bin/bash", "-c", "set -o pipefail && wget -O - https://some.site | wc -l > /number"]
+
+### CMD
+The `CMD` instruction should be used to run the software contained in your image, along with any arguments. `CMD` should almost always be used in the form of `CMD ["executable", "param1", "param2"]`. Thus, if the image is for a service, such as Apache and Rails, you would run something like `CMD ["apache2","-DFOREGROUND"]`. Indeed, this form of the instruction is recommended for any service-based image.
+
+> `CMD` 명령어는 이미지안에 포함된 소프트웨어를 몇몇 매개변수와 함께 전달해 실행시키기 위해서 사용되어야 합니다. `CMD`는 대개 `CMD ["executable", "param1", "param2"]`와 같은 형식으로 언제나 사용됩니다. 그러므로 만약 이미지가 Apache와 Rails와 같은 서비스용이라면, `CMD ["apache2", '-DFOREGROUND"]`와 같은 형식으로 실행하세요. 실제로 이러한 CMD 명령어의 형식은 모든 서비스 기반 이미지에 권장됩니다.
+
+In most other cases, `CMD` should be given an interactive shell, such as bash, python and perl. For example, `CMD ["perl", "-de0"]`, `CMD ["python"]`, or `CMD ["php", "-a"]`. Using this form means that when you execute something like `docker run -it python`, you’ll get dropped into a usable shell, ready to go. `CMD` should rarely be used in the manner of `CMD ["param", "param"]` in conjunction with [`ENTRYPOINT`](https://docs.docker.com/engine/reference/builder/#entrypoint), unless you and your expected users are already quite familiar with how `ENTRYPOINT` works.
+
+> 대부분의 경우에 `CMD` 명령어에는 bash, python, perl과 같은 상호작용하는 쉘이 주어져야 합니다. 예를 들어 `CMD ["perl", "-de0"], CMD ["python"], CMD["php", "-a"]`와 같습니다. 이러한 형식을 사용하는 것은 여러분들이 `docker run -it python`을 실행하는 것과 같은 의미입니다. 이 명령어를 실행하면 여러분들을 명령어 쉘로 이동시킬 수 것입니다. `CMD`는 ENTRYPOINT와 함께 `CMD ["param", "param"]`의 방식으로 사용되는 경우가 거의 없습니다. 여러분과 여러분들의 예상되는 사용자들이 이미 ENTRYPOINT가 어떻게 작동하는지 익숙하지 않는 한 말이죠.
+
+For more information about `CMD`, see [Dockerfile reference for the CMD instruction](https://docs.docker.com/engine/reference/builder/#cmd).
+
+> `CMD`에 대한 자세한 설명은 CMD 명령어에 대한 Dockerfile 참조를 확인해주세요.
+
+### EXPOSE
+The `EXPOSE` instruction indicates the ports on which a container listens for connections. Consequently, you should use the common, traditional port for your application. For example, an image containing the Apache web server would use `EXPOSE 80`, while an image containing MongoDB would use `EXPOSE 27017` and so on.
+
+> `EXPOST` 명령어는 컨테이너 연결 포트를 나타냅니다. 따라서 애플리케이션에 대한 공통적이고 전통적인 포트를 사용해야 합니다. 예를 들어 Apache web server를 포함하고 있는 이미지는 `EXPOST 80`을 사용합니다. 반면에 MongoDB를 포함하고 있는 이미지는 `EXPOST 27017`을 사용합니다.
+
+For external access, your users can execute `docker run` with a flag indicating how to map the specified port to the port of their choice. For container linking, Docker provides environment variables for the path from the recipient container back to the source (for example, `MYSQL_PORT_3306_TCP`).
+
+> 외부에서 접근을 하기 위해서 여러분들의 사용자들은 `docker run` 명령어를 그들이 선택한 특정한 포트 대 포트를 매핑하는 방법을 나타내는 플래그와 함께 실행합니다. 컨테이너를 링크하기 위해서는 Docker는 수신 컨테이너에서 소스로 돌아가는 경로에 대한 환경 변수를 제공합니다. (예를 들어 `MYSQL_PORT_3306_TCP`)
+
+### ENV
+To make new software easier to run, you can use `ENV` to update the `PATH` environment variable for the software your container installs. For example, `ENV PATH=/usr/local/nginx/bin:$PATH` ensures that `CMD ["nginx"]` just works.
+
+> 새로운 소프트웨어를 쉽게 실행시키기 위해서 여러분들은 컨테이너에 설치된 소프트웨어에 대한 `PATH` 환경 변수를 업데이트하기 위해서 `ENV`를 사용할 수 있습니다. 예를 들어 `ENV` `PATH=/user/local/nginx/bin:$PATH`는 `CMD ["nginx"`]와 같이 동작하도록 합니다.
+
+The `ENV` instruction is also useful for providing the required environment variables specific to services you want to containerize, such as Postgres’s `PGDATA`.
+
+> `ENV` 명령어는 또한 Postgre's의 `PGDATA`와 같은 여러분들이 커스터마이징하기를 원하는 서비스에 요구되는 환경 변수들의 스펙을 제공하는데 유용합니다. 
+
+Lastly, `ENV` can also be used to set commonly used version numbers so that version bumps are easier to maintain, as seen in the following example:
+
+> 마지막으로 `ENV`는 유지보수를 쉽게하기 위한 버전 덤프할 수 있도록 공통적으로 사용되는 버전 번호들을 설정하기 위해서 사용될 수 있습니다. 다음 예제와 같습니다.
+
+```dockerfile
+ENV PG_MAJOR=9.3
+ENV PG_VERSION=9.3.4
+RUN curl -SL https://example.com/postgres-$PG_VERSION.tar.xz | tar -xJC /usr/src/postgres && …
+ENV PATH=/usr/local/postgres-$PG_MAJOR/bin:$PATH
+```
+
+Similar to having constant variables in a program, as opposed to hard-coding values, this approach lets you change a single `ENV` instruction to automatically bump the version of the software in your container.
+
+ > 하드 코딩 값들이 아닌 프로그램의 일정한 변수가 있는것과 마찬가지로 이 방법을 사용하면 단일 `ENV` 명령을 변경하여 소프트웨어 버전을 자동으로 연결할 수 있습니다.
+ 
+ Each `ENV` line creates a new intermediate layer, just like `RUN` commands. This means that even if you unset the environment variable in a future layer, it still persists in this layer and its value can be dumped. You can test this by creating a Dockerfile like the following, and then building it.
+
+> 각각의 `ENV` 라인은 `RUN` 명령어와 같은 새로운 중간 레이어를 생성합니다. 이것은 여러분들이 미래의 레이어에 환경 변수를 설정하지 않음에도 불구하고 이 레이어에 영속할 것이고 값들이 덤플될수 있습니다. 여러분들은 다음과 같이 Dockerfile을 생성함으로써 테스트할 수 있고 빌드할 수 있습니다.
+
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM alpine
+ENV ADMIN_USER="mark"
+RUN echo $ADMIN_USER > ./mark
+RUN unset ADMIN_USER
+```
+
+```console
+$ docker run --rm test sh -c 'echo $ADMIN_USER'
+
+mark
+```
+
+To prevent this, and really unset the environment variable, use a `RUN` command with shell commands, to set, use, and unset the variable all in a single layer. You can separate your commands with `;` or `&&`. If you use the second method, and one of the commands fails, the `docker build` also fails. This is usually a good idea. Using `\` as a line continuation character for Linux Dockerfiles improves readability. You could also put all of the commands into a shell script and have the `RUN` command just run that shell script.
+
+> 이것을 예방하고 환경 변수를 정말로 설정 해제하려면 shell 명령어와 함께 `RUN` 명령어를 사용하여 변수를 단일 레이어에서 모두 설정, 사용 및 설정 해제합니다. 여러분들은 `;`이나 `&&` 명령어들을 사용하여 분리할 수 있습니다. 만약 여러분들이 두번째 방법을 사용한다면 명령어들 중 하나가 실패하면 `docker build` 또한 실패할 것입니다. 일반적으로 리눅스 DOckerfile 파일의 줄 연속 문자로 `\`을 사용하면 가독성이 향상됩니다. 쉘 스크립트에 모든 명령어들을 넣고 `RUN` 명령어를 실행하면 됩니다.
+
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM alpine
+RUN export ADMIN_USER="mark" \
+    && echo $ADMIN_USER > ./mark \
+    && unset ADMIN_USER
+CMD sh
+```
+
+```shell
+$ docker run --rm test sh -c 'echo $ADMIN_USER'
+```
+
+For more information about `ENV`, see [Dockerfile reference for the ENV instruction](https://docs.docker.com/engine/reference/builder/#env).
+
+> `ENV` 에 대한 더 많은 정보는 ENV 명령어에 대한 Dockerfile 참조를 확인해주세요
 
