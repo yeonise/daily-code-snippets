@@ -1,10 +1,28 @@
-# Dockerfile들을 작성하기 위한 모범 사례의 개요(Overview of best practices for writing Dockerfiles)
+## 목차
+- Dockerfile들을 작성하기 위한 모범 사례의 개요
+	- Dockerfile은 무엇인가?
+- 일반적인 가이드라인과 권장사항들
+	- 멀티 스테이지 빌드 사용하기
+	- .dockerignore를 가지고 제외하기
+	- 필수적이지 않은 패키지들을 설치하지 마세요
+	- 애플리케이션을 디커플링하라
+	- 멀티-라인 매개변수들을 정렬하라
+	- 빌드 캐시 링크 활용
+	- 베이스 이미지 버전들을 고정하라
+- Dockerfile 명령어들에 대한 모범 사례
+	- FROM
+	- LABEL
+	- RUN
+	- CMD
+	- EXPOST
+	- ENV
 
+## Dockerfile들을 작성하기 위한 모범 사례의 개요(Overview of best practices for writing Dockerfiles)
 This topic covers recommended best practices and methods for building efficient images. It provides [general guidelines for your Dockerfiles](https://docs.docker.com/develop/develop-images/guidelines/) and more [specific best practices for each Dockerfile instruction](https://docs.docker.com/develop/develop-images/instructions/).
 
 > 이 주제는 효율적인 이미지들을 빌드하기 위한 방법과 권장사항을 다룹니다. 이 권장사항은 여러분들의 Dockerfile들에 대해서 일반적인 가이드라인을 제공하고 각각의 Dockerfile 명령어에 대해서 더 특정한 권장사항을 제공합니다.
 
-## Dockerfile은 무엇인가?(What is a Dockerfile?)
+### Dockerfile은 무엇인가?(What is a Dockerfile?)
 Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all
 commands, in order, needed to build a given image. A Dockerfile adheres to a specific format and set of instructions
 which you can find at [Dockerfile reference](https://docs.docker.com/engine/reference/builder/).

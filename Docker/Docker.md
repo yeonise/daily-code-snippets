@@ -29,7 +29,9 @@
 
 - [Part 1: Overview](Develop_With_Docker/1-Overview.md)
     - YongHwanKim
-- [Part 2: Dovker development best practices](Develop_With_Docker/2-Docker-development-best-practices.md)
+- [Part 2: Development best practices](./Develop_With_Docker/2-Development-best-practices)
+    - YongHwanKim
+- [Part 3: Dockerfile best practices](./Develop_With_Docker/3-Dockerfile-best-practices)
     - YongHwanKim
 
 ### Language-Specific_Guides
