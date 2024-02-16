@@ -576,3 +576,58 @@ For more information about `ENV`, see [Dockerfile reference for the ENV instru
 
 > `ENV` 에 대한 더 많은 정보는 ENV 명령어에 대한 Dockerfile 참조를 확인해주세요
 
+### ADD or COPY
+`ADD` and `COPY` are functionally similar. `COPY` supports basic copying of files into the container, from the [build context](https://docs.docker.com/build/building/context/) or from a stage in a [multi-stage build](https://docs.docker.com/build/building/multi-stage/). `ADD` supports features for fetching files from remote HTTPS and Git URLs, and extracting tar files automatically when adding files from the build context.
+
+> `ADD` 와 `COPY`는 기능적으로 비슷한 기능입니다. `COPY`는 파일들을 빌드 컨텍스트나 멀티 스테이지 빌드안에 스테이지에서 컨테이너로 복사하는 것을 지원합니다. `ADD`는 HTTPS와 Git URLs로부터 파일을 가져오는 것에 대한 기능들을 지원하고 빌드 컨텍스트로부터 파일들을 추가할 때 자동적으로 tar 파일들을 추출하는 것을 지원합니다.
+
+You'll mostly want to use `COPY` for copying files from one stage to another in a multi-stage build. If you need to add files from the build context to the container temporarily to execute a `RUN` instruction, you can often substitute the `COPY` instruction with a bind mount instead. For example, to temporarily add a `requirements.txt` file for a `RUN pip install` instruction:
+
+> 멀티 스테이지 빌드안의 한 단계에서 다른 단계로 복사하는데 주로 `COPY`를 사용하고자 할 것입니다. 만약 여러분들이 빌드 컨텍스트에서 컨테이너로 파일들을 임시적으로 추가할 필요가 있다면 `RUN` 명령어를 사용하세요. 여러분들은 종종 바인드 마운트를 가진 `COPY` 명령어를 대체할 수 있습니다. 예를 들어 `RUN pip install` 명령에 대한 `requirements.txt` 파일을 임시로 추가하려면 다음과 같이 하십시오.
+
+```dockerfile
+RUN --mount=type=bind,source=requirements.txt,target=/tmp/requirements.txt \
+    pip install --requirement /tmp/requirements.txt
+```
+
+Bind mounts are more efficient than `COPY` for including files from the build context in the container. Note that bind-mounted files are only added temporarily for a single `RUN` instruction, and don't persist in the final image. If you need to include files from the build context in the final image, use `COPY`.
+
+> 바인드 마운트들은 컨테이너 안에 빌드 컨텍스트로부터 파일들을 포함하기 위해서 `COPY` 를 사용하는 것보다 더욱 효율적입니다. 바인드 마운트된 파일들은 오직 임시적으로 추가된 것임을 명심하세요. 그리고 최종 이미지에서 영속적이지 않습니다. 만약 최종 이미지안에 빌드 컨텍스트로부터 파일들을 포함할 필요가 있다면 `COPY`를 사용하세요.
+
+The `ADD` instruction is best for when you need to download a remote artifact as part of your build. `ADD` is better than manually adding files using something like `wget` and `tar`, because it ensures a more precise build cache. `ADD` also has built-in support for checksum validation of the remote resources, and a protocol for parsing branches, tags, and subdirectories from [Git URLs](https://docs.docker.com/engine/reference/commandline/image_build/#git-repositories).
+
+> `ADD` 명령어는 빌드의 일부분으로써 여러분들이 원격 아티팩트를 다운로드하기 위해서 필요할 때 최고입니다. `ADD`는 `wget`과 `tar` 과 같은 것들을 사용하여 파일들을 손수 추가하는 것보다 더 났습니다. 왜냐하면 `ADD`는  보다 정확한 빌드 캐시를 보장하기 때문입니다. `ADD`는 또한 원격 리소스들의 체크섬 검증을 내장 지원합니다. 그리고 Git URL들로부터 브랜치를 추출하기 위한 프로토콜, 태그, 서브 디렉토리들에 대한 체크섬 검증도 지원합니다.
+
+The following example uses `ADD` to download a .NET installer. Combined with multi-stage builds, only the .NET runtime remains in the final stage, no intermediate files.
+
+> 다음 예제는 .NET 인스톨러를 다운로드하기 위해 `ADD`를 사용합니다. 멀티 스테이지 빌드와 결합하면, .NET 런타임만 최종 단계에 남아 중간 파일은 없습니다.
+
+```dockerfile
+# syntax=docker/dockerfile:1
+
+FROM scratch AS src
+ARG DOTNET_VERSION=8.0.0-preview.6.23329.7
+ADD --checksum=sha256:270d731bd08040c6a3228115de1f74b91cf441c584139ff8f8f6503447cebdbb \
+    https://dotnetcli.azureedge.net/dotnet/Runtime/$DOTNET_VERSION/dotnet-runtime-$DOTNET_VERSION-linux-arm64.tar.gz /dotnet.tar.gz
+
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0.0-preview.6-bookworm-slim-arm64v8 AS installer
+
+# Retrieve .NET Runtime
+RUN --mount=from=src,target=/src <<EOF
+mkdir -p /dotnet
+tar -oxzf /src/dotnet.tar.gz -C /dotnet
+EOF
+
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0.0-preview.6-bookworm-slim-arm64v8
+
+COPY --from=installer /dotnet /usr/share/dotnet
+RUN ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+```
+
+For more information about `ADD` or `COPY`, see the following:
+
+- [Dockerfile reference for the ADD instruction](https://docs.docker.com/engine/reference/builder/#add)
+- [Dockerfile reference for the COPY instruction](https://docs.docker.com/engine/reference/builder/#copy)
+
+> `ADD`나 `COPY` 명령어에 대한 더욱 자세한 정보는 다음을 참고해주세요.
+
