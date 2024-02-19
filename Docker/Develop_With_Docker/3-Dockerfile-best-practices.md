@@ -631,3 +631,192 @@ For more information about `ADD` or `COPY`, see the following:
 
 > `ADD`나 `COPY` 명령어에 대한 더욱 자세한 정보는 다음을 참고해주세요.
 
+### ENTRYPOINT
+The best use for `ENTRYPOINT` is to set the image's main command, allowing that image to be run as though it was that command, and then use `CMD` as the default flags.
+
+> `ENTRYPOINT`는 이미지의 메인 명령어를 설정하여 이미지가 마치 명령어인 것처럼 실행되도록 한 다음 `CMD`를 기본 플래그로 사용하는 것이 가장 좋습니다.
+
+The following is an example of an image for the command line tool `s3cmd`:
+
+> 다음 예제는 `s3cmd` CLI에 대한 이미지의 예제입니다.
+
+```dockerfile
+ENTRYPOINT ["s3cmd"]
+CMD ["--help"]
+```
+
+You can use the following command to run the image and show the command's help:
+
+> 다음 명령어를 실행하여 이미지를 실행하고 명령어의 도움말을 출력합니다.
+
+```shell
+$ docker run s3cmd
+```
+
+Or, you can use the right parameters to execute a command, like in the following example:
+
+> 또는 여러분들은 명령어를 실행시키기 위해서 오른쪽에 파라미터를 다음과 같이 사용할 수 있습니다.
+
+```shell
+$ docker run s3cmd ls s3://mybucket
+```
+
+This is useful because the image name can double as a reference to the binary as shown in the command above.
+
+이미지 이름이 위의 명령과 같이 이진법의 참조로 두배가 될 수 있기 때문에 유용합니다.
+
+The `ENTRYPOINT` instruction can also be used in combination with a helper script, allowing it to function in a similar way to the command above, even when starting the tool may require more than one step.
+
+> `ENTRYPOINT` 명령어는 또한 툴이 한개 이상의 단계를 요구할 때에도 위 명령어와 비슷한 방법으로 동작하는 helper script와의 조합으로 사용될 수 있습니다.
+
+For example, the [Postgres Official Image](https://hub.docker.com/_/postgres/) uses the following script as its `ENTRYPOINT`:
+
+> 다음 예제는 Postgres 공식 이미지가 다음 스크립트를 `ENTRYPOINT`로 사용합니다.
+
+```bash
+#!/bin/bash
+set -e
+
+if [ "$1" = 'postgres' ]; then
+    chown -R postgres "$PGDATA"
+
+    if [ -z "$(ls -A "$PGDATA")" ]; then
+        gosu postgres initdb
+    fi
+
+    exec gosu postgres "$@"
+fi
+
+exec "$@"
+```
+
+This script uses [the `exec` Bash command](https://wiki.bash-hackers.org/commands/builtin/exec) so that the final running application becomes the container's PID 1. This allows the application to receive any Unix signals sent to the container. For more information, see the [`ENTRYPOINT` reference](https://docs.docker.com/engine/reference/builder/#entrypoint).
+
+> 이 스크립트는 최종 실행중인 애플리케이션이 컨테이너의 PID 1이 될수 있도록 exec Bash 명령어를 사용합니다. 이를 통해 애플리케이션은 컨테이너로 전송되는 모든 유닉스 신호를 수신할 수 있습니다. 더 많은 정보는 `ENTRYPOINT` 참조를 참고해주세요
+
+In the following example, a helper script is copied into the container and run via `ENTRYPOINT` on container start:
+
+> 다음 예제는 컨테이너 시작시 `ENTRYPOINT`를 통해 실행하고 helper script가 컨테이너로 복사됩니다.
+
+```dockerfile
+COPY ./docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["postgres"]
+```
+
+This script lets you interact with Postgres in several ways.
+
+> 이 스크립트는 여러분들에게 여러 방법으로 Postgres와 상호작용하게 됩니다.
+
+It can simply start Postgres:
+
+> 이것은 간단한게 Postgres를 시작할 수 있습니다.
+
+```bash
+$ docker run postgres
+```
+
+Or, you can use it to run Postgres and pass parameters to the server:
+
+> 또는 여러분들은 서버에 파라미터를 전달하고 Postgres를 실행할 수 있습니다.
+
+```bash
+$ docker run postgres postgres --help
+```
+
+Lastly, you can use it to start a totally different tool, such as Bash:
+
+> 마지막으로 여러분들은 Bash와 같은 방법 다른 도구로 사용할 수 있습니다.
+
+```
+$ docker run --rm -it postgres bash
+```
+
+For more information about `ENTRYPOINT`, see [Dockerfile reference for the ENTRYPOINT instruction](https://docs.docker.com/engine/reference/builder/#entrypoint).
+
+> `ENTRYPOINT`에 대한 더 많은 정보는 ENTRYPOINT 명령어를 위한 Dockerfile 참조를 참고해주세요
+
+### Volume
+You should use the `VOLUME` instruction to expose any database storage area, configuration storage, or files and folders created by your Docker container. You are strongly encouraged to use `VOLUME` for any combination of mutable or user-serviceable parts of your image.
+
+> 도커 컨테이너에 의해서 생성된 디렉토리들, 파일들, 설정 저장소, 데이터베이스 스토리지 영역을 내보내기 위해서 `VOLUME` 명령어를 사용하여야 합니다. 이미지의 변경 가능한 부분이나 사용자가 사용할 수 있는 부분의 조합에는 `VOLUME`을 사용하는것이 좋습니다.
+
+For more information about `VOLUME`, see [Dockerfile reference for the VOLUME instruction](https://docs.docker.com/engine/reference/builder/#volume).
+
+> `VOLUME`에 대한 더 많은 정보는 VOLUME 명령어에 대한 Dockerfile 참조를 확인해주세요
+
+### USER
+If a service can run without privileges, use `USER` to change to a non-root user. Start by creating the user and group in the Dockerfile with something like the following example:
+
+> 만약 한 서비스가 권한 없이 동작 가능해야 한다면, `USER` 명령어를 사용하여 루트 유저가 아닌  사용자로 변경합니다. 다음 예제와 같이 Dockerfile에서 사용자와 그룹을 생성함해서 시작하세요.
+
+```shell
+$ RUN groupadd -r postgres && useradd --no-log-init -r -g postgres postgres
+```
+
+>**Note**
+>Consider an explicit UID/GID.
+>Users and groups in an image are assigned a non-deterministic UID/GID in that the "next" UID/GID is assigned regardless of image rebuilds. So, if it’s critical, you should assign an explicit UID/GID.
+
+> **Note**
+> 명시적인 UID/GID를 고라혀세요.
+> 이미지에 있는 Users와 groups는 이미지 재빌드와 관계없이 "next" UID/GID가 할당된다는 점에서 비결정론적인 UID/GID가 할당됩니다. 그래서 만약 이것이 치명적인 문제라면, 여러분들은 명시적인 UID/GID를 할당하세요.
+
+> **Note**
+> Due to an [unresolved bug](https://github.com/golang/go/issues/13548) in the Go archive/tar package's handling of sparse files, attempting to create a user with a significantly large UID inside a Docker container can lead to disk exhaustion because `/var/log/faillog` in the container layer is filled with NULL (\0) characters. A workaround is to pass the `--no-log-init` flag to useradd. The Debian/Ubuntu `adduser` wrapper does not support this flag.
+
+> **Note**
+> Go archive/tar 패키지의 희소 파일 처리에서 unresolved bug로 인해서 도커 컨테이너 내부에서 상당히 큰 UID를 가진 사용자를 생성하려고 하면 컨테이너 계층의 `/var/log/failog`가 NULL(\0) 문자로 채워지기 때문에 디스크가 소진될 수 있습니다. 해결 방법은 useradd 명령어에 --no-log-init 플래그를 전달하는 것입니다. Debian/Ubuntu 계열 `adduser` 명령어는 이 옵션을 지원하지 않습니다.
+
+Avoid installing or using `sudo` as it has unpredictable TTY and signal-forwarding behavior that can cause problems. If you absolutely need functionality similar to `sudo`, such as initializing the daemon as `root` but running it as non-`root`, consider using [“gosu”](https://github.com/tianon/gosu).
+
+> `sudo`는 TTY(teletypewriter)를 예측할 수 없고 신호 전달 동작이 문제를 일으킬 수 있으므로 설치하거나 사용하지 마세요. 데몬을 루트로 초기화하되 비루트로 실행하는 등 `sudo`와 유사한 기능이 꼭 필요한 경우에는 `gosu`를 사용하는 것을 고려해보세요.
+
+Lastly, to reduce layers and complexity, avoid switching `USER` back and forth frequently.
+
+> 마지막으로 레이어와 복잡성을 줄이기 위해서 `USER`를 자주 앞뒤로 전환하지 마세요.
+
+For more information about `USER`, see [Dockerfile reference for the USER instruction](https://docs.docker.com/engine/reference/builder/#user)
+> `USER`에 대한 더 많은 정보는 USER 명령어에 대한 Dockerfile 참조를 확인해주세요
+
+### WORKDIR
+For clarity and reliability, you should always use absolute paths for your `WORKDIR`. Also, you should use `WORKDIR` instead of proliferating instructions like `RUN cd … && do-something`, which are hard to read, troubleshoot, and maintain.
+
+> 명확성과 신뢰성을 위해서 항상 `WORKDIR`에 절대 경로를 사용해야 합니다. 또한 `RUN cd ... && do-something`과 같은 명령어 대신에 `WORKDIR`를 사용하세요. 
+
+For more information about `WORKDIR`, see [Dockerfile reference for the WORKDIR instruction](https://docs.docker.com/engine/reference/builder/#workdir).
+
+> `WORKDIR`에 대한 더 자세한 정보는 WORKDIR 명령어에 대한 Dockerfile 참조를 확인해주세요
+
+### ONBUILD
+An `ONBUILD` command executes after the current Dockerfile build completes. `ONBUILD` executes in any child image derived `FROM` the current image. Think of the `ONBUILD` command as an instruction that the parent Dockerfile gives to the child Dockerfile.
+
+> `ONBUILD` 명령어는 현재 Dockerfile이 빌드를 완료한 후에 실행합니다. `ONBUILD`는 현재 이미지에서 파생된 어떤 자식 이미지에서든 실행되는 지시문입니다. `ONBUILD` 명령어는 부모 Dockerfile이 자식 Dockerfile에 제공하는 명령어라고 생각하세요.
+
+A Docker build executes `ONBUILD` commands before any command in a child Dockerfile.
+
+> Docker 빌드는 `ONBUILD` 명령어를 자식 Dockerfile안에 명령어 전에 실행합니다. 
+
+`ONBUILD` is useful for images that are going to be built `FROM` a given image. For example, you would use `ONBUILD` for a language stack image that builds arbitrary user software written in that language within the Dockerfile, as you can see in [Ruby’s `ONBUILD` variants](https://github.com/docker-library/ruby/blob/c43fef8a60cea31eb9e7d960a076d633cb62ba8d/2.4/jessie/onbuild/Dockerfile).
+
+> `ONBUILD`는 주어진 이미지에서 구축되는 이미지에 유용합니다. 예를 들어Ruby의 ONBUILD 변형에서 볼수 있듯이 해당 언어로 작성된 임의의 사용자 소프트웨어를 도커 파일 내에 빌드하는 언어 스택 이미지에 `ONBUILD`를 사용합니다.
+
+Images built with `ONBUILD` should get a separate tag. For example, `ruby:1.9-onbuild` or `ruby:2.0-onbuild`.
+
+> `ONBUILD`가 내장된 이미지는 별도의 태그를 얻어야 합니다. 예를 들어 `ruby:1.9-onbuild`나 `ruby:2.0-onbuild`가 있습니다.
+
+Be careful when putting `ADD` or `COPY` in `ONBUILD`. The onbuild image fails catastrophically if the new build's context is missing the resource being added. Adding a separate tag, as recommended above, helps mitigate this by allowing the Dockerfile author to make a choice.
+
+> `ONBUILD`에 `ADD`나 `COPY`를 넣을때 조심하세요. 만약 새로운 빌드의 컨텍스트가 추가되어야할 리소스를 빠뜨린다면 onbuild 이미지는 실패할 것입니다. 위와 같은 명령어와 같이 별도의 태그를 추가해서 Dockerfile 작성자가 선택하는 것을 허용하게 함으로써 이를 완화하는데 도움이 됩니다.
+
+For more information about `ONBUILD`, see [Dockerfile reference for the ONBUILD instruction](https://docs.docker.com/engine/reference/builder/#onbuild).
+
+> `ONBUILD`에 대한 더 많은 정보는 ONBUILD 명령어에 대한 Dockerfile을 참고해주세요
+
+
+
+
+
+
+
+
